@@ -12,7 +12,7 @@ import numpy as np
 import functools
 import os
 
-user_home = os.path.expanduser("~")
+user_home = os.path.expanduser("~/desktop")
 app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "pp_app_plots")
 output_dir1 = os.path.join(user_home, "pp_app_data")
