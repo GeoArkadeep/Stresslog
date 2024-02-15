@@ -1,0 +1,13 @@
+curve mnemonic, colour, lw, ls, xlim, xscale
+GR, darkgreen, 1.0,  -, "0,150", linear
+KTH, purple, 1.0,  -, "0,150", linear
+ZDEN, brown, 0.5, --, "0,3", linear
+DT, black, 1.0, --, "300,0", linear
+DTCT, violet, 2.0, --, "300,0", linear
+RHOA, red, 0.5,  --, "0,3", linear
+OBG, green, 1.0,  -, "0,3", linear
+PP, red, 1.0,  -, "0,3", linear
+FG, blue, 1.0,  -, "0,3", linear
+PPpsi, red, 1.0,  -, "0,10000", linear
+FGpsi, blue, 1.0,  -, "0,10000", linear
+Gcal, purple, 10.0,  dotted, "0,3", linear
