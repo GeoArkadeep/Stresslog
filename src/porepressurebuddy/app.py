@@ -12,7 +12,7 @@ import numpy as np
 import functools
 import os
 
-user_home = os.path.expanduser("~/desktop")
+user_home = os.path.expanduser("~/documents")
 app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "pp_app_plots")
 output_dir1 = os.path.join(user_home, "pp_app_data")
@@ -38,16 +38,16 @@ h2 = None
 depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
 
-my_file = open("model.csv", "r") 
+modelfile = open("model.csv", "r") 
   
 # reading the file 
-data = my_file.read() 
+data = modelfile.read() 
   
 # replacing end splitting the text  
 # when newline ('\n') is seen. 
 data_into_list = data.split(",") 
 print(data_into_list) 
-my_file.close() 
+modelfile.close() 
 
 #model = np.array([16.33,0.63,0.0008,210,60,0.4,0.8,1,0,2000])
 model = ['16.33','0.63','0.0008','210','60','0.4','0.8','1','0','2000']
