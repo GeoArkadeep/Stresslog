@@ -80,7 +80,7 @@ class MyApp(toga.App):
         self.dropdown3 = toga.Selection(style=Pack(padding=10), enabled = False)
 
 
-        
+          
         self.page2 = toga.Box(style=Pack(direction=COLUMN))
         self.page2_label = toga.Label("Measured Depth", style=Pack(padding=10))
         self.page2.add(self.page2_label)
@@ -131,15 +131,35 @@ class MyApp(toga.App):
         def add_depth_mw_row(self, widget):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
             
-            depth_label = toga.Label("Depth", style=Pack(padding_right=5))
-            depth_entry = toga.TextInput(style=Pack(padding_left=2, width=100), initial="0")
+            depth_label = toga.Label("Casing Landing Depth (m)", style=Pack(padding_right=2))
+            depth_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
             row_box.add(depth_label)
             row_box.add(depth_entry)
 
-            mud_weight_label = toga.Label("Mud Weight", style=Pack(padding_right=5))
-            mud_weight_entry = toga.TextInput(style=Pack(padding_left=2, width=100), initial="0")
+            mud_weight_label = toga.Label("Max. Mud Weight", style=Pack(padding_right=2))
+            mud_weight_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="1")
             row_box.add(mud_weight_label)
             row_box.add(mud_weight_entry)
+            
+            od_label = toga.Label("Casing OD (inches)", style=Pack(padding_right=2))
+            od_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            row_box.add(od_label)
+            row_box.add(od_entry)
+            
+            bitdia_label = toga.Label("Bit Dia (inches)", style=Pack(padding_right=2))
+            bitdia_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            row_box.add(bitdia_label)
+            row_box.add(bitdia_entry)
+            
+            iv_label = toga.Label("Casing volume (bbl/100ft)", style=Pack(padding_right=2))
+            iv_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            row_box.add(iv_label)
+            row_box.add(iv_entry)
+            
+            ppf_label = toga.Label("Casing Weight (ppf)", style=Pack(padding_right=5))
+            ppf_entry = toga.TextInput(style=Pack(padding_left=2, width=100), initial="0")
+            row_box.add(ppf_label)
+            row_box.add(ppf_entry)
 
             self.depth_mw_rows.append(row_box)
             self.depth_mw_box.add(row_box)
@@ -390,15 +410,23 @@ class MyApp(toga.App):
         for row_box in self.depth_mw_rows:
             depth_entry = row_box.children[1] # Access the depth TextInput widget
             mw_entry = row_box.children[3] # Access the mud weight TextInput widget
+            od_entry = row_box.children[5] # Access the mud weight TextInput widget
+            bd_entry = row_box.children[7] # Access the mud weight TextInput widget
+            iv_entry = row_box.children[9] # Access the mud weight TextInput widget
+            ppf_entry = row_box.children[11] #access the casing volume TextInput Widget
 
             try:
                 depth = float(depth_entry.value)
                 mw = float(mw_entry.value)
+                od = float(od_entry.value)
+                bd = float(bd_entry.value)
+                iv = float(iv_entry.value)
+                ppf = float(ppf_entry.value)
             except ValueError:
                 print("Invalid input. Skipping this row.")
                 continue
 
-            depth_mw_values.append([mw,depth])
+            depth_mw_values.append([mw,depth,bd,od,iv])
 
         # Sort the depth_mw_values list by depth
         depth_mw_values.sort(key=lambda x: x[0])
@@ -414,6 +442,18 @@ class MyApp(toga.App):
         if devpath is not None:
             deva=pd.read_csv(devpath, sep=' ')
             print(deva)
+            start_depth = wella.df().index[0]
+            final_depth = wella.df().index[-1]
+            spacing = ((wella.df().index.values[9]-wella.df().index.values[0])/9)
+            print("Sample interval is :",spacing)
+            padlength = int(start_depth/spacing)
+            print(padlength)
+            padval = np.zeros(padlength)
+            i = 1
+            while(i<padlength):
+                padval[-i] = start_depth-(spacing*i)
+                i+=1
+            print("pad depths: ",padval)
             md = pd.to_numeric(deva[self.dropdown1.value], errors='coerce')
             inc = pd.to_numeric(deva[self.dropdown2.value], errors='coerce')
             azm = pd.to_numeric(deva[self.dropdown3.value], errors='coerce')
@@ -739,6 +779,24 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
     
+    detail = app_instance.get_depth_mw_data_values()
+    i = 0
+    mud_weight = []
+    while i<len(detail):
+        mud_weight.append([detail[i][1],detail[i][0]])
+        i+=1    
+    #first = [1, 0]
+    last = [mud_weight[-1][0], final_depth]
+    lastmw = last[0]
+    frac_grad_data = app_instance.get_frac_grad_data_values()[0]
+    flow_grad_data = app_instance.get_flow_grad_data_values()[0]
+    frac_psi_data = app_instance.get_frac_grad_data_values()[1]
+    flow_psi_data = app_instance.get_flow_grad_data_values()[1]
+    
+    #mud_weight.insert(0,first)
+    mud_weight.append(last)
+    
+    
     print (alias['sonic'])
     if alias['sonic'][0] == 'none':
         print("Without sonic log, no prediction possible")
@@ -876,6 +934,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     rhoppg = np.zeros(len(tvdf))
     ObgTppg = np.zeros(len(tvdf))
     hydrostatic = np.zeros(len(tvd))
+    mudhydrostatic = np.zeros(len(tvd))
     lithostatic = np.zeros(len(tvd))
     i = 1
     #while(i<len(tvdf-1)):
@@ -886,23 +945,29 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdf[i]-agf-wdf)/3125)**a)
                 hydrostatic[i] = 1.025
+                mudhydrostatic[i] = 1.0*lastmw
             else:
                 if(tvdmsl[i]<0):
                     rhoppg[i] = 8.34540426515252*1.025
                     hydrostatic[i] = 0
+                    mudhydrostatic[i] = 0
                 else:
                     rhoppg[i] = 0
                     hydrostatic[i] = 1.025
+                    mudhydrostatic[i] = 1.0*lastmw
         else:
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdbglf[i])/3125)**a)
                 hydrostatic[i]= 1.025
+                mudhydrostatic[i] = 1.0*lastmw
             else:
                 rhoppg[i] = 0
                 hydrostatic[i] = 0
+                mudhydrostatic[i] = 0
         i+=1
     #hydrostatic =  (1.025*9.80665/6.89476) * tvdmsl
     hydroppf = 0.4335275040012*hydrostatic
+    mudppf = 0.4335275040012*mudhydrostatic
     lithostatic =  (2.6*9.80665/6.89476) * tvd
     gradient = lithostatic/(tvdf)*1.48816
     rhoppg[0] = rhoappg
@@ -1004,7 +1069,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
                     if gccmiller[i]<1:
-                       gccmiller[i]=np.nan  
+                        gccmiller[i]=np.nan
                 else:
                     gccmiller[i] = np.nan
                 ppgmiller[i] = gccmiller[i]*8.33
@@ -1041,6 +1106,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 psipp[i] = psiftpp[i]*tvdf[i]
         i+=1
     #gccmiller[0] = np.nan
+    gccmiller[-1] = hydrostatic[-1]
     gccmiller = interpolate_nan(gccmiller)
     ppgmiller = interpolate_nan(ppgmiller)
     psiftpp = interpolate_nan(psiftpp)
@@ -1287,14 +1353,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt_obj = well.plot(tracks=tracks, legend=legend)
 
     # Add your custom plot
-    mud_weight = app_instance.get_depth_mw_data_values()
-    last = [mud_weight[-1][0], final_depth]
-    frac_grad_data = app_instance.get_frac_grad_data_values()[0]
-    flow_grad_data = app_instance.get_flow_grad_data_values()[0]
-    frac_psi_data = app_instance.get_frac_grad_data_values()[1]
-    flow_psi_data = app_instance.get_flow_grad_data_values()[1]
     
-    mud_weight.append(last)
     print(mud_weight)
     print(frac_grad_data)
     print(flow_grad_data)
@@ -1354,3 +1413,4 @@ def main():
 if __name__ == "__main__":
     app = MyApp("Pore Pressure Buddy Zhang", "in.rocklab.porepressurebuddy")
     app.main_loop()
+
