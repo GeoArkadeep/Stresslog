@@ -39,10 +39,8 @@ depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
 
 modelfile = open("model.csv", "r") 
-  
 # reading the file 
-data = modelfile.read() 
-  
+data = modelfile.read()   
 # replacing end splitting the text  
 # when newline ('\n') is seen. 
 data_into_list = data.split(",") 
@@ -50,7 +48,7 @@ print(data_into_list)
 modelfile.close() 
 
 #model = np.array([16.33,0.63,0.0008,210,60,0.4,0.8,1,0,2000])
-model = ['16.33','0.63','0.0008','210','60','0.4','0.8','1','0','2000']
+#model = ['16.33','0.63','0.0008','210','60','0.4','0.8','1','0','2000']
 model = data_into_list
 
 class MyApp(toga.App):
@@ -246,7 +244,10 @@ class MyApp(toga.App):
             {'label': 'ShaleFlag Cutoff', 'default_value': str(model[6])},
             {'label': 'Window', 'default_value': str(model[7])},
             {'label': 'Start', 'default_value': str(model[8])},
-            {'label': 'Stop', 'default_value': str(model[9])}
+            {'label': 'Stop', 'default_value': str(model[9])},
+            {'label': 'WaterDensity', 'default_value': str(model[10])},
+            {'label': 'Subhydrostatic', 'default_value': str(model[11])}
+            
         ]
 
         # Create a list to store the textboxes
@@ -440,7 +441,7 @@ class MyApp(toga.App):
         wella = welly.Well.from_las(laspath, index = "m")
         depth_track = wella.df().index
         if devpath is not None:
-            deva=pd.read_csv(devpath, sep=' ')
+            deva=pd.read_csv(devpath, sep=' ',skipinitialspace=True)
             print(deva)
             start_depth = wella.df().index[0]
             final_depth = wella.df().index[-1]
@@ -454,11 +455,18 @@ class MyApp(toga.App):
                 padval[-i] = start_depth-(spacing*i)
                 i+=1
             print("pad depths: ",padval)
-            md = pd.to_numeric(deva[self.dropdown1.value], errors='coerce')
-            inc = pd.to_numeric(deva[self.dropdown2.value], errors='coerce')
-            azm = pd.to_numeric(deva[self.dropdown3.value], errors='coerce')
+            md = depth_track
+            md =  np.append(padval,md)
+            mda = pd.to_numeric(deva[self.dropdown1.value], errors='coerce')
+            inca = pd.to_numeric(deva[self.dropdown2.value], errors='coerce')
+            azma = pd.to_numeric(deva[self.dropdown3.value], errors='coerce')
+            inc = np.interp(md,mda,inca)
+            azm = np.interp(md,mda,azma)
+            #i = 1
+            #while md[i]<final_depth:
+            #    if md[i]
             z = deva.to_numpy(na_value=0)
-            dz = [md.to_numpy(),inc.to_numpy(),azm.to_numpy()]
+            dz = [md,inc,azm]
         else:
             start_depth = wella.df().index[0]
             final_depth = wella.df().index[-1]
@@ -620,13 +628,25 @@ class MyApp(toga.App):
         global attrib
         global model
         self.getwelldev()
+        modelfile = open("model.csv", "r") 
+        data = modelfile.read()   
+        # replacing end splitting the text  
+        # when newline (',') is seen. 
+        data_into_list = data.split(",") 
+        print(data_into_list) 
+        modelfile.close() 
+        model = data_into_list
+        tail1 = str(model[10])
+        tail2 = str(model[11])
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         model = tv
+        model.append(tail1)
+        model.append(tail2)
         ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]))
         file = open('model.csv','w')
         for item in model:
-            file.write(item+",")
+            file.write(str(item)+",")
         file.close()
         print("Great Success!! :D")
         image_path = 'PlotFigure.png.png'
@@ -760,7 +780,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, water = float(model[10]), underbalancereject = bool(model[11]=='True' or model[11] =='true' or model[11]=='TRUE')):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -828,7 +848,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         rdiff = pad0_nan(rdiff)
         radiff = (rdiff[:]*rdiff[:])**0.5
         plt.plot(radiff)
-        #plt.yscale('log')
+        plt.yscale('log')
         i = 0
         lradiff = np.zeros(len(radiff))
         while i<len(radiff):
@@ -842,7 +862,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         shaleflag = rediff.block(cutoffs=sfs,values=(0,1)).values
         zoneflag = rediff.block(cutoffs=sfs,values=(0,1)).values
         print(shaleflag)
-        #rediff.plot_2d(cmap='RdBu')#,curve=True)        
+        plt.plot(shaleflag)        
         plt.show()
     else:
         shaleflag = np.zeros(len(md))
@@ -944,28 +964,28 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         if glwd<0:
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdf[i]-agf-wdf)/3125)**a)
-                hydrostatic[i] = 1.025
+                hydrostatic[i] = water
                 mudhydrostatic[i] = 1.0*lastmw
             else:
                 if(tvdmsl[i]<0):
-                    rhoppg[i] = 8.34540426515252*1.025
+                    rhoppg[i] = 8.34540426515252*water
                     hydrostatic[i] = 0
                     mudhydrostatic[i] = 0
                 else:
                     rhoppg[i] = 0
-                    hydrostatic[i] = 1.025
+                    hydrostatic[i] = water
                     mudhydrostatic[i] = 1.0*lastmw
         else:
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdbglf[i])/3125)**a)
-                hydrostatic[i]= 1.025
+                hydrostatic[i]= water
                 mudhydrostatic[i] = 1.0*lastmw
             else:
                 rhoppg[i] = 0
                 hydrostatic[i] = 0
                 mudhydrostatic[i] = 0
         i+=1
-    #hydrostatic =  (1.025*9.80665/6.89476) * tvdmsl
+    #hydrostatic =  (water*9.80665/6.89476) * tvdmsl
     hydroppf = 0.4335275040012*hydrostatic
     mudppf = 0.4335275040012*mudhydrostatic
     lithostatic =  (2.6*9.80665/6.89476) * tvd
@@ -976,7 +996,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
 #    rhogcc[0] = 0.01
     
     i=1
-    maxwaterppg = wdf*8.34540426515252*1.025
+    maxwaterppg = wdf*8.34540426515252*water
     while(i<len(tvdf-1)):
         if glwd<0:
             if(tvdbgl[i]>0):
@@ -984,7 +1004,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                     ObgTppg[i] =((maxwaterppg + ((rhoppg[i])*(tvdbglf[i])))/tvdmslf[i])
             else:
                 if(tvdmsl[i]>0):
-                    ObgTppg[i] =(8.34540426515252*1.025)
+                    ObgTppg[i] =(8.34540426515252*water)
         else:
             if (tvdbgl[i]>0):
                 ObgTppg[i] =((rhoppg[i])*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
@@ -1000,15 +1020,18 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     print("Zden: ",zden2)
     print("len of zden: ",len(zden2))
     import math
+    coalflag = np.zeros(len(tvd))   
     if (len(zden2)>10):
         ObgTgcc = [ObgTgcc[i] if math.isnan(zden2[i]) else zden2[i] for i in range(len(zden2))]
-
+        coalflag = [0 if math.isnan(zden2[i]) else 1 if zden2[i]<1.5 else 0 for i in range(len(zden2))]
+    
+    coal = Curve(coalflag, mnemonic='CoalFlag',units='coal', index=md, null=0)
     #Millers
 
     ct = 0 #delta m/s per metre of depth
     ct = ct*0.1524
     ct = lamb #zhang's value for gulf of mehico
-    pn = 1.025 #Hydrostatic, in gcc
+    pn = water #Hydrostatic, in gcc
     
     matrick = dtmt #us/ft
     mudline = dtml #us/ft
@@ -1062,13 +1085,13 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     #ObgTppg[0] = np.nan
     print("ObgTppg:",ObgTppg)
-    
+    print("Reject Subhydrostatic = ",underbalancereject)
     while i<(len(ObgTppg)-1):
         if glwd>=0:
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if gccmiller[i]<1:
+                    if underbalancereject and gccmiller[i]<1:
                         gccmiller[i]=np.nan
                 else:
                     gccmiller[i] = np.nan
@@ -1090,6 +1113,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    if underbalancereject and gccmiller[i]<1:
+                        gccmiller[i]=np.nan
                 else:
                     gccmiller[i] = np.nan
                 ppgmiller[i] = gccmiller[i]*8.33
@@ -1289,8 +1314,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt4.legend()
     plt4.set_xlim([0,5000])
     
-    flag.plot_2d(plt6,cmap='RdBu')
-    zone.plot_2d(plt7,cmap='hot')
+    flag.plot_2d(plt6,cmap='summer')
+    coal.plot_2d(plt7,cmap='binary')
     #plt6.plot(fgpsi,tvd,color='blue',label='Sh min')
     #plt6.plot(obgpsi,tvd,color='green',label='Sigma V')
     #plt2.plot(dalm,tvd,label='DT')
