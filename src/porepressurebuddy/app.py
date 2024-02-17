@@ -1155,7 +1155,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #Eatons
     
     i = 0
-    mu = 0.6
+    mu = 0.3
     fgppg = np.zeros(len(ppgmiller))
     fgcc = np.zeros(len(ppgmiller))
     mufgppg = np.zeros(len(ppgmiller))
@@ -1165,7 +1165,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         if tvdbgl[i]>0:
             if shaleflag[i]<0.5:
                 fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgmiller[i])+ppgmiller[i]
-                mufgppg[i] = ((ObgTppg[i+10]-ppgmiller[i])/((((mu**2)+1)**0.5)+mu)**2) + ppgmiller[i]
+                mufgppg[i] = ((ObgTppg[i]-ppgmiller[i])/((((mu**2)+1)**0.5)+mu)**2) + ppgmiller[i]
                 mufgcc[i] = 0.11982642731*mufgppg[i]
             else:
                 fgppg[i] = np.nan
@@ -1273,6 +1273,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.data['PP'] =  pp
     fg = Curve(sfg, mnemonic='FG_EATON',units='G/C3', index=md, null=0)
     well.data['FG'] =  fg
+    fg2 = Curve(mufgcc, mnemonic='FG_ZOBACK',units='G/C3', index=md, null=0)
+    well.data['FG'] =  fg2
+    
+    
     pppsi = Curve(spsipp, mnemonic='GEOPRESSURE',units='psi', index=md, null=0)
     well.data['PPpsi'] =  pppsi
     fgpsi = Curve(spsifp, mnemonic='FRACTURE_PRESSURE',units='psi', index=md, null=0)
@@ -1311,7 +1315,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt2.legend()
     plt2.set_xlim([300,50])
 
-    plt3.plot(fg,tvd,color='blue',label='Fracture Gradient (Eaton)')
+    plt3.plot(fg,tvd,color='aqua',label='Fracture Gradient (Eaton)')
+    plt3.plot(fg2,tvd,color='blue',label='Fracture Gradient (Zoback)')
     plt3.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
     plt3.plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
     plt3.legend()
