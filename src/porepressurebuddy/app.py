@@ -1155,15 +1155,22 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #Eatons
     
     i = 0
+    mu = 0.6
     fgppg = np.zeros(len(ppgmiller))
     fgcc = np.zeros(len(ppgmiller))
+    mufgppg = np.zeros(len(ppgmiller))
+    mufgcc = np.zeros(len(ppgmiller))
 
     while i<(len(ObgTppg)-1):
         if tvdbgl[i]>0:
             if shaleflag[i]<0.5:
                 fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgmiller[i])+ppgmiller[i]
+                mufgppg[i] = ((ObgTppg[i+10]-ppgmiller[i])/((((mu**2)+1)**0.5)+mu)**2) + ppgmiller[i]
+                mufgcc[i] = 0.11982642731*mufgppg[i]
             else:
                 fgppg[i] = np.nan
+                mufgppg[i] = np.nan
+                mufgcc[i] = np.nan
         fgcc[i] = 0.11982642731*fgppg[i]
         i+=1
     fgppg = interpolate_nan(fgppg)
