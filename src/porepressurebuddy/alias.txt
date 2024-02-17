@@ -1,7 +1,7 @@
 {'sonic': ['none','DTC', 'DT24','DTCO','DT','AC'],
  'ssonic': ['none','DTSM'],
  'gr': ['none','GR', 'GRD','CGR','GRR'],
- 'resdeep': ['none','HDRS','LLD', 'M2RX', 'MLR4C','RD','RT90','RLA1','RDEP','RLLD','RILD','ILD'],
+ 'resdeep': ['none','HDRS','LLD', 'M2RX', 'MLR4C','RD','RT90','RLA1','RDEP','RLLD','RILD','ILD','RT_HRLT'],
  'resshal': ['none','LLS','HMRS','M2R1','RS','RFOC','ILM','RSFL','RMED'],
- 'density':['none','ZDEN','RHOB','RHOZ','RHO','DEN'],
+ 'density':['none','ZDEN','RHOB','RHOZ','RHO','DEN','RHO8'],
  'neutron':['none','CNCF','NPHI','NEU']}

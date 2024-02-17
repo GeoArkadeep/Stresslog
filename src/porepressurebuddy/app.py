@@ -1020,12 +1020,16 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     print("Zden: ",zden2)
     print("len of zden: ",len(zden2))
     import math
-    coalflag = np.zeros(len(tvd))   
+    coalflag = np.zeros(len(tvd))
+    lithoflag = np.zeros(len(tvd))
     if (len(zden2)>10):
         ObgTgcc = [ObgTgcc[i] if math.isnan(zden2[i]) else zden2[i] for i in range(len(zden2))]
-        coalflag = [0 if math.isnan(zden2[i]) else 1 if zden2[i]<1.5 else 0 for i in range(len(zden2))]
+        coalflag = [0 if math.isnan(zden2[i]) else 1 if zden2[i]<1.6 else 0 for i in range(len(zden2))]
+        lithoflag = [0 if shaleflag[i]<1 else 1 if zden2[i]<1.6 else 2 for i in range(len(zden2))]
+    
     
     coal = Curve(coalflag, mnemonic='CoalFlag',units='coal', index=md, null=0)
+    litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=md, null=0)
     #Millers
 
     ct = 0 #delta m/s per metre of depth
@@ -1314,7 +1318,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt4.legend()
     plt4.set_xlim([0,5000])
     
-    flag.plot_2d(plt6,cmap='summer')
+    litho.plot_2d(plt6,cmap='seismic')
     coal.plot_2d(plt7,cmap='binary')
     #plt6.plot(fgpsi,tvd,color='blue',label='Sh min')
     #plt6.plot(obgpsi,tvd,color='green',label='Sigma V')
