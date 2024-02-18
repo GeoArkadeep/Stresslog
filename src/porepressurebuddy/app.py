@@ -812,17 +812,18 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     i = 0
     mud_weight = []
     while i<len(detail):
-        mud_weight.append([detail[i][1],detail[i][0]])
+        mud_weight.append([detail[i][0],detail[i][1]])
         i+=1    
-    #first = [1, 0]
-    last = [final_depth,mud_weight[-1][1]]
-    lastmw = last[1]
+    print(mud_weight)
+    first = [mud_weight[0][0],0]
+    last = [mud_weight[-1][0],final_depth]
+    lastmw = last[0]
     frac_grad_data = app_instance.get_frac_grad_data_values()[0]
     flow_grad_data = app_instance.get_flow_grad_data_values()[0]
     frac_psi_data = app_instance.get_frac_grad_data_values()[1]
     flow_psi_data = app_instance.get_flow_grad_data_values()[1]
     
-    #mud_weight.insert(0,first)
+    mud_weight.insert(0,first)
     mud_weight.append(last)
     print("MudWeights: ",mud_weight)
     
@@ -1267,20 +1268,21 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         spsifp[i] = sumi/(2*window)
         i+=1
         
-           
-    doi = 1000.24
-    doiactual = find_nearest_depth(tvdm,doi)
-    print(doiactual)
-    doiA = doiactual[1]
-    doiX = doiactual[0]
-    print("Depth of interest :",doiA," with index of ",doiX)
-    sigmaVmpa = obgpsi[doiX]/145.038
-    ppmpa = psipp[doiX]/145.038
-    bhpmpa = mudpsi[doiX]/145.038
-    stresspolygon = [sigmaVmpa,ppmpa,bhpmpa]
-    print(stresspolygon)
-    from DrawSP import drawSP
-    drawSP(sigmaVmpa,ppmpa,bhpmpa)
+    from DrawSP import drawSP       
+    doi = 4018
+    if doi>0:
+        doiactual = find_nearest_depth(tvdm,doi)
+        print(doiactual)
+        doiA = doiactual[1]
+        doiX = doiactual[0]
+        print("Depth of interest :",doiA," with index of ",doiX)
+        sigmaVmpa = obgpsi[doiX]/145.038
+        ppmpa = psipp[doiX]/145.038
+        bhpmpa = mudpsi[doiX]/145.038
+        ucs = horsud[doiX]
+        stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucs]
+        print(stresspolygon)
+        drawSP(sigmaVmpa,ppmpa,bhpmpa,ucs)
     
     
     
@@ -1400,7 +1402,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
 
     #well.data['strip'] = sd2
 
-    well.unify_basis(keys=None, alias=None, basis=None, start=zulu, stop=tango, step=None)
+    well.unify_basis(keys=None, alias=None, basis=md, start=zulu, stop=tango, step=None)
 
     well.location.plot_3d()
     #well.location.plot_plan()
@@ -1409,6 +1411,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         
     array = well.data_as_matrix(return_meta = False)
     dfa = well.df
+    #mdgh = well.df().index.values
+    #print(mdgh)
     header = well._get_curve_mnemonics()
     #header += 'MD'
     csvdf = pd.DataFrame(array, columns=header)
@@ -1450,7 +1454,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         third_track_ax.scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     
     mud_weight_x, mud_weight_y = zip(*mud_weight)
-    second_track_ax.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-pre')  # Add the stepped mud_weight line to the second track
+    second_track_ax.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
     
     # Create a new y-axis for the new track
     new_track_ax = plt_obj.get_axes()[0].twinx()

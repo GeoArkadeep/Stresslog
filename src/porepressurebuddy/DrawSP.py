@@ -10,7 +10,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(Sv,Pp,bhp,mu = 0.6, UCS = 0, PhiB = 0):
+def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
 
     ufac = ((((mu**2)+1)**0.5)+mu)**2
     print("Mu factor: ",ufac)
