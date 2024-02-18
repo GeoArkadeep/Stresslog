@@ -808,14 +808,15 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
     
     detail = app_instance.get_depth_mw_data_values()
+    print(detail)
     i = 0
     mud_weight = []
     while i<len(detail):
         mud_weight.append([detail[i][1],detail[i][0]])
         i+=1    
     #first = [1, 0]
-    last = [mud_weight[-1][0], final_depth]
-    lastmw = last[0]
+    last = [final_depth,mud_weight[-1][1]]
+    lastmw = last[1]
     frac_grad_data = app_instance.get_frac_grad_data_values()[0]
     flow_grad_data = app_instance.get_flow_grad_data_values()[0]
     frac_psi_data = app_instance.get_frac_grad_data_values()[1]
@@ -823,7 +824,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     #mud_weight.insert(0,first)
     mud_weight.append(last)
-    
+    print("MudWeights: ",mud_weight)
     
     print (alias['sonic'])
     if alias['sonic'][0] == 'none':
@@ -1080,6 +1081,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     else:
         hydropsi = hydroppf[:]*tvdbglf[:]
         obgpsi= ObgTppf[:]*tvdbglf[:]
+    mudpsi = mudppf[:]*tvdf[:]
     
     i = 0
     ppgmiller = np.zeros(len(tvdf))
@@ -1266,12 +1268,20 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         i+=1
         
            
-    doi = 100.24
+    doi = 1000.24
     doiactual = find_nearest_depth(tvdm,doi)
     print(doiactual)
     doiA = doiactual[1]
     doiX = doiactual[0]
     print("Depth of interest :",doiA," with index of ",doiX)
+    sigmaVmpa = obgpsi[doiX]/145.038
+    ppmpa = psipp[doiX]/145.038
+    bhpmpa = mudpsi[doiX]/145.038
+    stresspolygon = [sigmaVmpa,ppmpa,bhpmpa]
+    print(stresspolygon)
+    from DrawSP import drawSP
+    drawSP(sigmaVmpa,ppmpa,bhpmpa)
+    
     
     
     TVDF = Curve(tvdf, mnemonic='TVDF',units='m', index=md, null=0)
@@ -1392,10 +1402,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
 
     well.unify_basis(keys=None, alias=None, basis=None, start=zulu, stop=tango, step=None)
 
-    #well.location.plot_3d()
+    well.location.plot_3d()
     #well.location.plot_plan()
 
-    #plt.show()
+    plt.show()
         
     array = well.data_as_matrix(return_meta = False)
     dfa = well.df
@@ -1467,10 +1477,10 @@ def readDevFromAsciiHeader(devpath, delim = ' '):
     return dheader
 
 def main():
-    app = MyApp('PorePressureBuddyZhang', 'com.example.porepressurebuddy')
+    app = MyApp('WellMasterGeoMech', 'com.example.porepressurebuddy')
     return app
 
 if __name__ == "__main__":
-    app = MyApp("Pore Pressure Buddy Zhang", "in.rocklab.porepressurebuddy")
+    app = MyApp("WellMasterGeoMech", "in.rocklab.porepressurebuddy")
     app.main_loop()
 
