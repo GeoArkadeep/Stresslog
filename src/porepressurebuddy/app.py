@@ -755,7 +755,7 @@ def read_aliases_from_file(file_path='alias.txt'):
         aliases = eval(file.read())  # Note: Using eval to parse the dictionary from the file
     return aliases
 
-def pad0_nan(array_like):
+def pad_val(array_like,value):
     array = array_like.copy()
 
     nans = np.isnan(array)
@@ -766,6 +766,14 @@ def pad0_nan(array_like):
     array[nans] = np.interp(get_x(nans), get_x(~nans), array[~nans])
 
     return array
+
+def find_nearest_depth(array,value):
+    import math
+    idx = np.searchsorted(array, value, side="left")
+    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
+        return [idx-1,array[idx-1]]
+    else:
+        return [idx,array[idx]]
 
 def interpolate_nan(array_like):
     array = array_like.copy()
@@ -845,7 +853,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         #sd2 = kth.plot_2d(cmap='viridis_r', curve=True, lw=0.3, edgecolor='k')
         #plt.xlim(0,150)
         rdiff = rD[:]-rS[:]
-        rdiff = pad0_nan(rdiff)
+        rdiff[np.isnan(rdiff)] = 0
+        #rdiff = interpolate_nan(rdiff,0)
         radiff = (rdiff[:]*rdiff[:])**0.5
         plt.plot(radiff)
         plt.yscale('log')
@@ -1030,6 +1039,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     coal = Curve(coalflag, mnemonic='CoalFlag',units='coal', index=md, null=0)
     litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=md, null=0)
+    
     #Millers
 
     ct = 0 #delta m/s per metre of depth
@@ -1136,8 +1146,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         i+=1
     #gccmiller[0] = np.nan
     gccmiller[-1] = hydrostatic[-1]
-    gccmiller = interpolate_nan(gccmiller)
-    ppgmiller = interpolate_nan(ppgmiller)
+    gccmiller[np.isnan(gccmiller)] = water
+    ppgmiller[np.isnan(ppgmiller)] = water*8.33
     psiftpp = interpolate_nan(psiftpp)
     psipp = interpolate_nan(psipp)
     print("GCCmiller: ",gccmiller)
@@ -1152,10 +1162,12 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #plt.show()
     #plt.clf()
     
-    #Eatons
+    #Eatons/Daines
     
     i = 0
-    mu = 0.3
+    mu = 0.65
+    b = 0.0
+  
     fgppg = np.zeros(len(ppgmiller))
     fgcc = np.zeros(len(ppgmiller))
     mufgppg = np.zeros(len(ppgmiller))
@@ -1164,8 +1176,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     while i<(len(ObgTppg)-1):
         if tvdbgl[i]>0:
             if shaleflag[i]<0.5:
-                fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgmiller[i])+ppgmiller[i]
-                mufgppg[i] = ((ObgTppg[i]-ppgmiller[i])/((((mu**2)+1)**0.5)+mu)**2) + ppgmiller[i]
+                fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgmiller[i])+ppgmiller[i] +(b*ObgTppg[i])
+                mufgppg[i] = ((1/((((mu**2)+1)**0.5)+mu)**2)*(ObgTppg[i]-ppgmiller[i])) + ppgmiller[i]
                 mufgcc[i] = 0.11982642731*mufgppg[i]
             else:
                 fgppg[i] = np.nan
@@ -1254,6 +1266,13 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         i+=1
         
            
+    doi = 100.24
+    doiactual = find_nearest_depth(tvdm,doi)
+    print(doiactual)
+    doiA = doiactual[1]
+    doiX = doiactual[0]
+    print("Depth of interest :",doiA," with index of ",doiX)
+    
     
     TVDF = Curve(tvdf, mnemonic='TVDF',units='m', index=md, null=0)
     TVDMSL = Curve(tvdmsl, mnemonic='TVDMSL',units='m', index=md, null=0)
@@ -1271,10 +1290,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
 
     pp = Curve(spp, mnemonic='PP_DT_MILLER',units='G/C3', index=md, null=0)
     well.data['PP'] =  pp
-    fg = Curve(sfg, mnemonic='FG_EATON',units='G/C3', index=md, null=0)
+    fg = Curve(sfg, mnemonic='FG_DAINES',units='G/C3', index=md, null=0)
     well.data['FG'] =  fg
     fg2 = Curve(mufgcc, mnemonic='FG_ZOBACK',units='G/C3', index=md, null=0)
-    well.data['FG'] =  fg2
+    well.data['FG2'] =  fg2
     
     
     pppsi = Curve(spsipp, mnemonic='GEOPRESSURE',units='psi', index=md, null=0)
@@ -1315,8 +1334,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt2.legend()
     plt2.set_xlim([300,50])
 
-    plt3.plot(fg,tvd,color='aqua',label='Fracture Gradient (Eaton)')
-    plt3.plot(fg2,tvd,color='blue',label='Fracture Gradient (Zoback)')
+    plt3.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
+    #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
     plt3.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
     plt3.plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
     plt3.legend()
