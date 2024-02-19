@@ -1359,7 +1359,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt4.plot(pppsi,tvd,color='red',label='Pore Pressure')
     plt4.plot(psisfl,tvd,color='pink',label='Lade')
     plt4.legend()
-    plt4.set_xlim([0,5000])
+    #plt4.set_xlim([0,5000])
     
     litho.plot_2d(plt6,cmap='seismic')
     coal.plot_2d(plt7,cmap='binary')
@@ -1389,43 +1389,46 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     #plt = well.plot(tracks=['GR', 'DESPGR', 'DIFFGR'])
     #plt.show()
-
-    
-    #Plot Image
-    from striplog import Legend
-    def read_legend_from_file(file_path='legend.txt'):
-        with open('legend.txt', 'r') as file:
-            legend_csv = file.read()
-        return Legend.from_csv(text=legend_csv)
-
-    legend = read_legend_from_file('legend.txt')
-
-    #well.data['strip'] = sd2
-
-    well.unify_basis(keys=None, alias=None, basis=md, start=zulu, stop=tango, step=None)
-
-    well.location.plot_3d()
-    #well.location.plot_plan()
-
-    plt.show()
-        
-    array = well.data_as_matrix(return_meta = False)
-    dfa = well.df
-    #mdgh = well.df().index.values
-    #print(mdgh)
-    header = well._get_curve_mnemonics()
-    #header += 'MD'
-    csvdf = pd.DataFrame(array, columns=header)
-    
-    csvdf['MD'] = well.data['OBG'].index.values
-    #csvdf = csvdf.dropna()
-    csvdf.to_csv(output_file2, index=False)
-    
     plt.clf()
+    graph, (plt1, plt2,plt3) = plt.subplots(1, 3,sharey=True)
+    graph.suptitle(well.name,fontsize=18)
+    """plt5.plot(slal,tvd,label='lal-direct-c0')
+    plt5.plot(slal2,tvd,label='horsud E')
+    plt5.plot(slal3,tvd,label='horsud G')
+    plt5.plot(shorsud,tvd, label='horsud UCS')
     
-    tracks = ['MD',[alias['sonic'][0],'DTCT'],['OBG','PP','FG',alias['density'][0]],['PPpsi','FGpsi'],'TVD']
-    plt_obj = well.plot(tracks=tracks, legend=legend)
+    plt5.legend()
+    plt5.set_xlim([0,20])
+    
+    
+    plt1.plot(gr,tvd,color='green',label='GR')
+    plt1.legend()
+    plt1.set_xlim([0,150])"""
+    
+    #plt1.invert_yaxis()
+    plt1.set_ylim([tango,zulu])
+    plt1.plot(dalm,tvd,label='DT')
+    plt1.plot(dtNormal,tvd,label='Normal DT (Zhang)')
+    plt1.legend(fontsize = "6",loc='lower center')
+    plt1.set_xlim([300,50])
+    plt1.title.set_text("Sonic")
 
+    plt2.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
+    #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
+    plt2.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
+    plt2.plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
+    plt2.legend(fontsize = "6",loc='lower center')
+    plt2.set_xlim([0,3])
+    plt2.title.set_text("Gradients")
+
+    plt3.plot(fgpsi,tvd,color='blue',label='Sh min')
+    plt3.plot(obgpsi,tvd,color='green',label='Sigma V')
+    plt3.plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
+    plt3.plot(pppsi,tvd,color='red',label='Pore Pressure')
+    plt3.plot(mudpsi,tvd,color='pink',label='BHP')
+    plt3.legend(fontsize = "6",loc='lower center')
+    plt3.title.set_text("Pressures")
+    #plt4.set_xlim([0,5000])
     # Add your custom plot
     
     print(mud_weight)
@@ -1438,41 +1441,29 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     x_values2, y_values2 = zip(*flow_grad_data)
     x_values3, y_values3 = zip(*frac_psi_data)
     x_values4, y_values4 = zip(*flow_psi_data)
-    
-    second_track_ax = plt_obj.get_axes()[2]  # Get the second track's axes
-    
-    if frac_grad_data != [[0,0]]:
-        second_track_ax.scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
-    if flow_grad_data != [[0,0]]:
-        second_track_ax.scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+    #Plot Image
         
-    third_track_ax = plt_obj.get_axes()[3]  # Get the second track's axes
+    if frac_grad_data != [[0,0]]:
+        plt2.scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
+    if flow_grad_data != [[0,0]]:
+        plt2.scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     
     if frac_psi_data != [[0,0]]:
-        third_track_ax.scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
+        plt3.scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
     if flow_psi_data != [[0,0]]:
-        third_track_ax.scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+        plt3.scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     
     mud_weight_x, mud_weight_y = zip(*mud_weight)
-    second_track_ax.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
+    plt2.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
     
-    # Create a new y-axis for the new track
-    new_track_ax = plt_obj.get_axes()[0].twinx()
-
-    # Plot the new track
-#    new_track_ax.plot(csvdf['MD'], new_track_data, color='red', label='New Track')
-
-    # Adjust the limits of the new y-axis if necessary
-#    new_track_ax.set_ylim(min(new_track_data), max(new_track_data))
-
-    # Add a legend for the new track
-#    new_track_ax.legend(loc='upper right')
-
-    # Update the plot
-    plt_obj.canvas.draw()
+    #ax2 = plt3.twinx()
+    #ax2.set_ylabel('MD')
+    #secax = plt3.secondary_yaxis('right')
 
     # Save the modified plot
-    plt_obj.savefig(output_file)
+    plt.gcf().set_size_inches(7, 10)
+    plt.savefig(output_file,dpi=300)
+    plt.clf()
     return
 
 def readDevFromAsciiHeader(devpath, delim = ' '):
