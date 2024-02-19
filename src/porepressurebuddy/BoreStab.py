@@ -222,21 +222,21 @@ def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,nu=0.35):
     levels = np.linspace(0,s3,2100)
     cax = ax.contourf(azimuth, inclination, values, 2100, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 0.8)
     ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    ax.text(math.radians(orit[0]),orit[1], " "+str(s3))
+    ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     if(orit[3]<=90):
         ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),orit[3], " "+str(s1))
+        ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
     else:
         ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(s1))
+        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
     if(orit[5]<=90):
         ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-        ax.text(math.radians(-orit[4]),orit[5], " "+str(s2))
+        ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
     else:
         ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(s2))
+        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb = fig.colorbar(cax, orientation = 'horizontal')
-    plt.title( "DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
+    plt.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(nu) , loc="center")
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt.show()
 

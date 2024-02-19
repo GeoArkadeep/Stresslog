@@ -246,7 +246,9 @@ class MyApp(toga.App):
             {'label': 'Start', 'default_value': str(model[8])},
             {'label': 'Stop', 'default_value': str(model[9])},
             {'label': 'WaterDensity', 'default_value': str(model[10])},
-            {'label': 'Subhydrostatic', 'default_value': str(model[11])}
+            {'label': 'Subhydrostatic', 'default_value': str(model[11])},
+            {'label': 'TectonicFactor', 'default_value': str(model[12])},
+            {'label': 'Drainhole Analysis Depth', 'default_value': "0"}
             
         ]
 
@@ -255,8 +257,8 @@ class MyApp(toga.App):
         # Add 6 numeric entry boxes with their respective labels
         for i in range(2):
             entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-            for j in range(5):
-                entry_info = entries_info[5*i+j]
+            for j in range(7):
+                entry_info = entries_info[7*i+j]
                 label = toga.Label(entry_info['label'], style=Pack(padding_right=5))
                 entry = toga.TextInput(style=Pack(padding_left=2, width=100))
                 entry.value = entry_info['default_value']
@@ -638,12 +640,16 @@ class MyApp(toga.App):
         model = data_into_list
         tail1 = str(model[10])
         tail2 = str(model[11])
+        tail3 = str(model[12])
+        tail4 = str(model[13])
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         model = tv
-        model.append(tail1)
-        model.append(tail2)
-        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]))
+        #model.append(tail1)
+        #model.append(tail2)
+        #model.append(tail3)
+        #model.append(tail4)
+        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),model[11],float(model[12]),float(model[13]))
         file = open('model.csv','w')
         for item in model:
             file.write(str(item)+",")
@@ -788,7 +794,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, water = float(model[10]), underbalancereject = bool(model[11]=='True' or model[11] =='true' or model[11]=='TRUE')):
+def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1108,8 +1114,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject and gccmiller[i]<1:
-                        gccmiller[i]=np.nan
+                    if underbalancereject.upper()=="TRUE":
+                        if gccmiller[i]<water:
+                            gccmiller[i]=np.nan
                 else:
                     gccmiller[i] = np.nan
                 ppgmiller[i] = gccmiller[i]*8.33
@@ -1130,7 +1137,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject and gccmiller[i]<1:
+                    if underbalancereject.upper == "TRUE" and gccmiller[i]<1:
                         gccmiller[i]=np.nan
                 else:
                     gccmiller[i] = np.nan
@@ -1169,7 +1176,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     i = 0
     mu = 0.65
-    b = 0.0
+    #b = 0.0
   
     fgppg = np.zeros(len(ppgmiller))
     fgcc = np.zeros(len(ppgmiller))
@@ -1209,7 +1216,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     from BoreStab import drawStability
     from BoreStab import drawBreak
     from BoreStab import drawDITF
-    doi = 1456
+    
     if doi>0:
         doiactual = find_nearest_depth(tvdm,doi)
         print(doiactual)
