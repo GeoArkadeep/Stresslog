@@ -1197,6 +1197,42 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     psimes = ((psifg+obgpsi)/2)+psipp
     psisfl = (psimes[:]*H[:])+K[:]
     
+    from DrawSP import getSHMax
+    from DrawSP import drawSP
+    
+    i=0
+    sgHMpsi = np.zeros(len(tvd))
+    while i<len(tvd)-1:
+        sgHMpsi[i] = (getSHMax(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i])[2])*145.038
+        i+=1
+    
+    from BoreStab import drawStability
+    from BoreStab import drawBreak
+    from BoreStab import drawDITF
+    doi = 1456
+    if doi>0:
+        doiactual = find_nearest_depth(tvdm,doi)
+        print(doiactual)
+        doiA = doiactual[1]
+        doiX = doiactual[0]
+        print("Depth of interest :",doiA," with index of ",doiX)
+        sigmaVmpa = obgpsi[doiX]/145.038
+        sigmahminmpa = psifg[doiX]/145.038
+        ppmpa = psipp[doiX]/145.038
+        bhpmpa = mudpsi[doiX]/145.038
+        ucsmpa = horsud[doiX]
+        stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
+        print(stresspolygon)
+        drawSP(sigmaVmpa,ppmpa,bhpmpa,ucsmpa)
+        sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa)
+        print("SigmaHM = ",sigmaHMaxmpa[2])
+        sigmas = [sigmaVmpa, sigmahminmpa, sigmaHMaxmpa[1]]
+        sigmas.sort()
+        sigmas.append(bhpmpa-ppmpa)
+        drawStability(sigmas[0],sigmas[1],sigmas[2],sigmas[3])
+        drawBreak(sigmas[0],sigmas[1],sigmas[2],sigmas[3],ucsmpa)
+        drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3])
+    
 
     #params = {'mnemonic': 'AMOCO', 'run':0, }
     #params={'AMOCO': {'units': 'G/C3'}}
@@ -1210,79 +1246,38 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     #FILTERS
     #Smooth curves using moving averages
-    
     i = window
     sfg = fgcc
-    while i<len(fgcc):
-        sumi = np.sum(fgcc[(i-window):i+(window)])
-        sfg[i] = sumi/(2*window)
-        i+=1
-
-    
-    i = window
     spp = gccmiller
-    
-    while i<len(gccmiller):
-        sumi = np.sum(gccmiller[(i-window):i+(window)])
-        spp[i] = sumi/(2*window)
-        i+=1
-    
-    i = window
     spsipp = psipp
-    while i<len(psipp):
-        sumi = np.sum(psipp[(i-window):i+(window)])
-        spsipp[i] = sumi/(2*window)
-        i+=1
-    i = window
-    shorsud = horsud    
-    while i<len(horsud):
-        sumi = np.sum(horsud[(i-window):i+(window)])
-        shorsud[i] = sumi/(2*window)
-        i+=1
-    i = window
+    shorsud = horsud
     slal = lal
-    while i<len(lal):
-        sumi = np.sum(lal[(i-window):i+(window)])
-        slal[i] = sumi/(2*window)
-        i+=1
-    i = window
     slal2 = ym
-    while i<len(ym):
-        sumi = np.sum(ym[(i-window):i+(window)])
-        slal2[i] = sumi/(2*window)
-        i+=1
-    
-    i = window
     slal3 = sm
-    while i<len(sm):
-        sumi = np.sum(sm[(i-window):i+(window)])
-        slal3[i] = sumi/(2*window)
-        i+=1
-
-    
-    i = window
     spsifp = psifg
-    
-    while i<len(psifg):
-        sumi = np.sum(psifg[(i-window):i+(window)])
-        spsifp[i] = sumi/(2*window)
+    ssgHMpsi = sgHMpsi
+    while i<len(fgcc):
+        sum1 = np.sum(gccmiller[(i-window):i+(window)])
+        spp[i] = sum1/(2*window)
+        sum2 = np.sum(psipp[(i-window):i+(window)])
+        spsipp[i] = sum2/(2*window)
+        sum3 = np.sum(psipp[(i-window):i+(window)])
+        spsipp[i] = sum3/(2*window)
+        sum4 = np.sum(horsud[(i-window):i+(window)])
+        shorsud[i] = sum4/(2*window)
+        sum5 = np.sum(lal[(i-window):i+(window)])
+        slal[i] = sum5/(2*window)
+        sum6 = np.sum(ym[(i-window):i+(window)])
+        slal2[i] = sum6/(2*window)
+        sum7 = np.sum(sm[(i-window):i+(window)])
+        slal3[i] = sum7/(2*window)
+        sum8 = np.sum(psifg[(i-window):i+(window)])
+        spsifp[i] = sum8/(2*window)
+        sum9 = np.sum(fgcc[(i-window):i+(window)])
+        sfg[i] = sum9/(2*window)
+        sum10 = np.sum(sgHMpsi[(i-window):i+(window)])
+        ssgHMpsi[i] = sum10/(2*window)
         i+=1
-        
-    from DrawSP import drawSP       
-    doi = 4018
-    if doi>0:
-        doiactual = find_nearest_depth(tvdm,doi)
-        print(doiactual)
-        doiA = doiactual[1]
-        doiX = doiactual[0]
-        print("Depth of interest :",doiA," with index of ",doiX)
-        sigmaVmpa = obgpsi[doiX]/145.038
-        ppmpa = psipp[doiX]/145.038
-        bhpmpa = mudpsi[doiX]/145.038
-        ucs = horsud[doiX]
-        stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucs]
-        print(stresspolygon)
-        drawSP(sigmaVmpa,ppmpa,bhpmpa,ucs)
     
     
     
@@ -1312,6 +1307,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.data['PPpsi'] =  pppsi
     fgpsi = Curve(spsifp, mnemonic='FRACTURE_PRESSURE',units='psi', index=md, null=0)
     well.data['FGpsi'] =  fgpsi
+    sHMpsi = Curve(ssgHMpsi, mnemonic='SHMAX_PRESSURE',units='psi', index=md, null=0)
+    well.data['SHMpsi'] =  sHMpsi
+    shmpsi = Curve(ssgHMpsi, mnemonic='shmin_PRESSURE',units='psi', index=md, null=0)
+    well.data['shmpsi'] =  shmpsi
     
     c0lalmpa = Curve(slal, mnemonic='C0_Lal',units='MPa', index=md, null=0)
     well.data['C0LAL'] =  c0lalmpa
@@ -1411,7 +1410,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt1.plot(dtNormal,tvd,label='Normal DT (Zhang)')
     plt1.legend(fontsize = "6",loc='lower center')
     plt1.set_xlim([300,50])
-    plt1.title.set_text("Sonic")
+    plt1.title.set_text("Sonic (us/ft)")
 
     plt2.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
     #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
@@ -1419,15 +1418,16 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt2.plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
     plt2.legend(fontsize = "6",loc='lower center')
     plt2.set_xlim([0,3])
-    plt2.title.set_text("Gradients")
+    plt2.title.set_text("Gradients (g/cc)")
 
     plt3.plot(fgpsi,tvd,color='blue',label='Sh min')
     plt3.plot(obgpsi,tvd,color='green',label='Sigma V')
     plt3.plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
     plt3.plot(pppsi,tvd,color='red',label='Pore Pressure')
     plt3.plot(mudpsi,tvd,color='pink',label='BHP')
+    plt3.plot(ssgHMpsi,tvd,color='gray',label='SH MAX')
     plt3.legend(fontsize = "6",loc='lower center')
-    plt3.title.set_text("Pressures")
+    plt3.title.set_text("Pressures (psi)")
     #plt4.set_xlim([0,5000])
     # Add your custom plot
     

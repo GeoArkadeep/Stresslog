@@ -89,6 +89,7 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
     DITF =  Polygon(ditf, color='aqua', label = 'DITF')
+    print("DITF :",ditf)
     ax.add_patch(DITF)
     
     ax.legend()
@@ -99,15 +100,26 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     plt.show()
 
 
-def getSP(Sv,Pp,bhp,mu = 0.6, UCS = 0, PhiB = 0):
+def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 45):
 
     ufac = ((((mu**2)+1)**0.5)+mu)**2
-    print("Mu factor: ",ufac)
+    #print("Mu factor: ",ufac)
 
     ShmP = ((Sv-Pp)/ufac)+Pp
     SHMP = ((Sv-Pp)*ufac)+Pp
-    print("Corners: ",ShmP,SHMP)
-
+    #print("Corners: ",ShmP,SHMP)
+    
+    if(shmin<ShmP):
+        return[0,0,0]
+    if(shmin>Sv):
+        return [Sv,shmin,(shmin+Sv)/2]
+    else:
+        shma = [ShmP,Sv]
+        SHMa = [Sv,SHMP]
+        I1 = np.interp(shmin,shma,SHMa)
+        #print("Intercept is: ",I1)
+        return [shmin,I1,(shmin+I1)/2]
+        
 
     maxSt = 1.05*SHMP
     minSt = 0.90*ShmP
