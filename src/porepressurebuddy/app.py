@@ -246,9 +246,12 @@ class MyApp(toga.App):
             {'label': 'Start', 'default_value': str(model[8])},
             {'label': 'Stop', 'default_value': str(model[9])},
             {'label': 'WaterDensity', 'default_value': str(model[10])},
-            {'label': 'Subhydrostatic', 'default_value': str(model[11])},
+            {'label': 'No Subhydrostatic', 'default_value': str(model[11])},
             {'label': 'TectonicFactor', 'default_value': str(model[12])},
-            {'label': 'Drainhole Analysis Depth', 'default_value': "0"}
+            {'label': 'Drainhole Analysis Depth', 'default_value': "0"},
+            {'label': 'Fast Shear Azimuth', 'default_value': "0"},
+            {'label': 'Stress Tensor Tilt Beta', 'default_value': "0"},
+            {'label': 'Stress Tensor Tilt Gamma', 'default_value': "0"}
             
         ]
 
@@ -257,8 +260,8 @@ class MyApp(toga.App):
         # Add 6 numeric entry boxes with their respective labels
         for i in range(2):
             entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-            for j in range(7):
-                entry_info = entries_info[7*i+j]
+            for j in range(8):
+                entry_info = entries_info[8*i+j]
                 label = toga.Label(entry_info['label'], style=Pack(padding_right=5))
                 entry = toga.TextInput(style=Pack(padding_left=2, width=100))
                 entry.value = entry_info['default_value']
@@ -649,7 +652,7 @@ class MyApp(toga.App):
         #model.append(tail2)
         #model.append(tail3)
         #model.append(tail4)
-        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),model[11],float(model[12]),float(model[13]))
+        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),model[11],float(model[12]),float(model[13]),float(model[14]),float(model[15]))
         file = open('model.csv','w')
         for item in model:
             file.write(str(item)+",")
@@ -794,7 +797,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,alpha = float(model[14]), beta = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1114,9 +1117,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject.upper()=="TRUE":
+                    if underbalancereject.upper()=="TRUE":# and gccmiller[i]<water:
                         if gccmiller[i]<water:
-                            gccmiller[i]=np.nan
+                            gccmiller[i]=water
                 else:
                     gccmiller[i] = np.nan
                 ppgmiller[i] = gccmiller[i]*8.33
@@ -1137,8 +1140,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject.upper == "TRUE" and gccmiller[i]<1:
-                        gccmiller[i]=np.nan
+                    if underbalancereject.upper() == "TRUE":# and gccmiller[i]<water:
+                        if gccmiller[i]<water:
+                            gccmiller[i]=water
                 else:
                     gccmiller[i] = np.nan
                 ppgmiller[i] = gccmiller[i]*8.33
@@ -1213,32 +1217,11 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         sgHMpsi[i] = (getSHMax(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i])[2])*145.038
         i+=1
     
-    from BoreStab import drawStability
+    from BoreStab import drawStab
     from BoreStab import drawBreak
     from BoreStab import drawDITF
     
-    if doi>0:
-        doiactual = find_nearest_depth(tvdm,doi)
-        print(doiactual)
-        doiA = doiactual[1]
-        doiX = doiactual[0]
-        print("Depth of interest :",doiA," with index of ",doiX)
-        sigmaVmpa = obgpsi[doiX]/145.038
-        sigmahminmpa = psifg[doiX]/145.038
-        ppmpa = psipp[doiX]/145.038
-        bhpmpa = mudpsi[doiX]/145.038
-        ucsmpa = horsud[doiX]
-        stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
-        print(stresspolygon)
-        drawSP(sigmaVmpa,ppmpa,bhpmpa,ucsmpa)
-        sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa)
-        print("SigmaHM = ",sigmaHMaxmpa[2])
-        sigmas = [sigmaVmpa, sigmahminmpa, sigmaHMaxmpa[1]]
-        sigmas.sort()
-        sigmas.append(bhpmpa-ppmpa)
-        drawStability(sigmas[0],sigmas[1],sigmas[2],sigmas[3])
-        drawBreak(sigmas[0],sigmas[1],sigmas[2],sigmas[3],ucsmpa)
-        drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3])
+    
     
 
     #params = {'mnemonic': 'AMOCO', 'run':0, }
@@ -1285,6 +1268,43 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         sum10 = np.sum(sgHMpsi[(i-window):i+(window)])
         ssgHMpsi[i] = sum10/(2*window)
         i+=1
+    
+    if doi>0:
+        doiactual = find_nearest_depth(tvdm,doi)
+        print(doiactual)
+        doiA = doiactual[1]
+        doiX = doiactual[0]
+        print("Depth of interest :",doiA," with index of ",doiX)
+        sigmaVmpa = obgpsi[doiX]/145.038
+        sigmahminmpa = spsifp[doiX]/145.038
+        ppmpa = spsipp[doiX]/145.038
+        bhpmpa = mudpsi[doiX]/145.038
+        ucsmpa = shorsud[doiX]
+        stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
+        print(stresspolygon)
+        drawSP(sigmaVmpa,ppmpa,bhpmpa,ucsmpa)
+        sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa)
+        print("SigmaHM = ",sigmaHMaxmpa[2])
+        sigmas = [sigmaHMaxmpa[0],sigmahminmpa,sigmaVmpa]
+        print(sigmas)
+
+        if sigmas[0]>sigmas[1]:
+            alpha = 0
+            beta = 90 #normal faulting regime
+            gamma = 0
+        if(sigmas[1]>sigmas[0]):
+            alpha = 90 #strike slip faulting regime
+            beta = 0
+            gamma = 90
+        if(sigmas[2]>sigmas[0]):
+            alpha = 90
+            beta = 0 #reverse faulting regime
+            gamma = 0
+        #sigmas.sort()"""
+        sigmas.append(bhpmpa-ppmpa)
+        drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
+        drawBreak(sigmas[0],sigmas[1],sigmas[2],sigmas[3],ucsmpa,alpha,beta,gamma)
+        drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
     
     
@@ -1334,6 +1354,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #fgcal = Curve(fgradcalib[1], mnemonic='LOT/xLOT/HF GRAD',units='G/C3', index=fgradcalib[0], null=0)
     
     
+    
+    #Preview Plot
     graph, (plt1, plt2,plt3,plt4,plt5,plt6,plt7) = plt.subplots(1, 7,sharey=True)
     plt5.plot(slal,tvd,label='lal-direct-c0')
     plt5.plot(slal2,tvd,label='horsud E')
@@ -1341,7 +1363,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt5.plot(shorsud,tvd, label='horsud UCS')
     plt5.invert_yaxis()
     plt5.legend()
-    plt5.set_xlim([0,20])
+    #plt5.set_xlim([0,20])
     
     plt1.plot(gr,tvd,color='green',label='GR')
     plt1.legend()
@@ -1396,7 +1418,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #plt = well.plot(tracks=['GR', 'DESPGR', 'DIFFGR'])
     #plt.show()
     plt.clf()
-    graph, (plt1, plt2,plt3) = plt.subplots(1, 3,sharey=True)
+    
+    #Presentation Plot
+    graph, (plt1, plt2,plt3,plt4) = plt.subplots(1, 4,sharey=True)
     graph.suptitle(well.name,fontsize=18)
     """plt5.plot(slal,tvd,label='lal-direct-c0')
     plt5.plot(slal2,tvd,label='horsud E')
@@ -1436,6 +1460,15 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt3.legend(fontsize = "6",loc='lower center')
     plt3.title.set_text("Pressures (psi)")
     #plt4.set_xlim([0,5000])
+    
+    plt4.set_ylim([tango,zulu])
+    plt4.plot(slal2,tvd,label='UCS (Lal)')
+    plt4.plot(shorsud,tvd,label='UCS (Horsud)')
+    plt4.legend(fontsize = "6",loc='lower center')
+    #plt4.set_xlim([300,50])
+    plt4.title.set_text("Strengths (MPa)")
+    
+    
     # Add your custom plot
     
     print(mud_weight)
@@ -1468,7 +1501,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #secax = plt3.secondary_yaxis('right')
 
     # Save the modified plot
-    plt.gcf().set_size_inches(7, 10)
+    plt.gcf().set_size_inches(8, 10)
     plt.savefig(output_file,dpi=300)
     plt.clf()
     return

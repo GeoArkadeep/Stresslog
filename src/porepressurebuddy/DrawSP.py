@@ -20,8 +20,8 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     print("Corners: ",ShmP,SHMP)
 
 
-    maxSt = 1.05*SHMP
-    minSt = 0.90*ShmP
+    maxSt = 200
+    minSt = 0
     
     
 

@@ -84,7 +84,7 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,nu=0.35):
 
 
 
-def drawStability(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0):
+def drawStab(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
@@ -102,12 +102,13 @@ def drawStability(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0):
             inclination[inc][azim] = inc*10
             azimuth[inc][azim] = math.radians(azim*10)
             azim+=1
+        #print(round((inc/10)*100),"%")
         inc+=1
 
 
     fig = plt.figure()
     ax = fig.add_subplot(projection='polar')
-    ax.grid(False)
+    ax.grid(True)
     ax.set_yticklabels([])
     ax.set_rmax(90)
     ax.set_theta_zero_location("N")
@@ -118,7 +119,7 @@ def drawStability(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0):
     plt.show()
 
 
-def drawBreak(s1,s2,s3,deltaP,UCS,nu=0.35,alpha=0,beta=0,gamma=0):
+def drawBreak(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
@@ -134,10 +135,12 @@ def drawBreak(s1,s2,s3,deltaP,UCS,nu=0.35,alpha=0,beta=0,gamma=0):
                 if (STT-UCS)>0:
                     width+=1
                 pointer+=1
+            #print(width)
             values[inc][azim] = width/2
             inclination[inc][azim] = inc*10
             azimuth[inc][azim] = math.radians(azim*10)
             azim+=1
+        #print(round((inc/10)*100),"%")
         inc+=1
 
 
@@ -152,25 +155,25 @@ def drawBreak(s1,s2,s3,deltaP,UCS,nu=0.35,alpha=0,beta=0,gamma=0):
     cax = ax.contourf(azimuth, inclination, values, 13, levels=levels, extend = 'max', cmap = 'jet', alpha = 0.8)
     print(orit)
     ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    ax.text(math.radians(orit[0]),orit[1], " "+str(s3))
+    ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     if(orit[3]<90):
         ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),orit[3], " "+str(s1))
+        ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
     else:
         ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(s1))
+        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
     if(orit[5]<90):
         ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-        ax.text(math.radians(-orit[4]),orit[5], " "+str(s2))
+        ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
     else:
         ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(s2))
+        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb = fig.colorbar(cax, orientation = 'horizontal')
     cb.set_label("Breakout Widths in Degrees")
     plt.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
     plt.show()
     
-def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,nu=0.35):
+def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
@@ -207,8 +210,9 @@ def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,nu=0.35):
                 #plt.show()
             values[inc][azim] = np.min(line)
             inclination[inc][azim] = inc*10
-            azimuth[inc][azim] = math.radians(azim*10)
+            azimuth[inc][azim] = math.radians(azim*10+offset)
             azim+=1
+        #print(round((inc/10)*100),"%")
         inc+=1
 
 
