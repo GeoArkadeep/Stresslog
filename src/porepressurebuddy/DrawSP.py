@@ -10,8 +10,12 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
-
+def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, breakouts = 0, ditflag = 0,mu = 0.6):
+    maxSH = 0
+    minSH = 0
+    midSH = 0
+    sigmaV = Sv-Pp
+    sigmahmin = shmin-Pp
     ufac = ((((mu**2)+1)**0.5)+mu)**2
     print("Mu factor: ",ufac)
 
@@ -20,8 +24,8 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     print("Corners: ",ShmP,SHMP)
 
 
-    maxSt = 200
-    minSt = 0
+    maxSt = 1.02*SHMP
+    minSt = 0.98*ShmP
     
     
 
@@ -65,6 +69,7 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     #ShmP = UCS
     SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    
     SHM1H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM2H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM1L = ((UCSlow + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
@@ -74,6 +79,14 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     br1 = np.array([(Shm,SHM1),(Shm2,SHM2)])
     br2 = np.array([(Shm,SHM1H),(Shm2,SHM2H)])
     br3 = np.array([(Shm,SHM1L),(Shm2,SHM2L)])
+    
+    lowerulow = [Shm,SHM1H]
+    upperulow = [Shm2,SHM2H]
+    loweruhigh = [Shm,SHM1L]
+    upperuhigh = [Shm2,SHM2L]
+    lowerucs = [Shm,SHM1]
+    upperucs = [Shm2,SHM2]
+    
     #print(br1)
     Breakout2 =  Polygon(br2, color='red', label = "UCS- "+str(UCShigh)+"MPa")
     Breakout1 =  Polygon(br1, color='green', label = "UCS- "+str(UCS)+"MPa")
@@ -89,9 +102,43 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
     DITF =  Polygon(ditf, color='aqua', label = 'DITF')
+    lowerd = [Shm3,DITFshmax3]
+    upperd = [Shm4,DITFshmax4]
+    
+    if(shmin>Sv):
+        minSH = Sv
+        maxSH = SHMP
+        #return [Sv,shmin,(shmin+Sv)/2]
+    else:
+        lower = [ShmP,Sv]
+        upper = [Sv,SHMP]
+        I1 = np.interp(shmin,lower,upper)
+        #print("Intercept is: ",I1)
+        minSH = shmin
+        maxSH = I1
+        #return [shmin,I1,(shmin+I1)/2]
+    
+    if ditflag>0 and breakouts>0:
+        minSH = loweruhigh[1]+(shmin-loweruhigh[0])*(upperuhigh[1]-loweruhigh[1])/(upperuhigh[0]-loweruhigh[0])
+        maxSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])
+    else:
+        if ditflag>0:
+            minSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])#np.interp(shmin,lowerd,upperd)
+        else:
+            maxSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])#np.interp(shmin,lowerd,upperd)
+        if breakouts>0:
+            maxSH = loweruhigh[1]+(shmin-loweruhigh[0])*(upperuhigh[1]-loweruhigh[1])/(upperuhigh[0]-loweruhigh[0])
+            minSH = lowerulow[1]+(shmin-lowerulow[0])*(upperulow[1]-lowerulow[1])/(upperulow[0]-lowerulow[0])
+        else:
+            maxSH = lowerucs[1]+(shmin-lowerucs[0])*(upperucs[1]-lowerucs[1])/(upperucs[0]-lowerucs[0])#np.interp(shmin,lowerucs,upperucs)
+            print("nobreak")
+            print(lowerucs,upperucs,maxSH)
+    print([maxSH,minSH,shmin,Sv])
     print("DITF :",ditf)
     ax.add_patch(DITF)
-    
+    minmin = np.array([(shmin,minSH),(shmin,maxSH)])
+    Shmin =  Polygon(minmin, color='purple', label = 'Sh min')
+    ax.add_patch(Shmin)
     ax.legend()
     plt.gca().set_aspect('equal')
     plt.title("Stress Polygon")
@@ -100,8 +147,11 @@ def drawSP(Sv,Pp,bhp,UCS = 0,PhiB = 0,mu = 0.6):
     plt.show()
 
 
-def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 45):
-
+def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, PhiB = 45, breakouts = 0, ditflag = 0, mu=0.6):
+    maxSH = 0
+    minSH = 0
+    midSH = 0
+    
     ufac = ((((mu**2)+1)**0.5)+mu)**2
     #print("Mu factor: ",ufac)
 
@@ -111,26 +161,12 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 4
     
     if(shmin<ShmP):
         return[0,0,0]
-    if(shmin>Sv):
-        return [Sv,shmin,(shmin+Sv)/2]
-    else:
-        shma = [ShmP,Sv]
-        SHMa = [Sv,SHMP]
-        I1 = np.interp(shmin,shma,SHMa)
-        #print("Intercept is: ",I1)
-        return [shmin,I1,(shmin+I1)/2]
         
 
     maxSt = 1.05*SHMP
     minSt = 0.90*ShmP
 
-
-
-    fig,ax = plt.subplots()
-    ax.axis([minSt,maxSt,minSt,maxSt])
     limit = np.array([(0,0),(maxSt,maxSt), (maxSt,0)])
-    LM =  Polygon(limit, fill=False ,hatch='\\')
-    ax.add_patch(LM)
 
     X = ShmP
     Y = SHMP
@@ -147,13 +183,6 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 4
     Normal =  Polygon(NNcorners, color='green', alpha = 0.05)
     Reverse =  Polygon(RRcorners, color='red', alpha = 0.05)
 
-    ax.add_patch(StrikeSlip)
-    ax.add_patch(Normal)
-    ax.add_patch(Reverse)
-    ax.add_patch(StrikeSlipE)
-    ax.add_patch(NormalE)
-    ax.add_patch(ReverseE)
-
     #UCS = 46
     UCShigh = UCS + (0.2*UCS)
     UCSlow = UCS - (0.2*UCS)
@@ -162,8 +191,8 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 4
     #PhiB = 0.1 #degrees
     PhiBr = math.radians(PhiB)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
-    print("TwoCosPhiB: ",TwoCosPhiB)
-    #ShmP = UCS
+
+
     SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM1H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
@@ -175,13 +204,14 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 4
     br1 = np.array([(Shm,SHM1),(Shm2,SHM2)])
     br2 = np.array([(Shm,SHM1H),(Shm2,SHM2H)])
     br3 = np.array([(Shm,SHM1L),(Shm2,SHM2L)])
-    #print(br1)
-    Breakout2 =  Polygon(br2, color='red', label = "UCS- "+str(UCShigh)+"MPa")
-    Breakout1 =  Polygon(br1, color='green', label = "UCS- "+str(UCS)+"MPa")
-    Breakout3 =  Polygon(br3, color='blue', label = "UCS- "+str(UCSlow)+"MPa")
-    ax.add_patch(Breakout2)
-    ax.add_patch(Breakout1)
-    ax.add_patch(Breakout3)
+    
+    lowerulow = [Shm,SHM1H]
+    upperulow = [Shm2,SHM2H]
+    loweruhigh = [Shm,SHM1L]
+    upperuhigh = [Shm2,SHM2L]
+    lowerucs = [Shm,SHM1]
+    upperucs = [Shm2,SHM2]
+
 
     Shm3 = 1
     Shm4 = maxSt
@@ -189,12 +219,32 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, breakouts = 0, ditf = 0, mu=0.6, PhiB = 4
     DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp)
     DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
-    DITF =  Polygon(ditf, color='aqua', label = 'DITF')
-    ax.add_patch(DITF)
+    lowerd = [Shm3,DITFshmax3]
+    upperd = [Shm4,DITFshmax4]
+    
+    
+    if(shmin>Sv):
+        minSH = Sv
+        maxSH = SHMP
+        return [Sv,SHMP,(shmin+Sv)/2]
+    else:
+        lower = [ShmP,Sv]
+        upper = [Sv,SHMP]
+        I1 = np.interp(shmin,lower,upper)
+        #print("Intercept is: ",I1)
+        minSH = shmin
+        maxSH = I1
+        #return [shmin,I1,(shmin+I1)/2]
 
-    ax.legend()
-    plt.gca().set_aspect('equal')
-    plt.title("Stress Polygon")
-    plt.xlabel("Shmin")
-    plt.ylabel("SHmax")
-    plt.show()
+        if ditflag>0:
+            minSH = np.interp(shmin,lowerd,upperd)
+        else:
+            maxSH = np.interp(shmin,lowerd,upperd)
+        if breakouts>0:
+            maxSH = np.interp(shmin,loweruhigh,upperuhigh)
+            minSH = np.interp(shmin,lowerulow,upperulow)
+        else:
+            maxSH = lowerucs[1]+(shmin-lowerucs[0])*(upperucs[1]-lowerucs[1])/(upperucs[0]-lowerucs[0])
+        midSH=(minSH+maxSH)/2    
+    return [minSH,maxSH,midSH]
+from BoreStab import draw

@@ -3,19 +3,19 @@ import matplotlib.pyplot as plt
 import math
 #from numba import jit
 
-s1 = 45
-s2 = 34
-s3 = 29
-alpha = 5.4
-beta = 2.3
-gamma = 13.5
+#s1 = 45
+#s2 = 34
+#s3 = 29
+#alpha = 5.4
+#beta = 2.3
+#gamma = 13.5
 
-azim = 187
-inc  = 16
+#azim = 187
+#inc  = 16
 
-nu = 0.35
-theta = 37
-deltaP = 3
+#nu = 0.35
+#theta = 37
+#deltaP = 3
 
 
 def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,nu=0.35):
@@ -98,7 +98,7 @@ def drawStab(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0):
                 STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP)
                 line[pointer] = STM
                 pointer+=1
-            values[inc][azim] = np.min(line)
+            values[inc][azim] = np.max(line)
             inclination[inc][azim] = inc*10
             azimuth[inc][azim] = math.radians(azim*10)
             azim+=1
@@ -244,9 +244,9 @@ def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt.show()
 
-def getHoopMin(inc,azim,s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,nu=0.35):
+def getHoopMin(inc,azim,s1,s2,s3,deltaP, alpha=0,beta=0,gamma=0,nu=0.35):
     values = np.zeros((10,37))
-
+    
     pointer= 0
     line = np.zeros(3610)
     angle= np.zeros(3610)
@@ -275,3 +275,112 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,nu=0.35):
         #plt.ylim((1,151))
         plt.show()
     return np.min(line)
+
+
+def draw(s1,s2,s3,deltaP,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
+    values = np.zeros((10,37))
+    values2 = np.zeros((10,37))
+    inclination = np.zeros((10,37))
+    azimuth = np.zeros((10,37))
+    inc = 0
+    TS = -UCS/10
+    TS = 0
+    while inc<10:
+        azim = 0
+        while azim<37:
+            pointer= 0
+            line = np.zeros(361)
+            line2 = np.zeros(361)
+            angle= np.zeros(361)
+            width= 0
+            width2 = 0
+            frac = np.zeros(361)
+            widthR = np.zeros(361)
+            while pointer<361:
+                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP)
+                line[pointer] = STT
+                angle[pointer] = omega
+                if STT<TS:
+                    width+=1
+                    frac[pointer] = frac[pointer-1]+(1/math.tan(math.radians(omega)))
+                else:
+                    frac[pointer] = 0
+                #if pointer>180:
+                    #frac[pointer] = frac[360-pointer]
+                widthR[pointer] = (pointer/360)*0.67827 #in metres
+                pointer+=1
+                
+                if STM>UCS:
+                    width2+=0.5
+                    
+            if width>0:
+                print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
+                #plt.scatter(np.array(range(0,361)),frac)
+                #plt.plot(angle)
+                #plt.plot(line)
+                #plt.xlim((0,0.67827))
+                #plt.ylim((1,151))
+                #plt.show()
+            values[inc][azim] = np.min(line)
+            values2[inc][azim] = width2
+            inclination[inc][azim] = inc*10
+            azimuth[inc][azim] = math.radians(azim*10+offset)
+            azim+=1
+        #print(round((inc/10)*100),"%")
+        inc+=1
+
+
+    fig = plt.figure()
+    ax = fig.add_subplot(121,projection='polar')
+    ax.grid(False)
+    ax.set_yticklabels([])
+    ax.set_rmax(90)
+    ax.set_theta_zero_location("N")
+    ax.set_theta_direction(-1)
+    levels = np.linspace(0,s3,2100)
+    cax = ax.contourf(azimuth, inclination, values, 2100, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 1)
+    ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
+    ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
+    if(orit[3]<=90):
+        ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
+        ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
+    else:
+        ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
+        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
+    if(orit[5]<=90):
+        ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
+        ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
+    else:
+        ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
+        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
+    cb = fig.colorbar(cax, orientation = 'horizontal')
+    plt.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(nu) , loc="center")
+    cb.set_label("Excess Mud Pressure to TensileFrac")
+    
+    aws = fig.add_subplot(122,projection='polar')
+    aws.grid(False)
+    aws.set_yticklabels([])
+    aws.set_rmax(90)
+    aws.set_theta_zero_location("N")
+    aws.set_theta_direction(-1)
+    levels = np.linspace(0,120,120)
+    cax2 = aws.contourf(azimuth, inclination, values2, 120, levels=levels, extend = 'max', cmap = 'jet', alpha = 1)
+    print(orit)
+    aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
+    aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
+    if(orit[3]<90):
+        aws.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
+        aws.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
+    else:
+        aws.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
+        aws.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
+    if(orit[5]<90):
+        aws.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
+        aws.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
+    else:
+        aws.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
+        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
+    cb2 = fig.colorbar(cax2, orientation = 'horizontal')
+    cb2.set_label("Breakout Widths in Degrees")
+    plt.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
+    plt.show()

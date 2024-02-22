@@ -797,7 +797,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,alpha = float(model[14]), beta = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1127,7 +1127,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
-                phi[i] = (vp[i]+lala)/(vp[i]+lalb)
+                phi[i] = np.degrees(np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
@@ -1150,7 +1150,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
-                phi[i] = (vp[i]+lala)/(vp[i]+lalb)
+                phi[i] = np.degrees(np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
@@ -1206,20 +1206,29 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     psifg = psiftfg*tvdf
     psimes = ((psifg+obgpsi)/2)+psipp
-    psisfl = (psimes[:]*H[:])+K[:]
+    
     
     from DrawSP import getSHMax
     from DrawSP import drawSP
     
     i=0
     sgHMpsi = np.zeros(len(tvd))
+    sgHMpsiL = np.zeros(len(tvd))
+    sgHMpsiU = np.zeros(len(tvd))
+    psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        sgHMpsi[i] = (getSHMax(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i])[2])*145.038
+        result = getSHMax(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i],phi[i])
+        sgHMpsi[i] = (result[2])*145.038
+        sgHMpsiL[i] = (result[0])*145.038
+        sgHMpsiU[i] = (result[1])*145.038
+        #psisfl[i] = 0.5*((3*sgHMpsi[i])-psifg[i])*(1-np.sin(np.radians(phi[i]))) -(horsud[i]*145.038/10*np.cos(np.radians(phi[i])))+ (psipp[i]*np.sin(np.radians(phi[i])))
         i+=1
     
+    #psisfl = (psimes[:]*H[:])+K[:]
     from BoreStab import drawStab
     from BoreStab import drawBreak
     from BoreStab import drawDITF
+    from BoreStab import draw
     
     
     
@@ -1282,29 +1291,35 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         ucsmpa = shorsud[doiX]
         stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
         print(stresspolygon)
-        drawSP(sigmaVmpa,ppmpa,bhpmpa,ucsmpa)
+        print(phi[doiX])
+        drawSP(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX])
         sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa)
         print("SigmaHM = ",sigmaHMaxmpa[2])
-        sigmas = [sigmaHMaxmpa[0],sigmahminmpa,sigmaVmpa]
+        sigmas = [sigmaHMaxmpa[2],sigmahminmpa,sigmaVmpa]
         print(sigmas)
 
-        if sigmas[0]>sigmas[1]:
-            alpha = 0
-            beta = 90 #normal faulting regime
+        if sigmas[2]>sigmas[0]:
+            alpha = 90
+            beta = 0 #normal faulting regime
             gamma = 0
-        if(sigmas[1]>sigmas[0]):
+            print("normal")
+        if(sigmas[0]>sigmas[2] and sigmas[2]>sigmas[1]):
             alpha = 90 #strike slip faulting regime
             beta = 0
             gamma = 90
-        if(sigmas[2]>sigmas[0]):
+            print("Strike slip")
+        if(sigmas[0]>sigmas[2] and sigmas[1]>sigmas[2]):
             alpha = 90
             beta = 0 #reverse faulting regime
             gamma = 0
-        #sigmas.sort()"""
-        sigmas.append(bhpmpa-ppmpa)
-        drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        drawBreak(sigmas[0],sigmas[1],sigmas[2],sigmas[3],ucsmpa,alpha,beta,gamma)
-        drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
+            print("reverse")
+        sigmas.sort()
+        
+        sigmas.append(bhpmpa)
+        sigmas = sigmas[:] - ppmpa
+        #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
+        draw(sigmas[0],sigmas[1],sigmas[2],sigmas[3],ucsmpa,alpha,beta,gamma,offset,nu2[doiX])
+        #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
     
     
@@ -1457,6 +1472,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt3.plot(pppsi,tvd,color='red',label='Pore Pressure')
     plt3.plot(mudpsi,tvd,color='pink',label='BHP')
     plt3.plot(ssgHMpsi,tvd,color='gray',label='SH MAX')
+    #plt3.plot(sgHMpsiL,tvd,color='lime',label='SH MAX L')
+    #plt3.plot(sgHMpsiU,tvd,color='orange',label='SH MAX U')
     plt3.legend(fontsize = "6",loc='lower center')
     plt3.title.set_text("Pressures (psi)")
     #plt4.set_xlim([0,5000])
