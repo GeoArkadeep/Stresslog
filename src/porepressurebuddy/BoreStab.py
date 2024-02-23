@@ -17,8 +17,7 @@ import math
 #theta = 37
 #deltaP = 3
 
-
-def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,nu=0.35):
+def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     #print(Ss)
 
@@ -60,7 +59,10 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,nu=0.35):
     #print(Sg)
     Sb = Rb@RsT@Ss@Rs@RbT
     #print(Sb)
-
+    Sb[0][0] = Sb[0][0] - Pp
+    Sb[1][1] = Sb[1][1] - Pp
+    Sb[2][2] = Sb[2][2] - Pp
+    
     theta = math.radians(theta)
 
     Szz = Sb[2][2] - ((2*nu)*(Sb[0][0]-Sb[1][1])*(2*math.cos(2*theta))) - (4*nu*Sb[0][1]*math.sin(2*theta))
@@ -84,7 +86,7 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,nu=0.35):
 
 
 
-def drawStab(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0):
+def drawStab(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
@@ -95,7 +97,7 @@ def drawStab(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0):
             pointer= 0
             line = np.zeros(361)
             while pointer<361:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP)
+                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp)
                 line[pointer] = STM
                 pointer+=1
             values[inc][azim] = np.max(line)
@@ -119,7 +121,7 @@ def drawStab(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0):
     plt.show()
 
 
-def drawBreak(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
+def drawBreak(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
@@ -131,7 +133,7 @@ def drawBreak(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
             line = np.zeros(361)
             width = 0
             while pointer<361:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,nu)
+                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
                 if (STT-UCS)>0:
                     width+=1
                 pointer+=1
@@ -173,7 +175,7 @@ def drawBreak(s1,s2,s3,deltaP,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
     plt.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
     plt.show()
     
-def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
+def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
@@ -188,7 +190,7 @@ def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
             frac = np.zeros(361)
             widthR = np.zeros(361)
             while pointer<361:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP)
+                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
                 line[pointer] = STT
                 angle[pointer] = omega
                 if STT<0:
@@ -244,7 +246,7 @@ def drawDITF(s1,s2,s3,deltaP,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt.show()
 
-def getHoopMin(inc,azim,s1,s2,s3,deltaP, alpha=0,beta=0,gamma=0,nu=0.35):
+def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
     values = np.zeros((10,37))
     
     pointer= 0
@@ -277,7 +279,7 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP, alpha=0,beta=0,gamma=0,nu=0.35):
     return np.min(line)
 
 
-def draw(s1,s2,s3,deltaP,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
+def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
     inclination = np.zeros((10,37))
@@ -297,10 +299,10 @@ def draw(s1,s2,s3,deltaP,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
             frac = np.zeros(361)
             widthR = np.zeros(361)
             while pointer<361:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP)
+                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
                 line[pointer] = STT
                 angle[pointer] = omega
-                if STT<TS:
+                if stm<TS:
                     width+=1
                     frac[pointer] = frac[pointer-1]+(1/math.tan(math.radians(omega)))
                 else:
@@ -313,8 +315,8 @@ def draw(s1,s2,s3,deltaP,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
                 if STM>UCS:
                     width2+=0.5
                     
-            if width>0:
-                print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
+            #if width>0:
+                #print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
                 #plt.scatter(np.array(range(0,361)),frac)
                 #plt.plot(angle)
                 #plt.plot(line)
@@ -363,8 +365,8 @@ def draw(s1,s2,s3,deltaP,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     aws.set_rmax(90)
     aws.set_theta_zero_location("N")
     aws.set_theta_direction(-1)
-    levels = np.linspace(0,120,120)
-    cax2 = aws.contourf(azimuth, inclination, values2, 120, levels=levels, extend = 'max', cmap = 'jet', alpha = 1)
+    levels = np.linspace(0,120,1200)
+    cax2 = aws.contourf(azimuth, inclination, values2, 1200, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
     print(orit)
     aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
     aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))

@@ -24,10 +24,11 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, breakouts = 0, ditflag = 0,mu = 0.6
     print("Corners: ",ShmP,SHMP)
 
 
-    maxSt = 1.02*SHMP
-    minSt = 0.98*ShmP
+    #maxSt = 1.02*SHMP
+    #minSt = 0.98*ShmP
     
-    
+    maxSt = 200
+    minSt = 0
 
     fig,ax = plt.subplots()
     ax.axis([minSt,maxSt,minSt,maxSt])
@@ -60,20 +61,20 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, breakouts = 0, ditflag = 0,mu = 0.6
     #UCS = 46
     UCShigh = UCS + (0.2*UCS)
     UCSlow = UCS - (0.2*UCS)
-    Shm = 1
-    Shm2 = maxSt
+    Shm = ShmP
+    Shm2 = SHMP
     #PhiB = 0.1 #degrees
     PhiBr = math.radians(PhiB)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
     print("TwoCosPhiB: ",TwoCosPhiB)
     #ShmP = UCS
-    SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     
-    SHM1H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM2H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM1L = ((UCSlow + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM2L = ((UCSlow + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM1H = ((UCShigh + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM2H = ((UCShigh + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM1L = ((UCSlow + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM2L = ((UCSlow + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
 
     #print(SHM1)
     br1 = np.array([(Shm,SHM1),(Shm2,SHM2)])
@@ -95,9 +96,11 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, breakouts = 0, ditflag = 0,mu = 0.6
     ax.add_patch(Breakout1)
     ax.add_patch(Breakout3)
     
-    Shm3 = 1
-    Shm4 = maxSt
+    Shm3 = ShmP
+    Shm4 = Y
     
+    #DITFshmax3 = 3*Shm3 - 2*Pp
+    #DITFshmax4 = 3*Shm4 - 2*Pp
     DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp)
     DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
@@ -147,7 +150,7 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, breakouts = 0, ditflag = 0,mu = 0.6
     plt.show()
 
 
-def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, PhiB = 45, breakouts = 0, ditflag = 0, mu=0.6):
+def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, mu=0.6):
     maxSH = 0
     minSH = 0
     midSH = 0
@@ -158,10 +161,6 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, PhiB = 45, breakouts = 0, ditflag = 0, mu
     ShmP = ((Sv-Pp)/ufac)+Pp
     SHMP = ((Sv-Pp)*ufac)+Pp
     #print("Corners: ",ShmP,SHMP)
-    
-    if(shmin<ShmP):
-        return[0,0,0]
-        
 
     maxSt = 1.05*SHMP
     minSt = 0.90*ShmP
@@ -189,7 +188,7 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, PhiB = 45, breakouts = 0, ditflag = 0, mu
     Shm = 1
     Shm2 = maxSt
     #PhiB = 0.1 #degrees
-    PhiBr = math.radians(PhiB)
+    PhiBr = math.radians(ThetaB)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
 
 
@@ -216,17 +215,20 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, PhiB = 45, breakouts = 0, ditflag = 0, mu
     Shm3 = 1
     Shm4 = maxSt
 
+    #DITFshmax3 = 3*Shm3 - 2*Pp
+    #DITFshmax4 = 3*Shm4 - 2*Pp
     DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp)
     DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
     lowerd = [Shm3,DITFshmax3]
     upperd = [Shm4,DITFshmax4]
     
-    
+    if(shmin<ShmP):
+        return[ShmP,ShmP,ShmP]
     if(shmin>Sv):
         minSH = Sv
         maxSH = SHMP
-        return [Sv,SHMP,(shmin+Sv)/2]
+        #return [Sv,shmin,(shmin+Sv)/2]
     else:
         lower = [ShmP,Sv]
         upper = [Sv,SHMP]
@@ -235,16 +237,23 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, PhiB = 45, breakouts = 0, ditflag = 0, mu
         minSH = shmin
         maxSH = I1
         #return [shmin,I1,(shmin+I1)/2]
-
+    
+    if ditflag>0 and breakouts>0:
+        minSH = loweruhigh[1]+(shmin-loweruhigh[0])*(upperuhigh[1]-loweruhigh[1])/(upperuhigh[0]-loweruhigh[0])
+        maxSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])
+    else:
         if ditflag>0:
-            minSH = np.interp(shmin,lowerd,upperd)
+            minSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])#np.interp(shmin,lowerd,upperd)
         else:
-            maxSH = np.interp(shmin,lowerd,upperd)
+            maxSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])#np.interp(shmin,lowerd,upperd)
         if breakouts>0:
-            maxSH = np.interp(shmin,loweruhigh,upperuhigh)
-            minSH = np.interp(shmin,lowerulow,upperulow)
+            maxSH = loweruhigh[1]+(shmin-loweruhigh[0])*(upperuhigh[1]-loweruhigh[1])/(upperuhigh[0]-loweruhigh[0])
+            minSH = lowerulow[1]+(shmin-lowerulow[0])*(upperulow[1]-lowerulow[1])/(upperulow[0]-lowerulow[0])
         else:
-            maxSH = lowerucs[1]+(shmin-lowerucs[0])*(upperucs[1]-lowerucs[1])/(upperucs[0]-lowerucs[0])
-        midSH=(minSH+maxSH)/2    
+            maxSH = lowerucs[1]+(shmin-lowerucs[0])*(upperucs[1]-lowerucs[1])/(upperucs[0]-lowerucs[0])#np.interp(shmin,lowerucs,upperucs)
+            #print("nobreak")
+            #print(lowerucs,upperucs,maxSH)
+    midSH=(minSH+maxSH)/2    
     return [minSH,maxSH,midSH]
 from BoreStab import draw
+from BoreStab import drawStab

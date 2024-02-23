@@ -826,7 +826,6 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     print(mud_weight)
     first = [mud_weight[0][0],0]
     last = [mud_weight[-1][0],final_depth]
-    lastmw = last[0]
     frac_grad_data = app_instance.get_frac_grad_data_values()[0]
     flow_grad_data = app_instance.get_flow_grad_data_values()[0]
     frac_psi_data = app_instance.get_frac_grad_data_values()[1]
@@ -927,6 +926,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     print(attrib[1])
     well.location.gl = float(attrib[1])
     well.location.kb = float(attrib[0])
+    mudweight = np.zeros(len(tvd))
     try:
         agf = (well.location.ekb-well.location.egl)*3.28084
     except AttributeError:
@@ -948,6 +948,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     tvdbglf = np.zeros(len(tvdbgl))
     tvdmslf = np.zeros(len(tvdmsl))
     wdfi = np.zeros(len(tvdmsl))
+    j=1
     i=0
     while(i<len(tvd)):
         if tvdbgl[i]<0:
@@ -960,6 +961,11 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             tvdmslf[i] = 0
         else:
             tvdmslf[i] = tvdmsl[i]*3.28084
+        if md[i]<mud_weight[j][1]:
+            mudweight[i] = mud_weight[j][0]
+        else:
+            mudweight[i] = mud_weight[j][0]
+            j+=1
         i+=1
     
     print("air gap is ",agf,"feet")
@@ -985,7 +991,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdf[i]-agf-wdf)/3125)**a)
                 hydrostatic[i] = water
-                mudhydrostatic[i] = 1.0*lastmw
+                mudhydrostatic[i] = 1.0*mudweight[i]
             else:
                 if(tvdmsl[i]<0):
                     rhoppg[i] = 8.34540426515252*water
@@ -994,12 +1000,12 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 else:
                     rhoppg[i] = 0
                     hydrostatic[i] = water
-                    mudhydrostatic[i] = 1.0*lastmw
+                    mudhydrostatic[i] = 1.0*mudweight[i]
         else:
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdbglf[i])/3125)**a)
                 hydrostatic[i]= water
-                mudhydrostatic[i] = 1.0*lastmw
+                mudhydrostatic[i] = 1.0*mudweight[i]
             else:
                 rhoppg[i] = 0
                 hydrostatic[i] = 0
@@ -1315,10 +1321,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             print("reverse")
         sigmas.sort()
         
-        sigmas.append(bhpmpa)
-        sigmas = sigmas[:] - ppmpa
+        sigmas.append(bhpmpa-ppmpa)
+        sigmas.append(ppmpa)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(sigmas[0],sigmas[1],sigmas[2],sigmas[3],ucsmpa,alpha,beta,gamma,offset,nu2[doiX])
+        draw(sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu2[doiX])
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
     
@@ -1353,7 +1359,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.data['SHMpsi'] =  sHMpsi
     shmpsi = Curve(ssgHMpsi, mnemonic='shmin_PRESSURE',units='psi', index=md, null=0)
     well.data['shmpsi'] =  shmpsi
-    
+    mwpsi = Curve(mudpsi, mnemonic='MUD_PRESSURE',units='psi', index=md, null=0)
+    well.data['mwpsi'] =  mwpsi
+    mhpsi = Curve(mudweight, mnemonic='MUD_GRADIENT',units='g/cc', index=md, null=0)
+    well.data['mwpsi'] =  mhpsi
     c0lalmpa = Curve(slal, mnemonic='C0_Lal',units='MPa', index=md, null=0)
     well.data['C0LAL'] =  c0lalmpa
     c0lal2mpa = Curve(slal2, mnemonic='C0_Lal_Phi',units='MPa', index=md, null=0)
@@ -1389,6 +1398,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt2.legend()
     plt2.set_xlim([300,50])
 
+    plt3.plot(mudweight,tvd,color='brown',label='Mud Gradient')
     plt3.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
     #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
     plt3.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
@@ -1397,10 +1407,11 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt3.set_xlim([0,3])
 
     plt4.plot(fgpsi,tvd,color='blue',label='Sh min')
+    plt4.plot(ssgHMpsi,tvd,color='pink',label='SH Max')
     plt4.plot(obgpsi,tvd,color='green',label='Sigma V')
     plt4.plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
     plt4.plot(pppsi,tvd,color='red',label='Pore Pressure')
-    plt4.plot(psisfl,tvd,color='pink',label='Lade')
+    plt4.plot(mudpsi,tvd,color='red',label='Bottom Hole Pressure')
     plt4.legend()
     #plt4.set_xlim([0,5000])
     
@@ -1458,6 +1469,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt1.set_xlim([300,50])
     plt1.title.set_text("Sonic (us/ft)")
 
+    
+    plt2.plot(mudweight,tvd,color='brown',label='Mud Gradient')
     plt2.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
     #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
     plt2.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
@@ -1467,11 +1480,11 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt2.title.set_text("Gradients (g/cc)")
 
     plt3.plot(fgpsi,tvd,color='blue',label='Sh min')
+    plt3.plot(ssgHMpsi,tvd,color='pink',label='SH MAX')
     plt3.plot(obgpsi,tvd,color='green',label='Sigma V')
     plt3.plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
     plt3.plot(pppsi,tvd,color='red',label='Pore Pressure')
-    plt3.plot(mudpsi,tvd,color='pink',label='BHP')
-    plt3.plot(ssgHMpsi,tvd,color='gray',label='SH MAX')
+    plt3.plot(mudpsi,tvd,color='brown',label='BHP')
     #plt3.plot(sgHMpsiL,tvd,color='lime',label='SH MAX L')
     #plt3.plot(sgHMpsiU,tvd,color='orange',label='SH MAX U')
     plt3.legend(fontsize = "6",loc='lower center')
@@ -1510,8 +1523,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     if flow_psi_data != [[0,0]]:
         plt3.scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     
-    mud_weight_x, mud_weight_y = zip(*mud_weight)
-    plt2.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
+    #mud_weight_x, mud_weight_y = zip(*mud_weight)
+    #plt2.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
     
     #ax2 = plt3.twinx()
     #ax2.set_ylabel('MD')
