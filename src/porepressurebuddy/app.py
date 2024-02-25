@@ -23,6 +23,7 @@ os.makedirs(output_dir1, exist_ok=True)
 
 output_file = os.path.join(output_dir, "PlotFigure.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
+output_file3 = os.path.join(output_dir1, "output.las")
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
         super().__init__(image=toga.Image(image_path), *args, **kwargs)
@@ -31,10 +32,19 @@ class BackgroundImageView(toga.ImageView):
 #Global Variables
 laspath = None
 devpath = None
+lithopath = None
+ucspath = None
+flagpath = None
 wella = None
+well2 =None
 deva = None
+lithos = None
+UCSs = None
+flags = None
 h1 = None
 h2 = None
+h3 = None
+h4 = None
 depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
 
@@ -129,7 +139,7 @@ class MyApp(toga.App):
         def add_depth_mw_row(self, widget):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
             
-            depth_label = toga.Label("Casing Landing Depth (m)", style=Pack(padding_right=2))
+            depth_label = toga.Label("Casing Shoe Depth (m)", style=Pack(padding_right=2))
             depth_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
             row_box.add(depth_label)
             row_box.add(depth_entry)
@@ -182,8 +192,19 @@ class MyApp(toga.App):
         # Step 5: Add the new box to self.page2
         self.page2.add(self.depth_mw_box)
         
-        self.page2_btn = toga.Button("Load Data and Proceed", on_press=self.show_page3, style=Pack(padding=10))
+        self.page2_btn = toga.Button("Load Lithology from csv", on_press=self.open_litho, style=Pack(padding=10))
         self.page2.add(self.page2_btn)
+        
+        self.page2_btn = toga.Button("Load UCS from csv", on_press=self.open_ucs, style=Pack(padding=10))
+        self.page2.add(self.page2_btn)
+        
+        self.page2_btn = toga.Button("Load Breakouts/DITFs from csv", on_press=self.open_flags, style=Pack(padding=10))
+        self.page2.add(self.page2_btn)
+        
+        self.page2_btn2 = toga.Button("Load Data and Proceed", on_press=self.show_page3, style=Pack(padding=10))
+        self.page2.add(self.page2_btn2)
+        
+        
         
         self.page3 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
         
@@ -278,7 +299,7 @@ class MyApp(toga.App):
         self.page3_btn2 = toga.Button("Export Plot", on_press=self.show_page1, style=Pack(padding=1))
         button_box3.add(self.page3_btn2)
         
-        self.page3_btn3 = toga.Button("Export Las", on_press=self.show_page1, style=Pack(padding=1))
+        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=1))
         button_box3.add(self.page3_btn3)
         
         self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=1))
@@ -290,7 +311,7 @@ class MyApp(toga.App):
         self.main_window.content = self.page1
         self.main_window.show()
         
-
+    
     def add_frac_grad_data_row(self, widget, row_type='frac_grad'):
         depth_label = toga.Label("Depth", style=Pack(text_align="center", width=100, padding_bottom=5))
         
@@ -435,7 +456,7 @@ class MyApp(toga.App):
             depth_mw_values.append([mw,depth,bd,od,iv])
 
         # Sort the depth_mw_values list by depth
-        depth_mw_values.sort(key=lambda x: x[0])
+        depth_mw_values.sort(key=lambda x: x[1])
 
         return depth_mw_values
     
@@ -446,7 +467,7 @@ class MyApp(toga.App):
         wella = welly.Well.from_las(laspath, index = "m")
         depth_track = wella.df().index
         if devpath is not None:
-            deva=pd.read_csv(devpath, sep=' ',skipinitialspace=True)
+            deva=pd.read_csv(devpath, sep=r'[ ,	]',skipinitialspace=True)
             print(deva)
             start_depth = wella.df().index[0]
             final_depth = wella.df().index[-1]
@@ -566,10 +587,76 @@ class MyApp(toga.App):
 
     def open_dev0(self, widget):
         try:
-            self.main_window.open_file_dialog(title="Select a file", multiselect=False, on_result=functools.partial(MyApp.on_result1,self))
+            self.main_window.open_file_dialog(title="Select a Dev file", multiselect=False, on_result=functools.partial(MyApp.on_result1,self))
         except Exception as e:
-            print("Error:", e)    
+            print("Error:", e)
+            
+    def on_result2(self, widget, dialog_result):
+        global h1, lithopath
+        if dialog_result:               
+            lithopath  = dialog_result
+            h2 = readLithoFromAscii(lithopath)
+            print("Loaded litho file:", dialog_result)
+            print(h2)           
+            
+        else:
+            print("No litho file loaded")
 
+    def on_result3(self, widget, dialog_result):
+        global h1, ucspath
+        if dialog_result:               
+            ucspath  = dialog_result
+            h3 = readUCSFromAscii(ucspath)
+            print("Loaded ucs file:", dialog_result)
+            print(h3)           
+            
+        else:
+            print("No ucs file loaded")
+    
+    def on_result4(self, widget, dialog_result):
+        global h1, flagpath
+        if dialog_result:               
+            flagpath  = dialog_result
+            h4 = readFlagFromAscii(flagpath)
+            print("Loaded flag file:", dialog_result)
+            print(h4)           
+            
+        else:
+            print("No flag file loaded")
+
+
+
+    def open_litho(self, widget):
+        try:
+            self.main_window.open_file_dialog(title="Select a Litho file", multiselect=False, on_result=functools.partial(MyApp.on_result2,self))
+        except Exception as e:
+            print("Error:", e)
+            
+    def open_ucs(self, widget):
+        try:
+            self.main_window.open_file_dialog(title="Select a UCS file", multiselect=False, on_result=functools.partial(MyApp.on_result3,self))
+        except Exception as e:
+            print("Error:", e)
+            
+    def open_flags(self, widget):
+        try:
+            self.main_window.open_file_dialog(title="Select a Flag file", multiselect=False, on_result=functools.partial(MyApp.on_result4,self))
+        except Exception as e:
+            print("Error:", e)
+            
+    def save_las(self,widget):
+        #global wella
+        #well = wella
+        #print(well)
+        #name = well.name
+        #output_file4 = os.path.join(output_dir1,name, "_GMech.las")
+        #print(well.df())
+        #df3 = well.df()
+        #well2 = welly.Well.from_df(df3)
+        #well2.to_las(output_file4)
+        self.show_page1
+        
+        
     def populate_dropdowns(self):
         global h1
         self.dropdown1.items = h1
@@ -806,6 +893,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     start_depth = wella.df().index[0]
     final_depth = wella.df().index[-1]
     
+    well.location.plot_3d()
+    well.location.plot_plan()
+    
     header = well._get_curve_mnemonics()
     print(header)
     alias['gr'] = [elem for elem in header if elem in set(alias['gr'])]
@@ -948,7 +1038,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     tvdbglf = np.zeros(len(tvdbgl))
     tvdmslf = np.zeros(len(tvdmsl))
     wdfi = np.zeros(len(tvdmsl))
-    j=1
+    j=0
     i=0
     while(i<len(tvd)):
         if tvdbgl[i]<0:
@@ -961,11 +1051,13 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             tvdmslf[i] = 0
         else:
             tvdmslf[i] = tvdmsl[i]*3.28084
+        
         if md[i]<mud_weight[j][1]:
             mudweight[i] = mud_weight[j][0]
         else:
             mudweight[i] = mud_weight[j][0]
             j+=1
+            
         i+=1
     
     print("air gap is ",agf,"feet")
@@ -1118,6 +1210,15 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #ObgTppg[0] = np.nan
     print("ObgTppg:",ObgTppg)
     print("Reject Subhydrostatic = ",underbalancereject)
+    global lithos
+    global UCSs
+    global flags
+    if UCSs is not None:
+        ucss = UCSs.to_numpy()
+    print("Lithos: ",lithos)
+    print("UCS: ",UCSs)
+    print("IMAGE: ",flags)
+    
     while i<(len(ObgTppg)-1):
         if glwd>=0:
             if tvdbgl[i]>0:
@@ -1362,7 +1463,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     mwpsi = Curve(mudpsi, mnemonic='MUD_PRESSURE',units='psi', index=md, null=0)
     well.data['mwpsi'] =  mwpsi
     mhpsi = Curve(mudweight, mnemonic='MUD_GRADIENT',units='g/cc', index=md, null=0)
-    well.data['mwpsi'] =  mhpsi
+    well.data['mhpsi'] =  mhpsi
     c0lalmpa = Curve(slal, mnemonic='C0_Lal',units='MPa', index=md, null=0)
     well.data['C0LAL'] =  c0lalmpa
     c0lal2mpa = Curve(slal2, mnemonic='C0_Lal_Phi',units='MPa', index=md, null=0)
@@ -1376,8 +1477,11 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #gcal = Curve(gradcalib[1], mnemonic='BHP GRAD',units='G/C3', index=gradcalib[0], null=0)
     
     #fgcal = Curve(fgradcalib[1], mnemonic='LOT/xLOT/HF GRAD',units='G/C3', index=fgradcalib[0], null=0)
-    
-    
+    mana = len(well._get_curve_mnemonics())
+    print(mana)
+    units = []
+    well2 = welly.Well.from_df(well.df())
+    well2.to_las(output_file3)
     
     #Preview Plot
     graph, (plt1, plt2,plt3,plt4,plt5,plt6,plt7) = plt.subplots(1, 7,sharey=True)
@@ -1422,7 +1526,6 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #plt2.plot(dalm,tvd,label='DT')
     #plt2.legend()
     #plt2.set_xlim([0,150])
-    
     
     plt.show()
     plt.clf()
@@ -1511,6 +1614,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     x_values2, y_values2 = zip(*flow_grad_data)
     x_values3, y_values3 = zip(*frac_psi_data)
     x_values4, y_values4 = zip(*flow_psi_data)
+    if UCSs is not None:
+        
+        y_values5, x_values5 = zip(*ucss)
+    
     #Plot Image
         
     if frac_grad_data != [[0,0]]:
@@ -1522,6 +1629,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         plt3.scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
     if flow_psi_data != [[0,0]]:
         plt3.scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+    if UCSs is not None:
+        plt4.scatter(x_values5, y_values5, color='lime', marker='x', s=100)  # Add the custom plot to the second track
     
     #mud_weight_x, mud_weight_y = zip(*mud_weight)
     #plt2.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
@@ -1536,10 +1645,31 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt.clf()
     return
 
-def readDevFromAsciiHeader(devpath, delim = ' '):
+def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
     dev=pd.read_csv(devpath, sep=delim)
     dheader = list(dev.columns)
     return dheader
+def readLithoFromAscii(lithopath, delim = r'[ ,	]'):
+    global lithos
+    litho=pd.read_csv(lithopath, sep=delim)
+    lithos=litho
+    lithoheader = list(litho.columns)
+    return litho
+
+def readUCSFromAscii(ucspath, delim = r'[ ,	]'):
+    global UCSs
+    ucs=pd.read_csv(ucspath, sep=delim)
+    UCSs=ucs
+    ucsheader = list(ucs.columns)
+    return ucs
+
+def readFlagFromAscii(flagpath, delim = r'[ ,	]'):
+    global flags
+    flag=pd.read_csv(flagpath, sep=delim)
+    flags=flag
+    flagheader = list(flag.columns)
+    return flag
+
 
 def main():
     app = MyApp('WellMasterGeoMech', 'com.example.porepressurebuddy')
