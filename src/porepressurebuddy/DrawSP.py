@@ -257,3 +257,76 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, 
     return [minSH,maxSH,midSH]
 from BoreStab import draw
 from BoreStab import drawStab
+import numpy as np
+import math
+
+def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, breakouts=0, ditflag=0, mu=0.6):
+    ufac = ((((mu**2) + 1)**0.5) + mu)**2
+
+    ShmP = ((Sv - Pp) / ufac) + Pp
+    SHMP = ((Sv - Pp) * ufac) + Pp
+
+    if shmin <= ShmP:
+        return [np.nan, np.nan, np.nan]
+    if shmin > Sv:
+        minSH = Sv
+        maxSH = SHMP
+    else:
+        #lower = np.array([ShmP, Sv])
+        #upper = np.array([Sv, SHMP])
+        y = np.array([Sv,SHMP])
+        x = np.array([ShmP,Sv])
+        I1 = np.interp(shmin, x, y)
+        #print(shmin,Sv,I1)
+        minSH = shmin
+        maxSH = I1
+    
+    
+    if ditflag>0 or breakouts>0:
+        UCShigh = UCS + (0.2 * UCS)
+        UCSlow = UCS - (0.2 * UCS)
+        Shm = 1
+        Shm2 = maxSt
+
+        PhiBr = math.radians(ThetaB)
+        TwoCosPhiB = 2 * (math.cos((math.pi) - (PhiBr)))
+
+        SHM1 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+        SHM2 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+        SHM1H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+        SHM2H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+        SHM1L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+        SHM2L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+        
+        lowerulow = np.array([Shm,SHM1H])
+        upperulow = np.array([Shm2,SHM2H])
+        loweruhigh = np.array([Shm,SHM1L])
+        upperuhigh = np.array([Shm2,SHM2L])
+        lowerucs = np.array([Shm,SHM1])
+        upperucs = np.array([Shm2,SHM2])
+        # ... (code for creating arrays and lists)
+
+        Shm3 = 1
+        Shm4 = maxSt
+
+        DITFshmax3 = ufac * Shm3 - (ufac - 1) * Pp - (bhp - Pp)
+        DITFshmax4 = ufac * Shm4 - (ufac - 1) * Pp - (bhp - Pp)
+        ditf = np.array([(Shm3, DITFshmax3), (Shm4, DITFshmax4)])
+        
+        lowerd = np.array([Shm3,DITFshmax3])
+        upperd = np.array([Shm4,DITFshmax4])
+        if ditflag > 1 and breakouts > 1:
+            minSH = np.interp(shmin, loweruhigh, upperuhigh)
+            maxSH = np.interp(shmin, lowerd, upperd)
+        else:
+            if ditflag > 1:
+                minSH = np.interp(shmin, lowerd, upperd)
+            else:
+                maxSH = np.interp(shmin, lowerd, upperd)
+            if breakouts > 1:
+                maxSH = np.interp(shmin, loweruhigh, upperuhigh)
+                minSH = np.interp(shmin, lowerulow, upperulow)
+            else:
+                maxSH = np.interp(shmin, lowerucs, upperucs)
+    midSH = (minSH + maxSH) / 2
+    return [minSH, maxSH, midSH]

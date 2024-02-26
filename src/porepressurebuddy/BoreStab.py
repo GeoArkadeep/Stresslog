@@ -83,9 +83,6 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     return Stt,Szz,Ttz,STMax,Stmin,omega,orit
 
 
-
-
-
 def drawStab(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0):
     values = np.zeros((10,37))
     inclination = np.zeros((10,37))

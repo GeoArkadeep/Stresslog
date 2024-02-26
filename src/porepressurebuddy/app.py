@@ -192,6 +192,9 @@ class MyApp(toga.App):
         # Step 5: Add the new box to self.page2
         self.page2.add(self.depth_mw_box)
         
+        self.page2_btn2 = toga.Button("Load Data and Proceed", on_press=self.show_page3, style=Pack(padding=10))
+        self.page2.add(self.page2_btn2)
+        
         self.page2_btn = toga.Button("Load Lithology from csv", on_press=self.open_litho, style=Pack(padding=10))
         self.page2.add(self.page2_btn)
         
@@ -200,10 +203,7 @@ class MyApp(toga.App):
         
         self.page2_btn = toga.Button("Load Breakouts/DITFs from csv", on_press=self.open_flags, style=Pack(padding=10))
         self.page2.add(self.page2_btn)
-        
-        self.page2_btn2 = toga.Button("Load Data and Proceed", on_press=self.show_page3, style=Pack(padding=10))
-        self.page2.add(self.page2_btn2)
-        
+               
         
         
         self.page3 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
@@ -894,7 +894,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     final_depth = wella.df().index[-1]
     
     well.location.plot_3d()
-    well.location.plot_plan()
+    #well.location.plot_plan()
     
     header = well._get_curve_mnemonics()
     print(header)
@@ -956,8 +956,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         rdiff[np.isnan(rdiff)] = 0
         #rdiff = interpolate_nan(rdiff,0)
         radiff = (rdiff[:]*rdiff[:])**0.5
-        plt.plot(radiff)
-        plt.yscale('log')
+        #plt.plot(radiff)
+        #plt.yscale('log')
         i = 0
         lradiff = np.zeros(len(radiff))
         while i<len(radiff):
@@ -971,8 +971,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         shaleflag = rediff.block(cutoffs=sfs,values=(0,1)).values
         zoneflag = rediff.block(cutoffs=sfs,values=(0,1)).values
         print(shaleflag)
-        plt.plot(shaleflag)        
-        plt.show()
+        #plt.plot(shaleflag)        
+        ##plt.show()
     else:
         shaleflag = np.zeros(len(md))
         zoneflag = np.zeros(len(md))
@@ -1007,6 +1007,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #a = 0.630 #amoco exponent
     #nu = 0.4
     global attrib
+    global lithos
+    global UCSs
+    global flags
     
     glwd = float(attrib[1])
     glf = glwd*(3.28084)
@@ -1038,7 +1041,15 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     tvdbglf = np.zeros(len(tvdbgl))
     tvdmslf = np.zeros(len(tvdmsl))
     wdfi = np.zeros(len(tvdmsl))
+    lithotype = np.zeros(len(tvdbgl))
+    ilog = np.zeros(len(tvdbgl))
+    if lithos is not None:
+        lithot = lithos.to_numpy()
+    if flags is not None:
+        imagelog = flags.to_numpy
     j=0
+    k=0
+    m=0
     i=0
     while(i<len(tvd)):
         if tvdbgl[i]<0:
@@ -1055,9 +1066,20 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         if md[i]<mud_weight[j][1]:
             mudweight[i] = mud_weight[j][0]
         else:
-            mudweight[i] = mud_weight[j][0]
+            mudweight[i-1] = mud_weight[j][0]
             j+=1
-            
+        if lithos is not None:
+            if md[i]<lithot[j][1]:
+                lithotype[i] = lithot[k][0]
+            else:
+                lithotype[i-1] = lithot[k][0]
+                k+=1
+        if lithos is not None:
+            if md[i]<imagelog[j][1]:
+                ilog[i] = imagelog[m][0]
+            else:
+                ilog[i-1] = lithot[m][0]
+                m+=1
         i+=1
     
     print("air gap is ",agf,"feet")
@@ -1210,9 +1232,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #ObgTppg[0] = np.nan
     print("ObgTppg:",ObgTppg)
     print("Reject Subhydrostatic = ",underbalancereject)
-    global lithos
-    global UCSs
-    global flags
+
     if UCSs is not None:
         ucss = UCSs.to_numpy()
     print("Lithos: ",lithos)
@@ -1280,7 +1300,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
 
     #plt.plot(dtNormal)
     #plt.plot(dalm)
-    #plt.show()
+    ###plt.show()
     #plt.clf()
     
     #Eatons/Daines
@@ -1316,6 +1336,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     
     from DrawSP import getSHMax
+    from DrawSP import getSHMax_optimized
     from DrawSP import drawSP
     
     i=0
@@ -1324,13 +1345,13 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     sgHMpsiU = np.zeros(len(tvd))
     psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        result = getSHMax(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i],phi[i])
+        result = getSHMax_optimized(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i],phi[i])
         sgHMpsi[i] = (result[2])*145.038
         sgHMpsiL[i] = (result[0])*145.038
         sgHMpsiU[i] = (result[1])*145.038
         #psisfl[i] = 0.5*((3*sgHMpsi[i])-psifg[i])*(1-np.sin(np.radians(phi[i]))) -(horsud[i]*145.038/10*np.cos(np.radians(phi[i])))+ (psipp[i]*np.sin(np.radians(phi[i])))
         i+=1
-    
+    sgHMpsi = interpolate_nan(sgHMpsi)
     #psisfl = (psimes[:]*H[:])+K[:]
     from BoreStab import drawStab
     from BoreStab import drawBreak
@@ -1527,7 +1548,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #plt2.legend()
     #plt2.set_xlim([0,150])
     
-    plt.show()
+    ##plt.show()
     plt.clf()
     
     
@@ -1545,12 +1566,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.data['TVDMSL'] =  TVDMSL
     
     #plt = well.plot(tracks=['GR', 'DESPGR', 'DIFFGR'])
-    #plt.show()
+    ###plt.show()
     plt.clf()
     
-    #Presentation Plot
-    graph, (plt1, plt2,plt3,plt4) = plt.subplots(1, 4,sharey=True)
-    graph.suptitle(well.name,fontsize=18)
+    
     """plt5.plot(slal,tvd,label='lal-direct-c0')
     plt5.plot(slal2,tvd,label='horsud E')
     plt5.plot(slal3,tvd,label='horsud G')
@@ -1564,44 +1583,99 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt1.legend()
     plt1.set_xlim([0,150])"""
     
-    #plt1.invert_yaxis()
-    plt1.set_ylim([tango,zulu])
-    plt1.plot(dalm,tvd,label='DT')
-    plt1.plot(dtNormal,tvd,label='Normal DT (Zhang)')
-    plt1.legend(fontsize = "6",loc='lower center')
-    plt1.set_xlim([300,50])
-    plt1.title.set_text("Sonic (us/ft)")
+    from matplotlib import ticker
+    from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
+    
+    #Presentation Plot
+    plt.rcParams['xtick.labeltop'] = True
+    plt.rcParams['xtick.top'] = True
+    plt.rcParams['xtick.labelbottom'] = False
+    
+    graph, splt = plt.subplots(1, 4,sharey=True)
+    graph.suptitle(well.name,fontsize=18)
+    #splt[0].invert_yaxis()
+    splt[0].set_ylim([tango,zulu])
+    splt[0].plot(dalm,tvd,label='DT')
+    splt[0].plot(dtNormal,tvd,label='Normal DT (Zhang)')
+    splt[0].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[0].set_xlim([300,50])
+    splt[0].yaxis.set_major_locator(MultipleLocator(100))
+    splt[0].yaxis.set_minor_locator(MultipleLocator(10))
+    #splt[0].tick_params(axis='both', which='minor', length = 0)
+    #splt[0].set_yticks([zulu,tango,10])
+    #splt[0].set_yticks([zulu,tango,1],minor=True)
+    splt[0].grid(which='both')
+    splt[0].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[0].grid(which='major', color = 'teal', alpha = 0.05)
+    #N = 11
+    #ymin, ymax = splt[0].get_ylim()
+    #splt[0].set_yticks(np.round(np.linspace(ymin, ymax, N)))
+    
+    #N1 = 6
+    splt[0].xaxis.set_major_locator(MultipleLocator(100))
+    splt[0].xaxis.set_minor_locator(MultipleLocator(10))
+    #xmin, xmax = splt[0].get_xlim()
+    #splt[0].set_xticks(np.round(np.linspace(xmin, xmax, N1)))
+    splt[0].title.set_text("Sonic (us/ft)")
 
     
-    plt2.plot(mudweight,tvd,color='brown',label='Mud Gradient')
-    plt2.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
-    #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
-    plt2.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
-    plt2.plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
-    plt2.legend(fontsize = "6",loc='lower center')
-    plt2.set_xlim([0,3])
-    plt2.title.set_text("Gradients (g/cc)")
+    splt[1].plot(mudweight,tvd,color='brown',label='Mud Gradient')
+    splt[1].plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
+    #splt[1].plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
+    splt[1].plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
+    splt[1].plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
+    splt[1].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[1].set_xlim([0,3])
+    splt[1].grid(which='both')
+    splt[1].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[1].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[1].xaxis.set_major_locator(MultipleLocator(1))
+    splt[1].xaxis.set_minor_locator(MultipleLocator(0.1))
+    N2 = 4
+    xmin, xmax = splt[1].get_xlim()
+    splt[1].set_xticks(np.round(np.linspace(xmin, xmax, N2),1))
+    splt[1].title.set_text("Gradients (g/cc)")
 
-    plt3.plot(fgpsi,tvd,color='blue',label='Sh min')
-    plt3.plot(ssgHMpsi,tvd,color='pink',label='SH MAX')
-    plt3.plot(obgpsi,tvd,color='green',label='Sigma V')
-    plt3.plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
-    plt3.plot(pppsi,tvd,color='red',label='Pore Pressure')
-    plt3.plot(mudpsi,tvd,color='brown',label='BHP')
-    #plt3.plot(sgHMpsiL,tvd,color='lime',label='SH MAX L')
-    #plt3.plot(sgHMpsiU,tvd,color='orange',label='SH MAX U')
-    plt3.legend(fontsize = "6",loc='lower center')
-    plt3.title.set_text("Pressures (psi)")
-    #plt4.set_xlim([0,5000])
+    splt[2].plot(fgpsi,tvd,color='blue',label='Sh min')
+    splt[2].plot(ssgHMpsi,tvd,color='pink',label='SH MAX')
+    splt[2].plot(obgpsi,tvd,color='green',label='Sigma V')
+    splt[2].plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
+    splt[2].plot(pppsi,tvd,color='red',label='Pore Pressure')
+    splt[2].plot(mudpsi,tvd,color='brown',label='BHP')
+    splt[2].plot(sgHMpsiL,tvd,color='lime',label='SH MAX L')
+    splt[2].plot(sgHMpsiU,tvd,color='orange',label='SH MAX U')
+    splt[2].grid(which='both')
+    splt[2].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[2].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[2].set_xlim(left=0)
+    splt[2].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[2].xaxis.set_major_locator(MultipleLocator(5000))
+    splt[2].xaxis.set_minor_locator(MultipleLocator(500))
+    xlabels = ['{:,.0f}'.format(x) + 'K' for x in splt[2].get_xticks()/1000]
+    splt[2].set_xticklabels(xlabels)
+    #N3 = 4
+    #xmin, xmax = splt[2].get_xlim()
+    #splt[2].set_xticks(np.round(np.linspace(xmin, xmax, N3)))
+    splt[2].title.set_text("Pressures (psi)")
+
     
-    plt4.set_ylim([tango,zulu])
-    plt4.plot(slal2,tvd,label='UCS (Lal)')
-    plt4.plot(shorsud,tvd,label='UCS (Horsud)')
-    plt4.legend(fontsize = "6",loc='lower center')
-    #plt4.set_xlim([300,50])
-    plt4.title.set_text("Strengths (MPa)")
+    splt[3].set_ylim([tango,zulu])
+    splt[3].plot(slal2,tvd,label='UCS (Lal)')
+    splt[3].plot(shorsud,tvd,label='UCS (Horsud)')
+    splt[3].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[3].set_xlim([0,100])
+    splt[3].grid(which='both')
+    splt[3].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[3].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[3].xaxis.set_major_locator(MultipleLocator(20))
+    splt[3].xaxis.set_minor_locator(MultipleLocator(2))
+    #N4 = 6
+    #xmin, xmax = splt[3].get_xlim()
+    #splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N4)))
+    splt[3].title.set_text("Strengths (MPa)")
     
-    
+    #graph.tight_layout()
+
     # Add your custom plot
     
     print(mud_weight)
@@ -1621,23 +1695,22 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #Plot Image
         
     if frac_grad_data != [[0,0]]:
-        plt2.scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
+        splt[1].scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
     if flow_grad_data != [[0,0]]:
-        plt2.scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
-    
+        splt[1].scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     if frac_psi_data != [[0,0]]:
-        plt3.scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
+        splt[2].scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
     if flow_psi_data != [[0,0]]:
-        plt3.scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+        splt[2].scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     if UCSs is not None:
-        plt4.scatter(x_values5, y_values5, color='lime', marker='x', s=100)  # Add the custom plot to the second track
+        splt[3].scatter(x_values5, y_values5, color='lime', marker='x', s=10)  # Add the custom plot to the second track
     
     #mud_weight_x, mud_weight_y = zip(*mud_weight)
-    #plt2.plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
+    #splt[1].plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
     
-    #ax2 = plt3.twinx()
+    #ax2 = splt[2].twinx()
     #ax2.set_ylabel('MD')
-    #secax = plt3.secondary_yaxis('right')
+    #secax = splt[2].secondary_yaxis('right')
 
     # Save the modified plot
     plt.gcf().set_size_inches(8, 10)
