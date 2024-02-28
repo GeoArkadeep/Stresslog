@@ -662,6 +662,8 @@ class MyApp(toga.App):
         name = name.translate({ord(i): '-' for i in '/\:*?"<>|'})
         output_file4 = os.path.join(output_dir1,name+"_GMech.las")
         df3 = wella.df()
+        df3.index.name = 'DEPT'
+        df3 = df3.reset_index()
         lasheader = wella.header
         print(lasheader,df3)
         datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
@@ -1560,7 +1562,6 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     df3 = well.df()
     df3.index.name = 'DEPT'
     df3 = df3.reset_index()
-    print(df3)
     header = well._get_curve_mnemonics()
     lasheader = well.header
     datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
