@@ -276,7 +276,7 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
     return np.min(line)
 
 
-def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
+def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azm=0,inc=0):
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
     inclination = np.zeros((10,37))
@@ -338,6 +338,7 @@ def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     ax.set_theta_direction(-1)
     levels = np.linspace(0,s3,2100)
     cax = ax.contourf(azimuth, inclination, values, 2100, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 1)
+    ax.scatter(inc,azm, s=50, color = 'green', edgecolors='black', label='Bore')
     ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
     ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     if(orit[3]<=90):
@@ -353,7 +354,7 @@ def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
         ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
         ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb = fig.colorbar(cax, orientation = 'horizontal')
-    plt.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(nu) , loc="center")
+    plt.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(round(nu,2)) , loc="center")
     cb.set_label("Excess Mud Pressure to TensileFrac")
     
     aws = fig.add_subplot(122,projection='polar')
@@ -365,6 +366,8 @@ def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     levels = np.linspace(0,120,1200)
     cax2 = aws.contourf(azimuth, inclination, values2, 1200, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
     print(orit)
+    aws.scatter(inc,azm, s=50, color = 'green', edgecolors='black', label='Bore')
+    #aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
     aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     if(orit[3]<90):
@@ -381,5 +384,5 @@ def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
         ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb2 = fig.colorbar(cax2, orientation = 'horizontal')
     cb2.set_label("Breakout Widths in Degrees")
-    plt.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
+    plt.title( "UCS = "+str(round(UCS))+", DeltaP = "+str(round(deltaP))+", Nu = "+str(round(nu)) , loc="center")
     plt.show()

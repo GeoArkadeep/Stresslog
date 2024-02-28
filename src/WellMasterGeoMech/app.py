@@ -16,14 +16,17 @@ user_home = os.path.expanduser("~/documents")
 app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "pp_app_plots")
 output_dir1 = os.path.join(user_home, "pp_app_data")
-
+input_dir = os.path.join(user_home, "pp_app_models")
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(output_dir1, exist_ok=True)
+os.makedirs(input_dir, exist_ok=True)
 
 output_file = os.path.join(output_dir, "PlotFigure.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
+output_file4 = os.path.join(input_dir, "model.csv")
+output_file5 = os.path.join(input_dir, "alias.txt")
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
         super().__init__(image=toga.Image(image_path), *args, **kwargs)
@@ -36,7 +39,7 @@ lithopath = None
 ucspath = None
 flagpath = None
 wella = None
-well2 =None
+#well2 =None
 deva = None
 lithos = None
 UCSs = None
@@ -48,19 +51,27 @@ h4 = None
 depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
 
-modelfile = open("model.csv", "r") 
-# reading the file 
-data = modelfile.read()   
+modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,tilt,nu_shale,su_sst,nu_lst,dt_lst"
+defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,2500,2900,1.025,True,0,3500,0,0,0.32,0.27,0.25,65"
+print(os.getcwd())
+try:
+    data = pd.read_csv('model.csv',index_col=False)
+except:
+    file = open('model.csv','w')
+    file.write(modelheader+'\n')
+    file.write(defaultmodel+'\n')
+    file.close()
+    data = pd.read_csv('model.csv',index_col=False)
 # replacing end splitting the text  
 # when newline ('\n') is seen. 
-data_into_list = data.split(",") 
+data_into_list = data.values.tolist()#(",") 
 print(data_into_list) 
-modelfile.close() 
+#modelfile.close() 
 
 #model = np.array([16.33,0.63,0.0008,210,60,0.4,0.8,1,0,2000])
 #model = ['16.33','0.63','0.0008','210','60','0.4','0.8','1','0','2000']
-model = data_into_list
-
+model = data_into_list[0]
+print(model)
 class MyApp(toga.App):
     def startup(self):
 
@@ -533,7 +544,6 @@ class MyApp(toga.App):
         
         #self.bg3.image = toga.Image('BG1.png')
         #smoothass.plotPPmiller(wella)
-
         print("Great Success!! :D")
         #image_path = 'PlotFigure.png'
         #self.bg3.image = toga.Image(image_path)
@@ -648,12 +658,16 @@ class MyApp(toga.App):
         #global wella
         #well = wella
         #print(well)
-        #name = well.name
-        #output_file4 = os.path.join(output_dir1,name, "_GMech.las")
-        #print(well.df())
-        #df3 = well.df()
-        #well2 = welly.Well.from_df(df3)
-        #well2.to_las(output_file4)
+        name = wella.name
+        name = name.translate({ord(i): '-' for i in '/\:*?"<>|'})
+        output_file4 = os.path.join(output_dir1,name+"_GMech.las")
+        df3 = wella.df()
+        lasheader = wella.header
+        print(lasheader,df3)
+        datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
+        
+        #well2 = wella.from_df(df3)
+        #wella.to_las(output_file4)
         self.show_page1
         
         
@@ -720,32 +734,30 @@ class MyApp(toga.App):
         global attrib
         global model
         self.getwelldev()
-        modelfile = open("model.csv", "r") 
-        data = modelfile.read()   
-        # replacing end splitting the text  
-        # when newline (',') is seen. 
-        data_into_list = data.split(",") 
-        print(data_into_list) 
-        modelfile.close() 
-        model = data_into_list
-        tail1 = str(model[10])
-        tail2 = str(model[11])
-        tail3 = str(model[12])
-        tail4 = str(model[13])
+        data = pd.read_csv('model.csv',index_col=False)
+        data_into_list = data.values.tolist()
+        print(data_into_list)
+        model = data_into_list[0]
+        tail = model[16:20]
+        #tail2 = str(model[17])
+        #tail3 = str(model[18])
+        #tail4 = str(model[19])
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         model = tv
-        #model.append(tail1)
+        model = model + tail
+        print(model)
         #model.append(tail2)
         #model.append(tail3)
         #model.append(tail4)
         ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),model[11],float(model[12]),float(model[13]),float(model[14]),float(model[15]))
         file = open('model.csv','w')
+        file.write(modelheader+'\n')
         for item in model:
             file.write(str(item)+",")
         file.close()
         print("Great Success!! :D")
-        image_path = 'PlotFigure.png.png'
+        image_path = 'PlotFigure.png'
         self.bg3.image = toga.Image(output_file)
         self.bg3.refresh()
         
@@ -893,7 +905,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     start_depth = wella.df().index[0]
     final_depth = wella.df().index[-1]
     
-    well.location.plot_3d()
+    #well.location.plot_3d()
     #well.location.plot_plan()
     
     header = well._get_curve_mnemonics()
@@ -933,9 +945,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     vs = 0
     vpvs = 0
     nu2 = []
-    if alias['ssonic'] != []:
+    try:
         nu2 = getNu(well, nu)
-    else:
+    except:
         nu2 = [nu] * (len(well.data[alias['sonic'][0]]))
     
     import matplotlib.pyplot as plt
@@ -1020,6 +1032,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.location.gl = float(attrib[1])
     well.location.kb = float(attrib[0])
     mudweight = np.zeros(len(tvd))
+    #mudweight[:] = np.nan
     try:
         agf = (well.location.ekb-well.location.egl)*3.28084
     except AttributeError:
@@ -1042,15 +1055,28 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     tvdmslf = np.zeros(len(tvdmsl))
     wdfi = np.zeros(len(tvdmsl))
     lithotype = np.zeros(len(tvdbgl))
+    nulitho = np.zeros(len(tvdbgl))
+    dtlitho = np.zeros(len(tvdbgl))
     ilog = np.zeros(len(tvdbgl))
+    
     if lithos is not None:
-        lithot = lithos.to_numpy()
+        lithot = lithos.values.tolist()
+        firstlith = [0,0]
+        lastlith = [final_depth,0]
+        lithot.insert(0,firstlith)
+        lithot.append(lastlith)
+        
     if flags is not None:
-        imagelog = flags.to_numpy
+        imagelog = flags.to_numpy()
     j=0
     k=0
     m=0
     i=0
+    nu3 = [nu] * (len(tvd)) 
+    try:
+        print(lithot)
+    except:
+        pass
     while(i<len(tvd)):
         if tvdbgl[i]<0:
             tvdbglf[i] = 0
@@ -1066,22 +1092,37 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         if md[i]<mud_weight[j][1]:
             mudweight[i] = mud_weight[j][0]
         else:
-            mudweight[i-1] = mud_weight[j][0]
+            mudweight[i] = mud_weight[j][0]
             j+=1
         if lithos is not None:
-            if md[i]<lithot[j][1]:
-                lithotype[i] = lithot[k][0]
+            if md[i]<lithot[k][0]:
+                lithotype[i] = int(lithot[k-1][1])
+                if len(lithot[k])>2:
+                    try:
+                        nu3[i] = lithot[k][2]
+                    except:
+                        pass
+                else:
+                    numodel = int(lithotype[i]) + 16
+                    nu3[i] = float(model[numodel])
             else:
-                lithotype[i-1] = lithot[k][0]
+                lithotype[i] = int(lithot[k][1])
+                try:
+                    nu3[i] = float(lithot[k][2])
+                except:
+                    pass
                 k+=1
-        if lithos is not None:
-            if md[i]<imagelog[j][1]:
+        if flags is not None:
+            if md[i]<imagelog[m][1]:
                 ilog[i] = imagelog[m][0]
             else:
                 ilog[i-1] = lithot[m][0]
                 m+=1
         i+=1
-    
+    #plt.plot(lithotype,md)
+    #plt.plot(nu3,md)
+    #plt.plot(nu2,md)
+    #plt.show()
     print("air gap is ",agf,"feet")
     if glwd>=0:
         print("Ground Level is ",glf,"feet above MSL")
@@ -1168,7 +1209,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         lithoflag = [0 if shaleflag[i]<1 else 1 if zden2[i]<1.6 else 2 for i in range(len(zden2))]
     
     
-    coal = Curve(coalflag, mnemonic='CoalFlag',units='coal', index=md, null=0)
+    coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=md, null=0)
     litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=md, null=0)
     
     #Millers
@@ -1191,6 +1232,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     i=0
     while i<(len(dalm)):
         matrix[i] = matrick + (ct*i)
+        if lithotype[i]>1.5:
+            matrix[i] = 65
         if tvdbgl[i]>0:
             if(dalm[i]<matrick):
                 dalm[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
@@ -1242,15 +1285,21 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     while i<(len(ObgTppg)-1):
         if glwd>=0:
             if tvdbgl[i]>0:
+                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject.upper()=="TRUE":# and gccmiller[i]<water:
+                    if underbalancereject:# and gccmiller[i]<water:
                         if gccmiller[i]<water:
                             gccmiller[i]=water
                 else:
                     gccmiller[i] = np.nan
+                if lithotype[i]>1.5:
+                    dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+                    gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    if underbalancereject:# and gccmiller[i]<water:
+                        if gccmiller[i]<water:
+                            gccmiller[i]=water
                 ppgmiller[i] = gccmiller[i]*8.33
-                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
@@ -1267,7 +1316,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject.upper() == "TRUE":# and gccmiller[i]<water:
+                    if underbalancereject:# and gccmiller[i]<water:
                         if gccmiller[i]<water:
                             gccmiller[i]=water
                 else:
@@ -1412,6 +1461,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         doiA = doiactual[1]
         doiX = doiactual[0]
         print("Depth of interest :",doiA," with index of ",doiX)
+        devdoi = well.location.deviation[doiX]
+        incdoi = devdoi[2]
+        azmdoi = devdoi[1]
+        print("Inclination is :",incdoi," towards azimuth of ",azmdoi)
         sigmaVmpa = obgpsi[doiX]/145.038
         sigmahminmpa = spsifp[doiX]/145.038
         ppmpa = spsipp[doiX]/145.038
@@ -1446,7 +1499,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu2[doiX])
+        draw(sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu3[doiX],incdoi,azmdoi)
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
     
@@ -1473,7 +1526,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.data['FG2'] =  fg2
     
     
-    pppsi = Curve(spsipp, mnemonic='GEOPRESSURE',units='psi', index=md, null=0)
+    pppsi = Curve(spsipp, mnemonic='GEOPRESSURE',units='psi', index=md, null=0, index_name = 'DEPT')
     well.data['PPpsi'] =  pppsi
     fgpsi = Curve(spsifp, mnemonic='FRACTURE_PRESSURE',units='psi', index=md, null=0)
     well.data['FGpsi'] =  fgpsi
@@ -1498,12 +1551,22 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #gcal = Curve(gradcalib[1], mnemonic='BHP GRAD',units='G/C3', index=gradcalib[0], null=0)
     
     #fgcal = Curve(fgradcalib[1], mnemonic='LOT/xLOT/HF GRAD',units='G/C3', index=fgradcalib[0], null=0)
-    mana = len(well._get_curve_mnemonics())
-    print(mana)
-    units = []
-    well2 = welly.Well.from_df(well.df())
-    well2.to_las(output_file3)
+    #mana = len(well._get_curve_mnemonics())
+    #print(mana)
+    #units = []
     
+    
+    output_file4 = os.path.join(output_dir1,"GMech.las")
+    df3 = well.df()
+    df3.index.name = 'DEPT'
+    df3 = df3.reset_index()
+    print(df3)
+    header = well._get_curve_mnemonics()
+    lasheader = well.header
+    datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
+    #well.to_las('output.las')
+    
+    """
     #Preview Plot
     graph, (plt1, plt2,plt3,plt4,plt5,plt6,plt7) = plt.subplots(1, 7,sharey=True)
     plt5.plot(slal,tvd,label='lal-direct-c0')
@@ -1548,7 +1611,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #plt2.legend()
     #plt2.set_xlim([0,150])
     
-    ##plt.show()
+    plt.show()
     plt.clf()
     
     
@@ -1568,7 +1631,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #plt = well.plot(tracks=['GR', 'DESPGR', 'DIFFGR'])
     ###plt.show()
     plt.clf()
-    
+    """
     
     """plt5.plot(slal,tvd,label='lal-direct-c0')
     plt5.plot(slal2,tvd,label='horsud E')
@@ -1677,7 +1740,6 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #graph.tight_layout()
 
     # Add your custom plot
-    
     print(mud_weight)
     print(frac_grad_data)
     print(flow_grad_data)
@@ -1742,6 +1804,122 @@ def readFlagFromAscii(flagpath, delim = r'[ ,	]'):
     flags=flag
     flagheader = list(flag.columns)
     return flag
+
+def datasets_to_las(path, datasets, **kwargs):
+    """
+    Write datasets to a LAS file on disk.
+
+    Args:
+        path (Str): Path to write LAS file to
+        datasets (Dict['<name>': pd.DataFrame]): Dictionary maps a
+            dataset name (e.g. 'Curves') or 'Header' to a pd.DataFrame.
+
+    Returns:
+        Nothing, only writes in-memory object to disk as .las
+    """
+    from functools import reduce
+    import warnings
+    from datetime import datetime
+    from io import StringIO
+    from urllib import error, request
+
+    import lasio
+    import numpy as np
+    import pandas as pd
+    from lasio import HeaderItem, CurveItem, SectionItems
+    from pandas._config.config import OptionError
+
+    from welly.curve import Curve
+    from welly import utils
+    from welly.fields import curve_sections, other_sections, header_sections
+    from welly.utils import get_columns_decimal_formatter, get_step_from_array
+    from welly.fields import las_fields as LAS_FIELDS
+    # ensure path is working on every dev set-up
+    path = utils.to_filename(path)
+
+    # instantiate new LASFile to parse data & header to
+    las = laua.LASFile()
+
+    # set header df as variable to later retrieve curve meta data from
+    header = datasets['Header']
+
+    # unpack datasets
+    for dataset_name, df in datasets.items():
+
+        # dataset is the header
+        if dataset_name == 'Header':
+            # parse header pd.DataFrame to LASFile
+            for section_name in set(df.section.values):
+                # get header section df
+                df_section = df[df.section == section_name]
+
+                if section_name == 'Curves':
+                    # curves header items are handled in curve data loop
+                    pass
+
+                elif section_name == 'Version':
+                    if len(df_section[df_section.original_mnemonic == 'VERS']) > 0:
+                        las.version.VERS = df_section[df_section.original_mnemonic == 'VERS']['value'].values[0]
+                    if len(df_section[df_section.original_mnemonic == 'WRAP']) > 0:
+                        las.version.WRAP = df_section[df_section.original_mnemonic == 'WRAP']['value'].values[0]
+                    if len(df_section[df_section.original_mnemonic == 'DLM']) > 0:
+                        las.version.DLM = df_section[df_section.original_mnemonic == 'DLM']['value'].values[0]
+
+                elif section_name == 'Well':
+                    las.sections["Well"] = SectionItems(
+                        [HeaderItem(r.original_mnemonic,
+                                    r.unit,
+                                    r.value,
+                                    r.descr) for i, r in df_section.iterrows()])
+
+                elif section_name == 'Parameter':
+                    las.sections["Parameter"] = SectionItems(
+                        [HeaderItem(r.original_mnemonic,
+                                    r.unit,
+                                    r.value,
+                                    r.descr) for i, r in df_section.iterrows()])
+
+                elif section_name == 'Other':
+                    las.sections["Other"] = df_section['descr'].iloc[0]
+
+                else:
+                    m = f"LAS Section was not recognized: '{section_name}'"
+                    warnings.warn(m, stacklevel=2)
+
+        # dataset contains curve data
+        if dataset_name in curve_sections:
+            header_curves = header[header.section == dataset_name]
+            for column_name in df.columns:
+                curve_data = df[column_name]
+                # Assuming header information for each curve is not available
+                # You might need to customize this part based on your requirements
+                # You can set default values for unit, description, and value or extract from the header if available.
+                las.append_curve(mnemonic=column_name,
+                                 data=curve_data,
+                                 unit='',
+                                 descr='',
+                                 value='')
+
+
+    # numeric null value representation from the header (e.g. # -9999)
+    try:
+        null_value = header[header.original_mnemonic == 'NULL'].value.iloc[0]
+    except IndexError:
+        null_value = None
+
+    # las.write defaults to %.5 decimal points. We want to retain the
+    # number of decimals. We first construct a column formatter based
+    # on the max number of decimal points found in each curve.
+    if 'column_fmt' not in kwargs:
+        kwargs['column_fmt'] = get_columns_decimal_formatter(
+            data=las.data, null_value=null_value)
+
+    # write file to disk
+    with open(path, mode='w') as f:
+        las.write(f, **kwargs)
+
+
+
 
 
 def main():
