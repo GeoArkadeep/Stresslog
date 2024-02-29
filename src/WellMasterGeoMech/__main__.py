@@ -1,4 +1,4 @@
-from porepressurebuddy.app import main
+from WellMasterGeoMech.app import main
 
 if __name__ == '__main__':
     main().main_loop()
