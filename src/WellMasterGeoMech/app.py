@@ -216,7 +216,7 @@ class MyApp(toga.App):
         self.page2.add(self.page2_btn)
                
         
-        
+        #Page 3
         self.page3 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
         
         # Create a container with ROW direction for plot and frac_grad_data
@@ -240,7 +240,7 @@ class MyApp(toga.App):
         self.add_frac_grad_data_row(None, row_type='frac_grad')
         self.add_frac_grad_data_row(None, row_type='frac_psi')
 
-        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex = 5))
+        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
         plot_and_data_box.add(self.bg3)
         spacer_box = toga.Box(style=Pack(flex=0.01))  # Add this spacer box
         plot_and_data_box.add(spacer_box)
@@ -293,9 +293,9 @@ class MyApp(toga.App):
         for i in range(2):
             entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
             for j in range(8):
-                entry_info = entries_info[8*i+j]
-                label = toga.Label(entry_info['label'], style=Pack(padding_right=5))
-                entry = toga.TextInput(style=Pack(padding_left=2, width=100))
+                entry_info = entries_info[8 * i + j]
+                label = toga.Label(entry_info['label'], style=Pack(alignment='center', width = 100, flex=1))  # Adjust flex as needed
+                entry = toga.TextInput(style=Pack(width=50, flex=1))  # Adjust flex as needed
                 entry.value = entry_info['default_value']
                 entry_box.add(label)
                 entry_box.add(entry)
@@ -1309,7 +1309,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject:# and gccmiller[i]<water:
+                    if str(underbalancereject).upper() == 'TRUE':# and gccmiller[i]<water:
                         if gccmiller[i]<water:
                             gccmiller[i]=water
                 else:
