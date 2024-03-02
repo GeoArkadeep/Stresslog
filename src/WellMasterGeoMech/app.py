@@ -23,6 +23,7 @@ os.makedirs(output_dir1, exist_ok=True)
 os.makedirs(input_dir, exist_ok=True)
 
 output_file = os.path.join(output_dir, "PlotFigure.png")
+output_fileS = os.path.join(output_dir, "PlotStability.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 output_file4 = os.path.join(input_dir, "model.csv")
@@ -317,7 +318,29 @@ class MyApp(toga.App):
         button_box3.add(self.page3_btn4)
         
         self.page3.add(button_box3)
-
+        
+        
+        #Page4
+        
+        self.page4 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
+        dplotbox = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
+        self.bg4 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        dplotbox.add(self.bg4)
+        self.page4.add(self.bg4)
+        
+        button_box4 = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
+        
+        self.page4_btn1 = toga.Button("Start Over", on_press=self.show_page1, style=Pack(padding=1))
+        button_box4.add(self.page4_btn1)
+        
+        self.page4_btn2 = toga.Button("Export Plot", on_press=self.save_las, style=Pack(padding=1))
+        button_box4.add(self.page4_btn2)
+        
+        self.page4_btn3 = toga.Button("Back", on_press=self.show_page3, style=Pack(padding=1))
+        button_box4.add(self.page4_btn3)
+        
+        self.page4.add(button_box4)
+        
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = self.page1
         self.main_window.show()
@@ -397,6 +420,10 @@ class MyApp(toga.App):
     def show_page3(self, widget):
         self.set_textbox2_values(widget)
         self.main_window.content = self.page3
+    
+    def show_page4(self, widget):
+        self.main_window.content = self.page4
+
 
     def get_frac_grad_data_values(self):
         frac_grad_values = []
@@ -760,8 +787,15 @@ class MyApp(toga.App):
         file.close()
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
+        
         self.bg3.image = toga.Image(output_file)
         self.bg3.refresh()
+        if float(model[13])>0:
+            self.page3_btn5 = toga.Button("Wellbore Stability Plot", on_press=self.show_page4, style=Pack(padding=1))
+            self.page3.add(self.page3_btn5)
+            self.bg4.image = toga.Image(output_fileS)
+            self.bg4.refresh()
+            self.show_page4(widget)
         
     
     def wellisvertical(self,widget):
@@ -1520,7 +1554,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu3[doiX],incdoi,azmdoi)
+        draw(output_fileS,sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu3[doiX],incdoi,azmdoi)
+        
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
     

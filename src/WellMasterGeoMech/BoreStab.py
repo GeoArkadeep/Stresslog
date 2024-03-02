@@ -276,7 +276,7 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
     return np.min(line)
 
 
-def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azm=0,inc=0):
+def draw(path,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azm=0,inc=0):
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
     inclination = np.zeros((10,37))
@@ -385,4 +385,4 @@ def draw(s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azm=
     cb2 = fig.colorbar(cax2, orientation = 'horizontal')
     cb2.set_label("Breakout Widths in Degrees")
     plt.title( "UCS = "+str(round(UCS))+", DeltaP = "+str(round(deltaP))+", Nu = "+str(round(nu)) , loc="center")
-    plt.show()
+    plt.savefig(path,dpi=600)
