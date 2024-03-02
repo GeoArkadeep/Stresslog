@@ -276,7 +276,7 @@ class MyApp(toga.App):
             {'label': 'NCT Exp', 'default_value': str(model[2])},
             {'label': 'DTml (us/ft)', 'default_value': str(model[3])},
             {'label': 'DTmat (us/ft)', 'default_value': str(model[4])},
-            {'label': "Eaton's", 'default_value': str(model[5])},
+            {'label': "Eaton's Nu", 'default_value': str(model[5])},
             {'label': 'ShaleFlag Cutoff', 'default_value': str(model[6])},
             {'label': 'Window', 'default_value': str(model[7])},
             {'label': 'Start', 'default_value': str(model[8])},
@@ -1176,9 +1176,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 k+=1
         if flags is not None:
             if md[i]<imagelog[m][1]:
-                ilog[i] = imagelog[m][0]
+                ilog[i] = int(imagelog[m-1][1])
             else:
-                ilog[i-1] = lithot[m][0]
+                ilog[i] = lithot[m][1]
                 m+=1
         i+=1
     #plt.plot(lithotype,md)
@@ -1456,7 +1456,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     sgHMpsiU = np.zeros(len(tvd))
     psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        result = getSHMax_optimized(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i],phi[i])
+        result = getSHMax_optimized(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i],30,ilog[i])
         sgHMpsi[i] = (result[2])*145.038
         sgHMpsiL[i] = (result[0])*145.038
         sgHMpsiU[i] = (result[1])*145.038
@@ -1533,11 +1533,12 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         ppmpa = spsipp[doiX]/145.038
         bhpmpa = mudpsi[doiX]/145.038
         ucsmpa = shorsud[doiX]
+        ilog_flag=ilog[doiX]
         stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
         print(stresspolygon)
         print(phi[doiX])
-        drawSP(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX])
-        sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa)
+        drawSP(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15)
+        sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15,ilog_flag)
         print("SigmaHM = ",sigmaHMaxmpa[2])
         sigmas = [sigmaHMaxmpa[2],sigmahminmpa,sigmaVmpa]
         print(sigmas)
