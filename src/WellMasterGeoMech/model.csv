@@ -1,2 +1,2 @@
 RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,tilt,nu_shale,su_sst,nu_lst,dt_lst
-17,0.8,0.0008,250,60,0.35,0.35,21,0,4500,1.025,True,0,4100,0,0,0.32,0.27,0.25,65,
+17,0.8,0.0008,250,60,0.35,0.35,21,0,3400,1.025,True,0,0,0,0,0.32,0.27,0.25,65,

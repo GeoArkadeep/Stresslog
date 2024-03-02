@@ -207,14 +207,17 @@ class MyApp(toga.App):
         self.page2_btn2 = toga.Button("Load Data and Proceed", on_press=self.show_page3, style=Pack(padding=10))
         self.page2.add(self.page2_btn2)
         
-        self.page2_btn = toga.Button("Load Lithology from csv", on_press=self.open_litho, style=Pack(padding=10))
-        self.page2.add(self.page2_btn)
+        self.page2_btn3 = toga.Button("Load Lithology from csv", on_press=self.open_litho, style=Pack(padding=10))
+        self.page2.add(self.page2_btn3)
         
-        self.page2_btn = toga.Button("Load UCS from csv", on_press=self.open_ucs, style=Pack(padding=10))
-        self.page2.add(self.page2_btn)
+        self.page2_btn4 = toga.Button("Load UCS from csv", on_press=self.open_ucs, style=Pack(padding=10))
+        self.page2.add(self.page2_btn4)
         
-        self.page2_btn = toga.Button("Load Breakouts/DITFs from csv", on_press=self.open_flags, style=Pack(padding=10))
-        self.page2.add(self.page2_btn)
+        self.page2_btn5 = toga.Button("Load Breakouts/DITFs from csv", on_press=self.open_flags, style=Pack(padding=10))
+        self.page2.add(self.page2_btn5)
+        
+        self.page2_btn1 = toga.Button("Back", on_press=self.show_page1, style=Pack(padding=10))
+        self.page2.add(self.page2_btn1)
                
         
         #Page 3
@@ -305,16 +308,19 @@ class MyApp(toga.App):
 
         
         button_box3 = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
-        self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=1))
+        self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=1,width = 100))
         button_box3.add(self.page3_btn1)
         
-        self.page3_btn2 = toga.Button("Export Plot", on_press=self.show_page1, style=Pack(padding=1))
+        self.page3_btn2 = toga.Button("Export Plot", on_press=self.show_page1, style=Pack(padding=1,width = 100))
         button_box3.add(self.page3_btn2)
         
-        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=1))
+        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=1,width = 100))
         button_box3.add(self.page3_btn3)
         
-        self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=1))
+        self.page3_btn5 = toga.Button("Stability Plot", on_press=self.show_page4, style=Pack(padding=1,width = 100),enabled=False)
+        button_box3.add(self.page3_btn5)
+        
+        self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=1,width = 100))
         button_box3.add(self.page3_btn4)
         
         self.page3.add(button_box3)
@@ -773,6 +779,7 @@ class MyApp(toga.App):
         #tail4 = str(model[19])
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
+        self.bg4.image = toga.Image('BG1.png')
         model = tv
         model = model + tail
         print(model)
@@ -791,12 +798,12 @@ class MyApp(toga.App):
         self.bg3.image = toga.Image(output_file)
         self.bg3.refresh()
         if float(model[13])>0:
-            self.page3_btn5 = toga.Button("Wellbore Stability Plot", on_press=self.show_page4, style=Pack(padding=1))
-            self.page3.add(self.page3_btn5)
+            self.page3_btn5.enabled = True
             self.bg4.image = toga.Image(output_fileS)
             self.bg4.refresh()
             self.show_page4(widget)
-        
+        else:
+            self.page3_btn5.enabled = False
     
     def wellisvertical(self,widget):
         global depth_track
@@ -1089,7 +1096,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     mudweight = np.zeros(len(tvd))
     #mudweight[:] = np.nan
     try:
-        agf = (well.location.ekb-well.location.egl)*3.28084
+        agf = (float(well.location.kb)-float(well.location.gl))*3.28084
     except AttributeError:
         agf = (float(attrib[0])-float(attrib[1]))*3.28084
     if(glwd>=0):
@@ -1510,6 +1517,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         ssgHMpsi[i] = sum10/(2*window)
         i+=1
     
+    
     if doi>0:
         doiactual = find_nearest_depth(tvdm,doi)
         print(doiactual)
@@ -1602,6 +1610,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     well.data['UCSHORSUD'] =  ucshorsudmpa
     ucslalmpa = Curve(slal3, mnemonic='UCS_Lal',units='MPa', index=md, null=0)
     well.data['UCSLAL'] =  ucslalmpa
+    
     #pcal = Curve(psicalib[1], mnemonic='PRESSURE TEST',units='psi', index=psicalib[0], null=0)
 
     #gcal = Curve(gradcalib[1], mnemonic='BHP GRAD',units='G/C3', index=gradcalib[0], null=0)
