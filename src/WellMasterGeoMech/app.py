@@ -132,7 +132,7 @@ class MyApp(toga.App):
             entry_box2 = toga.Box(style=Pack(direction=ROW, alignment='center'))
             for j in range(4):
                 entry_info2 = entries_info2[4*i+j]
-                label = toga.Label(entry_info2['label'], style=Pack(padding_right=5))
+                label = toga.Label(entry_info2['label'], style=Pack(padding_right=5, width=50, flex=1, text_direction='rtl'))
                 entry2 = toga.TextInput(style=Pack(padding_left=2, width=100))
                 entry2.value = entry_info2['default_value']
                 entry_box2.add(label)
@@ -151,32 +151,32 @@ class MyApp(toga.App):
         def add_depth_mw_row(self, widget):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
             
-            depth_label = toga.Label("Casing Shoe Depth (m)", style=Pack(padding_right=2))
+            depth_label = toga.Label("Casing Shoe Depth (m)", style=Pack(padding_right=2,text_direction='rtl'))
             depth_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
             row_box.add(depth_label)
             row_box.add(depth_entry)
 
-            mud_weight_label = toga.Label("Max. Mud Weight", style=Pack(padding_right=2))
+            mud_weight_label = toga.Label("Max. Mud Weight", style=Pack(padding_right=2,text_direction='rtl'))
             mud_weight_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="1")
             row_box.add(mud_weight_label)
             row_box.add(mud_weight_entry)
             
-            od_label = toga.Label("Casing OD (inches)", style=Pack(padding_right=2))
+            od_label = toga.Label("Casing OD (inches)", style=Pack(padding_right=2,text_direction='rtl'))
             od_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
             row_box.add(od_label)
             row_box.add(od_entry)
             
-            bitdia_label = toga.Label("Bit Dia (inches)", style=Pack(padding_right=2))
+            bitdia_label = toga.Label("Bit Dia (inches)", style=Pack(padding_right=2,text_direction='rtl'))
             bitdia_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
             row_box.add(bitdia_label)
             row_box.add(bitdia_entry)
             
-            iv_label = toga.Label("Casing volume (bbl/100ft)", style=Pack(padding_right=2))
+            iv_label = toga.Label("Casing volume (bbl/100ft)", style=Pack(padding_right=2,text_direction='rtl'))
             iv_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
             row_box.add(iv_label)
             row_box.add(iv_entry)
             
-            ppf_label = toga.Label("Casing Weight (ppf)", style=Pack(padding_right=5))
+            ppf_label = toga.Label("Casing Weight (ppf)", style=Pack(padding_right=5,text_direction='rtl'))
             ppf_entry = toga.TextInput(style=Pack(padding_left=2, width=100), initial="0")
             row_box.add(ppf_label)
             row_box.add(ppf_entry)
@@ -276,7 +276,7 @@ class MyApp(toga.App):
             {'label': 'NCT Exp', 'default_value': str(model[2])},
             {'label': 'DTml (us/ft)', 'default_value': str(model[3])},
             {'label': 'DTmat (us/ft)', 'default_value': str(model[4])},
-            {'label': 'Nu', 'default_value': str(model[5])},
+            {'label': "Eaton's", 'default_value': str(model[5])},
             {'label': 'ShaleFlag Cutoff', 'default_value': str(model[6])},
             {'label': 'Window', 'default_value': str(model[7])},
             {'label': 'Start', 'default_value': str(model[8])},
@@ -298,7 +298,7 @@ class MyApp(toga.App):
             entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
             for j in range(8):
                 entry_info = entries_info[8 * i + j]
-                label = toga.Label(entry_info['label'], style=Pack(alignment='center', width = 100, flex=1))  # Adjust flex as needed
+                label = toga.Label(entry_info['label'], style=Pack(alignment='center', width = 100, flex=1,text_direction='rtl'))  # Adjust flex as needed
                 entry = toga.TextInput(style=Pack(width=50, flex=1))  # Adjust flex as needed
                 entry.value = entry_info['default_value']
                 entry_box.add(label)
