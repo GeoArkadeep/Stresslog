@@ -26,8 +26,8 @@ output_file = os.path.join(output_dir, "PlotFigure.png")
 output_fileS = os.path.join(output_dir, "PlotStability.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
-output_file4 = os.path.join(input_dir, "model.csv")
-output_file5 = os.path.join(input_dir, "alias.txt")
+modelpath = os.path.join(input_dir, "model.csv")
+aliaspath = os.path.join(input_dir, "alias.txt")
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
         super().__init__(image=toga.Image(image_path), *args, **kwargs)
@@ -56,13 +56,13 @@ modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,star
 defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,2500,2900,1.025,True,0,3500,0,0,0.32,0.27,0.25,65"
 print(os.getcwd())
 try:
-    data = pd.read_csv('model.csv',index_col=False)
+    data = pd.read_csv(modelpath,index_col=False)
 except:
-    file = open('model.csv','w')
+    file = open(modelpath,'w')
     file.write(modelheader+'\n')
     file.write(defaultmodel+'\n')
     file.close()
-    data = pd.read_csv('model.csv',index_col=False)
+    data = pd.read_csv(modelpath,index_col=False)
 # replacing end splitting the text  
 # when newline ('\n') is seen. 
 data_into_list = data.values.tolist()#(",") 
@@ -152,32 +152,32 @@ class MyApp(toga.App):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
             
             depth_label = toga.Label("Casing Shoe Depth (m)", style=Pack(padding_right=2,text_direction='rtl'))
-            depth_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            depth_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
             row_box.add(depth_label)
             row_box.add(depth_entry)
 
             mud_weight_label = toga.Label("Max. Mud Weight", style=Pack(padding_right=2,text_direction='rtl'))
-            mud_weight_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="1")
+            mud_weight_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="1")
             row_box.add(mud_weight_label)
             row_box.add(mud_weight_entry)
             
             od_label = toga.Label("Casing OD (inches)", style=Pack(padding_right=2,text_direction='rtl'))
-            od_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            od_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
             row_box.add(od_label)
             row_box.add(od_entry)
             
             bitdia_label = toga.Label("Bit Dia (inches)", style=Pack(padding_right=2,text_direction='rtl'))
-            bitdia_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            bitdia_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
             row_box.add(bitdia_label)
             row_box.add(bitdia_entry)
             
             iv_label = toga.Label("Casing volume (bbl/100ft)", style=Pack(padding_right=2,text_direction='rtl'))
-            iv_entry = toga.TextInput(style=Pack(padding_left=5, width=100), initial="0")
+            iv_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
             row_box.add(iv_label)
             row_box.add(iv_entry)
             
             ppf_label = toga.Label("Casing Weight (ppf)", style=Pack(padding_right=5,text_direction='rtl'))
-            ppf_entry = toga.TextInput(style=Pack(padding_left=2, width=100), initial="0")
+            ppf_entry = toga.TextInput(style=Pack(padding_left=2, width=100), value="0")
             row_box.add(ppf_label)
             row_box.add(ppf_entry)
 
@@ -362,8 +362,8 @@ class MyApp(toga.App):
         else:
             raise ValueError("Invalid row type")
 
-        depth_input = toga.TextInput(style=Pack(width=100), initial="0")
-        second_input = toga.TextInput(style=Pack(width=100), initial="0")
+        depth_input = toga.TextInput(style=Pack(width=100), value="0")
+        second_input = toga.TextInput(style=Pack(width=100), value="0")
 
         row_labels = toga.Box(style=Pack(direction=ROW, padding_bottom=5))
         row_labels.add(depth_label)
@@ -393,8 +393,8 @@ class MyApp(toga.App):
         else:
             raise ValueError("Invalid row type")
 
-        depth_input = toga.TextInput(style=Pack(width=100), initial="0")
-        second_input = toga.TextInput(style=Pack(width=100), initial="0")
+        depth_input = toga.TextInput(style=Pack(width=100), value="0")
+        second_input = toga.TextInput(style=Pack(width=100), value="0")
 
         row_labels = toga.Box(style=Pack(direction=ROW, padding_bottom=5))
         row_labels.add(depth_label)
@@ -769,7 +769,7 @@ class MyApp(toga.App):
         global attrib
         global model
         self.getwelldev()
-        data = pd.read_csv('model.csv',index_col=False)
+        data = pd.read_csv(modelpath,index_col=False)
         data_into_list = data.values.tolist()
         print(data_into_list)
         model = data_into_list[0]
@@ -787,7 +787,7 @@ class MyApp(toga.App):
         #model.append(tail3)
         #model.append(tail4)
         ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),model[11],float(model[12]),float(model[13]),float(model[14]),float(model[15]))
-        file = open('model.csv','w')
+        file = open(modelpath,'w')
         file.write(modelheader+'\n')
         for item in model:
             file.write(str(item)+",")
@@ -850,11 +850,11 @@ class MyApp(toga.App):
         
         wella.unify_basis(keys=None, alias=None, basis=md3)
         self.bg3.image = toga.Image('BG1.png')
-        plotPPmiller(wella,self)
+        #plotPPmiller(wella,self)
 
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
-        self.bg3.image = toga.Image(output_file)
+        #self.bg3.image = toga.Image(output_file)
         #Clock.schedule_once(lambda dt: self.refresh_plot(image_path), 5)
         #print(self.output)
         self.main_window.content = self.page2
@@ -901,7 +901,7 @@ def getNu(well, nun):
     
     return nu
 
-def read_aliases_from_file(file_path='alias.txt'):
+def read_aliases_from_file(file_path=aliaspath):
     try:
         with open(file_path, 'r') as file:
             aliases = eval(file.read())  # Note: Using eval to parse the dictionary from the file
@@ -1012,7 +1012,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     except:
         nu2 = [nu] * (len(well.data[alias['sonic'][0]]))
     
-    import matplotlib.pyplot as plt
+    import matplotlib
+    matplotlib.use("Qt5Agg")
+    from matplotlib import pyplot as plt
+    
     import math
     gr = well.data[alias['gr'][0]]
     #kth = well.data['KTH']
@@ -1838,10 +1841,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #ax2 = splt[2].twinx()
     #ax2.set_ylabel('MD')
     #secax = splt[2].secondary_yaxis('right')
-
     # Save the modified plot
     plt.gcf().set_size_inches(8, 10)
-    plt.savefig(output_file,dpi=300)
+    plt.savefig(output_file,dpi=600)
     plt.clf()
     return
 
