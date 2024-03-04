@@ -4,8 +4,8 @@ project_name = "LasApps"
 bundle = "in.rocklab"
 version = "0.1.3"
 url = "https://rocklab.in/WellMasterGeoMech"
-license = "agpl"
-author = "Rocklab.in"
+license = "AGPL-3.0"
+author = "Arkadeep Ghosh"
 author_email = "arkadeep_ghosh@rocklab.in"
 
 [tool.briefcase.app.WellMasterGeoMech]
