@@ -49,6 +49,7 @@ h1 = None
 h2 = None
 h3 = None
 h4 = None
+currentstatus = "Ready"
 depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
 
@@ -223,6 +224,11 @@ class MyApp(toga.App):
         #Page 3
         self.page3 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
         
+        progressbox = toga.Box(style=Pack(direction=ROW, alignment='center'))
+        self.progress = toga.Label("Status: Program Ready",style=Pack(alignment='center'))
+        progressbox.add(self.progress)
+        self.page3.add(progressbox)
+        
         # Create a container with ROW direction for plot and frac_grad_data
         plot_and_data_box = toga.Box(style=Pack(direction=ROW, flex=1))
         
@@ -246,8 +252,8 @@ class MyApp(toga.App):
 
         self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
         plot_and_data_box.add(self.bg3)
-        spacer_box = toga.Box(style=Pack(flex=0.01))  # Add this spacer box
-        plot_and_data_box.add(spacer_box)
+        #spacer_box = toga.Box(style=Pack(flex=0.01))  # Add this spacer box
+        #plot_and_data_box.add(spacer_box)
 
         # Create a container for flow_grad_data rows
         self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN, padding_left=10))
@@ -267,7 +273,7 @@ class MyApp(toga.App):
         self.add_flow_grad_data_row(None, row_type='flow_psi')
 
         self.page3.add(plot_and_data_box)
-
+        
         # Define the labels and default values
         global model
         entries_info = [
@@ -290,7 +296,7 @@ class MyApp(toga.App):
             {'label': 'Stress Tensor Tilt Gamma', 'default_value': "0"}
             
         ]
-
+        
         # Create a list to store the textboxes
         self.textboxes = []
         # Add 6 numeric entry boxes with their respective labels
@@ -305,25 +311,26 @@ class MyApp(toga.App):
                 entry_box.add(entry)
                 self.textboxes.append(entry)
             self.page3.add(entry_box)
-
         
-        button_box3 = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
+        button_box = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
         self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=1,width = 100))
-        button_box3.add(self.page3_btn1)
+        button_box.add(self.page3_btn1)
         
         self.page3_btn2 = toga.Button("Export Plot", on_press=self.show_page1, style=Pack(padding=1,width = 100))
-        button_box3.add(self.page3_btn2)
+        button_box.add(self.page3_btn2)
         
         self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=1,width = 100))
-        button_box3.add(self.page3_btn3)
+        button_box.add(self.page3_btn3)
         
         self.page3_btn5 = toga.Button("Stability Plot", on_press=self.show_page4, style=Pack(padding=1,width = 100),enabled=False)
-        button_box3.add(self.page3_btn5)
+        button_box.add(self.page3_btn5)
         
         self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=1,width = 100))
-        button_box3.add(self.page3_btn4)
+        button_box.add(self.page3_btn4)
         
-        self.page3.add(button_box3)
+        
+        
+        self.page3.add(button_box)
         
         
         #Page4
@@ -777,6 +784,9 @@ class MyApp(toga.App):
         global wella
         global attrib
         global model
+        
+        self.progress.text = "Status: Calculating, Standby"
+        yield 0.1
         self.getwelldev()
         data = pd.read_csv(modelpath,index_col=False)
         data_into_list = data.values.tolist()
@@ -804,13 +814,16 @@ class MyApp(toga.App):
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
         
+        self.progress.text = "Status: Done! Program Ready"
+        yield 0.1
+        
         self.bg3.image = toga.Image(output_file)
         self.bg3.refresh()
         if float(model[13])>0:
             self.page3_btn5.enabled = True
             self.bg4.image = toga.Image(output_fileS)
             self.bg4.refresh()
-            self.show_page4(widget)
+            #self.show_page4(widget)
         else:
             self.page3_btn5.enabled = False
     
