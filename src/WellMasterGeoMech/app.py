@@ -582,10 +582,9 @@ class MyApp(toga.App):
         #self.bg3.image = toga.Image(image_path)
 
 
-    def on_result0(self, widget, dialog_result):
+    def on_result0(self, widget):
         global wella, laspath
-        if dialog_result:
-            laspath = dialog_result
+        if laspath is not None:
             wella = welly.Well.from_las(laspath, index = "m")
             print(wella)
             print(wella.header)
@@ -603,18 +602,23 @@ class MyApp(toga.App):
             print("No file selected.")
 
 
-    def open_las0(self, widget):
+    async def open_las0(self, widget):
+        global laspath
         try:
-            self.main_window.open_file_dialog(title="Select a file", multiselect=False, on_result=functools.partial(MyApp.on_result0,self))
+            laspath_dialog = await self.main_window.open_file_dialog(title="Select a file", multiselect=False)
+            if laspath_dialog:  # Check if the user selected a file and didn't cancel the dialog
+                laspath = laspath_dialog  # This is where you access the selected path
+                self.on_result0(widget)
+            else:
+                print("File selection was canceled.")
         except Exception as e:
             print("Error:", e)
 
-    def on_result1(self, widget, dialog_result):
+    def on_result1(self, widget):
         global h1, devpath
-        if dialog_result:               
-            devpath  = dialog_result
+        if devpath is not None:               
             h1 = readDevFromAsciiHeader(devpath)
-            print("Loaded dev file:", dialog_result)
+            print("Loaded dev file:", devpath)
             print(h1)
             self.populate_dropdowns()
             self.dropdown1.enabled = True
@@ -628,40 +632,39 @@ class MyApp(toga.App):
 
 
 
-    def open_dev0(self, widget):
+    async def open_dev0(self, widget):
+        global devpath
         try:
-            self.main_window.open_file_dialog(title="Select a Dev file", multiselect=False, on_result=functools.partial(MyApp.on_result1,self))
+            devpath = await self.main_window.open_file_dialog(title="Select a Dev file", multiselect=False)
+            self.on_result1(widget)
         except Exception as e:
             print("Error:", e)
             
-    def on_result2(self, widget, dialog_result):
-        global h1, lithopath
-        if dialog_result:               
-            lithopath  = dialog_result
+    def on_result2(self, widget):
+        global h2, lithopath
+        if lithopath is not None:               
             h2 = readLithoFromAscii(lithopath)
-            print("Loaded litho file:", dialog_result)
+            print("Loaded litho file:", lithopath)
             print(h2)           
             
         else:
             print("No litho file loaded")
 
-    def on_result3(self, widget, dialog_result):
-        global h1, ucspath
-        if dialog_result:               
-            ucspath  = dialog_result
+    def on_result3(self, widget):
+        global h3, ucspath
+        if ucspath is not None:               
             h3 = readUCSFromAscii(ucspath)
-            print("Loaded ucs file:", dialog_result)
+            print("Loaded ucs file:", ucspath)
             print(h3)           
             
         else:
             print("No ucs file loaded")
     
     def on_result4(self, widget, dialog_result):
-        global h1, flagpath
-        if dialog_result:               
-            flagpath  = dialog_result
+        global h4, flagpath
+        if flagpath is not None:               
             h4 = readFlagFromAscii(flagpath)
-            print("Loaded flag file:", dialog_result)
+            print("Loaded flag file:", flagpath)
             print(h4)           
             
         else:
@@ -669,21 +672,27 @@ class MyApp(toga.App):
 
 
 
-    def open_litho(self, widget):
+    async def open_litho(self, widget):
+        global lithopath
         try:
-            self.main_window.open_file_dialog(title="Select a Litho file", multiselect=False, on_result=functools.partial(MyApp.on_result2,self))
+            lithopath = await self.main_window.open_file_dialog(title="Select a Litho file", multiselect=False)
+            self.on_result2(widget)
         except Exception as e:
             print("Error:", e)
             
-    def open_ucs(self, widget):
+    async def open_ucs(self, widget):
+        global ucspath
         try:
-            self.main_window.open_file_dialog(title="Select a UCS file", multiselect=False, on_result=functools.partial(MyApp.on_result3,self))
+            ucspath = await self.main_window.open_file_dialog(title="Select a UCS file", multiselect=False)
+            self.on_result3(widget)
         except Exception as e:
             print("Error:", e)
             
-    def open_flags(self, widget):
+    async def open_flags(self, widget):
+        global flagpath
         try:
-            self.main_window.open_file_dialog(title="Select a Flag file", multiselect=False, on_result=functools.partial(MyApp.on_result4,self))
+            flagpath = self.main_window.open_file_dialog(title="Select a Flag file", multiselect=False)
+            self.on_result4(widget)
         except Exception as e:
             print("Error:", e)
             
