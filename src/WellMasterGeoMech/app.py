@@ -1022,7 +1022,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         nu2 = [nu] * (len(well.data[alias['sonic'][0]]))
     
     import matplotlib
-    matplotlib.use("Qt5Agg")
+    matplotlib.use("svg")
     from matplotlib import pyplot as plt
     
     import math
