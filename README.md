@@ -1,6 +1,6 @@
 # Well Master GeoMech
 
-A *libre* application to calculate and plot pore pressure using p-wave velocity from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary semi-realtime pressure prediction (for example if the wellsite geologist fetches and updates the las from MWD/LWD provider every single or so). A Pro version with improved features, including true realtime capabilities from streaming data, will be made available seperately under a commercial licence later on.
+A *libre* application to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary semi-realtime stress prediction (for example if the wellsite geologist fetches and updates the las from MWD/LWD provider every single or so). A Pro version with improved features, including true realtime capabilities from streaming data, will be made available seperately under a commercial licence later on.
 
 ## Features:
 
@@ -14,6 +14,8 @@ A *libre* application to calculate and plot pore pressure using p-wave velocity 
 
 * Calculate Pore Pressure, Shmin, SHMax, Sv and UCS from DT
 
+* Model saved to and read from model.csv, calibrate model on analog well and run it on current well using sonic velocity from seismic and/or LWD/MWD data 
+
 * Stress Polygon, Wellbore Stability Plots and Kirsch Plots at drainhole analysis depth
 
 * Plot the data in user configurable intervals
@@ -22,7 +24,7 @@ A *libre* application to calculate and plot pore pressure using p-wave velocity 
 
 * Option to output Las Files (with updated header and new data columns)
 
-* Fields for adding mud data, loss/gain data and other data interpreted from drilling and testing history, plots these over the calculated data to help visually constrain the model
+* Fields for adding mud data, loss/gain data and other data interpreted from drilling and testing history, these are plotted over the calculated data to help visually constrain the model
 
 * Option to include ascii file with observations from resistivity image logs (or others like ultrasonic calipers) to include tensile fractures and breakouts, which are then used to automatically constrain SHMax
 
