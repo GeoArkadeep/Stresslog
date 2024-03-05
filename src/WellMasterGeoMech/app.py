@@ -1648,8 +1648,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     
     output_file4 = os.path.join(output_dir1,"GMech.las")
+    output_fileCSV = os.path.join(output_dir1,"GMech.csv")
     df3 = well.df()
     df3.index.name = 'DEPT'
+    df3.to_csv(output_fileCSV)
     df3 = df3.reset_index()
     header = well._get_curve_mnemonics()
     lasheader = well.header
