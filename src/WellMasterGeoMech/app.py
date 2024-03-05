@@ -12,6 +12,11 @@ import numpy as np
 import functools
 import os
 
+import matplotlib
+matplotlib.use("svg")
+from matplotlib import pyplot as plt    
+import math
+
 user_home = os.path.expanduser("~/documents")
 app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "pp_app_plots")
@@ -316,7 +321,7 @@ class MyApp(toga.App):
         self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=1,width = 100))
         button_box.add(self.page3_btn1)
         
-        self.page3_btn2 = toga.Button("Export Plot", on_press=self.show_page1, style=Pack(padding=1,width = 100))
+        self.page3_btn2 = toga.Button("Export Plot", on_press=self.save_plot, style=Pack(padding=1,width = 100))
         button_box.add(self.page3_btn2)
         
         self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=1,width = 100))
@@ -719,7 +724,17 @@ class MyApp(toga.App):
         
         #well2 = wella.from_df(df3)
         #wella.to_las(output_file4)
-        self.show_page1
+        self.show_page1(widget)
+        
+    def save_plot(self,widget):
+        #global wella
+        #well = wella
+        #print(well)
+        name = wella.name
+        name = name.translate({ord(i): '_' for i in '/\:*?"<>|'})
+        output_filePNG = os.path.join(output_dir,name+"_GMech.png")
+        plt.savefig(output_filePNG,dpi=1200)
+        self.show_page1(widget)
         
         
     def populate_dropdowns(self):
@@ -988,7 +1003,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #print(well.location.location)
     start_depth = wella.df().index[0]
     final_depth = wella.df().index[-1]
-    
+    plt.clf()
     #well.location.plot_3d()
     #well.location.plot_plan()
     
@@ -1034,11 +1049,6 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     except:
         nu2 = [nu] * (len(well.data[alias['sonic'][0]]))
     
-    import matplotlib
-    matplotlib.use("svg")
-    from matplotlib import pyplot as plt
-    
-    import math
     gr = well.data[alias['gr'][0]]
     #kth = well.data['KTH']
     dt = well.data[alias['sonic'][0]]
@@ -1867,8 +1877,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #secax = splt[2].secondary_yaxis('right')
     # Save the modified plot
     plt.gcf().set_size_inches(8, 10)
-    plt.savefig(output_file,dpi=600)
-    plt.clf()
+    plt.savefig(output_file)#,dpi=600)
     return
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):

@@ -20,7 +20,7 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 * Plot the data in user configurable intervals
 
-* Option to save Plots ~~at custom DPI~~
+* Option to save Plots ~~at custom DPI~~ at 1200 dpi
 
 * Option to output Las Files (with updated header and new data columns)
 
