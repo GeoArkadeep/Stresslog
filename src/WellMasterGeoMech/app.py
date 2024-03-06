@@ -29,6 +29,7 @@ os.makedirs(input_dir, exist_ok=True)
 
 output_file = os.path.join(output_dir, "PlotFigure.png")
 output_fileS = os.path.join(output_dir, "PlotStability.png")
+output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
@@ -295,7 +296,7 @@ class MyApp(toga.App):
             {'label': 'WaterDensity', 'default_value': str(model[10])},
             {'label': 'No Subhydrostatic', 'default_value': str(model[11])},
             {'label': 'TectonicFactor', 'default_value': str(model[12])},
-            {'label': 'Drainhole Analysis Depth', 'default_value': "0"},
+            {'label': 'Drainhole TVD', 'default_value': "0"},
             {'label': 'Fast Shear Azimuth', 'default_value': "0"},
             {'label': 'Stress Tensor Tilt Beta', 'default_value': "0"},
             {'label': 'Stress Tensor Tilt Gamma', 'default_value': "0"}
@@ -1572,7 +1573,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
         print(stresspolygon)
         print(phi[doiX])
-        drawSP(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15)
+        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15)
         sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15,ilog_flag)
         print("SigmaHM = ",sigmaHMaxmpa[2])
         sigmas = [sigmaHMaxmpa[2],sigmahminmpa,sigmaVmpa]
@@ -1598,7 +1599,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu3[doiX],incdoi,azmdoi)
+        draw(output_fileS,tvd[doiX],sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu3[doiX],incdoi,azmdoi)
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     

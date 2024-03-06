@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt2
 import math
 #from numba import jit
 
@@ -105,7 +105,7 @@ def drawStab(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0):
         inc+=1
 
 
-    fig = plt.figure()
+    fig = plt2.figure()
     ax = fig.add_subplot(projection='polar')
     ax.grid(True)
     ax.set_yticklabels([])
@@ -115,7 +115,7 @@ def drawStab(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0):
     cax = ax.contourf(azimuth, inclination, values, 1000, cmap = 'jet')
     cb = fig.colorbar(cax, orientation = 'horizontal')
     cb.set_label("Sigma Theta-Theta Max")
-    plt.show()
+    plt2.show()
 
 
 def drawBreak(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
@@ -143,7 +143,7 @@ def drawBreak(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
         inc+=1
 
 
-    fig = plt.figure()
+    fig = plt2.figure()
     ax = fig.add_subplot(projection='polar')
     ax.grid(False)
     ax.set_yticklabels([])
@@ -169,8 +169,8 @@ def drawBreak(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
         ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb = fig.colorbar(cax, orientation = 'horizontal')
     cb.set_label("Breakout Widths in Degrees")
-    plt.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
-    plt.show()
+    plt2.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
+    plt2.show()
     
 def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     values = np.zeros((10,37))
@@ -201,12 +201,12 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
                 pointer+=1
             if width>0:
                 print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
-                #plt.scatter(np.array(range(0,361)),frac)
-                #plt.plot(angle)
-                #plt.plot(line)
-                #plt.xlim((0,0.67827))
-                #plt.ylim((1,151))
-                #plt.show()
+                #plt2.scatter(np.array(range(0,361)),frac)
+                #plt2.plot(angle)
+                #plt2.plot(line)
+                #plt2.xlim((0,0.67827))
+                #plt2.ylim((1,151))
+                #plt2.show()
             values[inc][azim] = np.min(line)
             inclination[inc][azim] = inc*10
             azimuth[inc][azim] = math.radians(azim*10+offset)
@@ -215,7 +215,7 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
         inc+=1
 
 
-    fig = plt.figure()
+    fig = plt2.figure()
     ax = fig.add_subplot(projection='polar')
     ax.grid(False)
     ax.set_yticklabels([])
@@ -239,9 +239,9 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
         ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
         ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb = fig.colorbar(cax, orientation = 'horizontal')
-    plt.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(nu) , loc="center")
+    plt2.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(nu) , loc="center")
     cb.set_label("Excess Mud Pressure to TensileFrac")
-    plt.show()
+    plt2.show()
 
 def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
     values = np.zeros((10,37))
@@ -267,16 +267,16 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
         pointer+=1
     if width>0:
         print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
-        #plt.scatter(np.array(range(0,3610)),frac)
-        #plt.plot(angle)
-        plt.plot(line)
-        #plt.xlim((0,0.67827))
-        #plt.ylim((1,151))
-        plt.show()
+        #plt2.scatter(np.array(range(0,3610)),frac)
+        #plt2.plot(angle)
+        plt2.plot(line)
+        #plt2.xlim((0,0.67827))
+        #plt2.ylim((1,151))
+        plt2.show()
     return np.min(line)
 
 
-def draw(path,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azm=0,inc=0):
+def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azimuthu=0,inclinationi=0):
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
     inclination = np.zeros((10,37))
@@ -314,12 +314,12 @@ def draw(path,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35
                     
             #if width>0:
                 #print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
-                #plt.scatter(np.array(range(0,361)),frac)
-                #plt.plot(angle)
-                #plt.plot(line)
-                #plt.xlim((0,0.67827))
-                #plt.ylim((1,151))
-                #plt.show()
+                #plt2.scatter(np.array(range(0,361)),frac)
+                #plt2.plot(angle)
+                #plt2.plot(line)
+                #plt2.xlim((0,0.67827))
+                #plt2.ylim((1,151))
+                #plt2.show()
             values[inc][azim] = np.min(line)
             values2[inc][azim] = width2
             inclination[inc][azim] = inc*10
@@ -329,16 +329,17 @@ def draw(path,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35
         inc+=1
 
 
-    fig = plt.figure()
+    fig = plt2.figure()
     ax = fig.add_subplot(121,projection='polar')
     ax.grid(False)
     ax.set_yticklabels([])
+    ax.set_xticklabels([])
     ax.set_rmax(90)
     ax.set_theta_zero_location("N")
     ax.set_theta_direction(-1)
-    levels = np.linspace(0,s3,2100)
-    cax = ax.contourf(azimuth, inclination, values, 2100, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 1)
-    #ax.scatter(inc,azm, s=50, color = 'green', edgecolors='black', label='Bore')
+    levels = np.linspace(0,np.min([s1,s2,s3]),1000)
+    cax = ax.contourf(azimuth, inclination, values, 1000, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 1)
+    ax.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
     ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
     ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     if(orit[3]<=90):
@@ -353,21 +354,29 @@ def draw(path,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35
     else:
         ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
         ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
-    cb = fig.colorbar(cax, orientation = 'horizontal')
-    plt.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(round(nu,2)) , loc="center")
-    cb.set_label("Excess Mud Pressure to TensileFrac")
+    conversion_constantSG = 0.102/(tvd/1000)  # Change this to your desired conversion constant
+    conversion_constantPPG = 0.102*8.345/(tvd/1000)  # Change this to your desired conversion constant
+    ticks = np.linspace(0, np.min([s1,s2,s3]), 7)  # 10 evenly spaced ticks from 0 to s3
+    ticks = np.round(ticks, 2)  # Round to one decimal place
+    cb = fig.colorbar(cax, ticks=ticks,orientation = 'horizontal')
+    current_ticks = cb.get_ticks()  # Get current tick locations
+    new_labels = [f"{value * conversion_constantSG:.1f}" for value in current_ticks]  # Create custom labels
+    cb.set_ticklabels(new_labels)  # Set new labels without changing positions
+    #plt2.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(round(nu,2)) , loc="center")
+    cb.set_label("Mud Weight Headroom")
     
     aws = fig.add_subplot(122,projection='polar')
     aws.grid(False)
     aws.set_yticklabels([])
+    aws.set_xticklabels([])
     aws.set_rmax(90)
     aws.set_theta_zero_location("N")
     aws.set_theta_direction(-1)
-    levels = np.linspace(0,120,1200)
-    cax2 = aws.contourf(azimuth, inclination, values2, 1200, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
+    levels = np.linspace(0,120,1300)
+    cax2 = aws.contourf(azimuth, inclination, values2, 1300, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
     print(orit)
-    #aws.scatter(inc,azm, s=50, color = 'green', edgecolors='black', label='Bore')
-    #aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
+    aws.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
+    aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
     aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     if(orit[3]<90):
@@ -382,8 +391,12 @@ def draw(path,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35
     else:
         aws.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
         ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
-    cb2 = fig.colorbar(cax2, orientation = 'horizontal')
+    cb2 = fig.colorbar(cax2, ticks=[0,20,40,60,80,100,120], orientation = 'horizontal')
     cb2.set_label("Breakout Widths in Degrees")
-    plt.title( "UCS = "+str(round(UCS))+", DeltaP = "+str(round(deltaP))+", Nu = "+str(round(nu,2)) , loc="center")
-    plt.savefig(path,dpi=600)
-    plt.clf()
+    fig.suptitle("Stability Plot at "+str(round(tvd,2))+"m TVD")
+    fig.text(0.5, 0.87, "UCS = " + str(round(UCS)) + ", DeltaP = " + str(round(deltaP)) + ", Nu = " + str(round(nu,2)), 
+         ha='center', fontsize=10)
+    
+    plt2.savefig(path,dpi=600)
+    plt2.clf()
+    print(inclinationi,azimuthu)

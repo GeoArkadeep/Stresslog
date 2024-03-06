@@ -10,7 +10,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
+def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     maxSH = 0
     minSH = 0
     midSH = 0
@@ -167,7 +167,8 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     plt.title("Stress Polygon")
     plt.xlabel("Shmin")
     plt.ylabel("SHmax")
-    plt.show()
+    plt.savefig(path)
+    plt.clf()
 
 
 def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, mu=0.6):
