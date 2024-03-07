@@ -1501,7 +1501,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     i = 0
     mu = 0.65
-    #b = 0.0
+    if b > 10.0:
+        b=0
   
     fgppg = np.zeros(len(ppgmiller))
     fgcc = np.zeros(len(ppgmiller))
