@@ -26,7 +26,7 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 * Fields for adding mud data, loss/gain data and other data interpreted from drilling and testing history, these are plotted over the calculated data to help visually constrain the model
 
-* Option to include ascii file with observations from resistivity image logs (or others like ultrasonic calipers) to include tensile fractures and breakouts, which are then used to automatically constrain SHMax
+* Option to include ascii file with observations from resistivity image logs (or others like ultrasonic calipers) to include tensile fractures and breakouts, which are then used internally to better constrain SHMax
 
 ## Installation:
 
