@@ -138,13 +138,12 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
             yuhigh = np.array([SHM1L,SHM2L])
             xucs = np.array([Shm,Shm2])
             yucs = np.array([SHM1,SHM2])
-            # ... (code for creating arrays and lists)
 
             xd = np.array([Shm3,Shm4])
             yd = np.array([DITFshmax3,DITFshmax4])
             if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
                 
-                minSH = np.interp(shmin, xuhigh, yuhigh)
+                minSH = np.interp(shmin, xucs, yucs)
                 maxSH = np.interp(shmin, xd, yd)
             if flag > 1.5 and flag <2.5: #breakout observed on image log
                 minSH = np.interp(shmin, xulow, yulow)
@@ -329,7 +328,7 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             yuhigh = np.array([SHM1L,SHM2L])
             xucs = np.array([Shm,Shm2])
             yucs = np.array([SHM1,SHM2])
-            # ... (code for creating arrays and lists)
+
 
             Shm3 = 1
             Shm4 = maxSt
@@ -341,7 +340,7 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             xd = np.array([Shm3,Shm4])
             yd = np.array([DITFshmax3,DITFshmax4])
             if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
-                minSH = np.interp(shmin, xuhigh, yuhigh)
+                minSH = np.interp(shmin, xucs, yucs)
                 maxSH = np.interp(shmin, xd, yd)
             if flag > 1.5 and flag <2.5: #breakout observed on image log
                 minSH = np.interp(shmin, xulow, yulow)
