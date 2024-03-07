@@ -1050,11 +1050,19 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     except:
         nu2 = [nu] * (len(well.data[alias['sonic'][0]]))
     
-    gr = well.data[alias['gr'][0]]
+    
     #kth = well.data['KTH']
     dt = well.data[alias['sonic'][0]]
-    zden2 = well.data[alias['density'][0]].values
+    
     md = well.data['MD'].values
+    
+    try:
+        zden2 = well.data[alias['density'][0]].values
+        gr = well.data[alias['gr'][0]]
+    except:
+        zden2 = np.full(len(md),np.nan)
+        gr = np.full(len(md),np.nan)
+    
     if alias['resshal'] != [] and alias['resdeep'] != []:
         rS = well.data[alias['resshal'][0]].values
         rD = well.data[alias['resdeep'][0]].values
@@ -1301,11 +1309,12 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     import math
     coalflag = np.zeros(len(tvd))
     lithoflag = np.zeros(len(tvd))
-    if (len(zden2)>10):
+    try:
         ObgTgcc = [ObgTgcc[i] if math.isnan(zden2[i]) else zden2[i] for i in range(len(zden2))]
         coalflag = [0 if math.isnan(zden2[i]) else 1 if zden2[i]<1.6 else 0 for i in range(len(zden2))]
         lithoflag = [0 if shaleflag[i]<1 else 1 if zden2[i]<1.6 else 2 for i in range(len(zden2))]
-    
+    except:
+        pass
     
     coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=md, null=0)
     litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=md, null=0)
@@ -1351,6 +1360,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         obgpsi= ObgTppf[:]*tvdmslf[:]
     else:
         hydropsi = hydroppf[:]*tvdbglf[:]
+        #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdbglf[i-1] for i in range(1, len(ObgTppf) + 1)])
         obgpsi= ObgTppf[:]*tvdbglf[:]
     mudpsi = mudppf[:]*tvdf[:]
     

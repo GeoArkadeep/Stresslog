@@ -2,7 +2,7 @@
 [tool.briefcase]
 project_name = "LasApps"
 bundle = "in.rocklab"
-version = "0.1.3"
+version = "0.9.8"
 url = "https://rocklab.in/WellMasterGeoMech"
 license = "AGPL-3.0"
 author = "Arkadeep Ghosh"
