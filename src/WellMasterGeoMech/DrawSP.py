@@ -341,7 +341,6 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             xd = np.array([Shm3,Shm4])
             yd = np.array([DITFshmax3,DITFshmax4])
             if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
-                
                 minSH = np.interp(shmin, xuhigh, yuhigh)
                 maxSH = np.interp(shmin, xd, yd)
             if flag > 1.5 and flag <2.5: #breakout observed on image log
@@ -350,7 +349,7 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             if flag > 2.5 and flag < 3.5: #tensile fractures observed on image log
                 minSH = np.interp(shmin, xucs, yucs)
                 maxSH = np.interp(shmin, xd, yd)
-            if flag>3.5:
+            if flag>3.5:# Both breakouts and tensile fractures on log
                 maxSH = np.interp(shmin, xd, yd)
                 minSH = np.interp(shmin, xucs, yucs)
     midSH = (minSH + maxSH) / 2

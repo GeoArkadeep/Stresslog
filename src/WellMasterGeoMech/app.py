@@ -13,7 +13,7 @@ import functools
 import os
 
 import matplotlib
-matplotlib.use("svg")
+#matplotlib.use("svg")
 from matplotlib import pyplot as plt    
 import math
 
@@ -618,7 +618,7 @@ class MyApp(toga.App):
     async def open_las0(self, widget):
         global laspath
         try:
-            laspath_dialog = await self.main_window.open_file_dialog(title="Select a file", multiselect=False)
+            laspath_dialog = await self.main_window.open_file_dialog(title="Select a las file", multiselect=False)
             if laspath_dialog:  # Check if the user selected a file and didn't cancel the dialog
                 laspath = laspath_dialog  # This is where you access the selected path
                 self.on_result0(widget)
@@ -673,7 +673,7 @@ class MyApp(toga.App):
         else:
             print("No ucs file loaded")
     
-    def on_result4(self, widget, dialog_result):
+    def on_result4(self, widget):
         global h4, flagpath
         if flagpath is not None:               
             h4 = readFlagFromAscii(flagpath)
@@ -704,7 +704,7 @@ class MyApp(toga.App):
     async def open_flags(self, widget):
         global flagpath
         try:
-            flagpath = self.main_window.open_file_dialog(title="Select a Flag file", multiselect=False)
+            flagpath = await self.main_window.open_file_dialog(title="Select a Flag file", multiselect=False)
             self.on_result4(widget)
         except Exception as e:
             print("Error:", e)
@@ -1052,6 +1052,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     
     #kth = well.data['KTH']
+        
     dt = well.data[alias['sonic'][0]]
     
     md = well.data['MD'].values
@@ -1167,18 +1168,24 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     if lithos is not None:
         lithot = lithos.values.tolist()
-        firstlith = [0,0]
-        lastlith = [final_depth,0]
+        firstlith = [0,0,0,0,0]
+        lastlith = [final_depth,0,0,0,0]
         lithot.insert(0,firstlith)
         lithot.append(lastlith)
         
     if flags is not None:
-        imagelog = flags.to_numpy()
+        imagelog = flags.values.tolist()
+        firstimg = [0,0]
+        lastimg = [final_depth,0]
+        imagelog.insert(0,firstimg)
+        imagelog.append(lastimg)
     j=0
     k=0
     m=0
     i=0
-    nu3 = [nu] * (len(tvd)) 
+    nu3 = [nu] * (len(tvd))
+    mu2 = [0.6] * (len(tvd))
+    ucs2 = [np.nan] * (len(tvd))
     try:
         print(lithot)
     except:
@@ -1205,7 +1212,16 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 lithotype[i] = int(lithot[k-1][1])
                 if len(lithot[k])>2:
                     try:
-                        nu3[i] = lithot[k][2]
+                        nu3[i] = lithot[k-1][2]
+                    except:
+                        pass
+                    try:
+                        if(lithot[k-1][3])>0:
+                            mu2[i] = lithot[k-1][3]
+                    except:
+                        pass
+                    try:
+                        ucs2[i] = lithot[k-1][4]
                     except:
                         pass
                 else:
@@ -1217,18 +1233,34 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                     nu3[i] = float(lithot[k][2])
                 except:
                     pass
+                try:
+                    if(lithot[k][3])>0:
+                        mu2[i] = float(lithot[k][3])
+                except:
+                    pass
+                try:
+                    ucs2[i] = float(lithot[k][4])
+                except:
+                    pass
                 k+=1
         if flags is not None:
-            if md[i]<imagelog[m][1]:
+            if md[i]<imagelog[m][0]:
                 ilog[i] = int(imagelog[m-1][1])
             else:
-                ilog[i] = lithot[m][1]
+                ilog[i] = imagelog[m][1]
                 m+=1
         i+=1
-    #plt.plot(lithotype,md)
-    #plt.plot(nu3,md)
-    #plt.plot(nu2,md)
-    #plt.show()
+    
+    #check plot
+    plt.plot(lithotype,md)
+    plt.plot(nu3,md)
+    plt.plot(nu2,md)
+    plt.plot(mu2,md)
+    plt.plot(ucs2,md)
+    plt.plot(ilog,md)
+    plt.show()
+    plt.clf()
+    
     print("air gap is ",agf,"feet")
     if glwd>=0:
         print("Ground Level is ",glf,"feet above MSL")
@@ -1319,7 +1351,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=md, null=0)
     litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=md, null=0)
     
-    #Millers
+    #zhangs
 
     ct = 0 #delta m/s per metre of depth
     ct = ct*0.1524
@@ -1358,6 +1390,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     if glwd<0:
         hydropsi = hydroppf[:]*tvdmslf[:]
         obgpsi= ObgTppf[:]*tvdmslf[:]
+        #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdmslf[i-1] for i in range(1, len(ObgTppf) + 1)])
     else:
         hydropsi = hydroppf[:]*tvdbglf[:]
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdbglf[i-1] for i in range(1, len(ObgTppf) + 1)])
@@ -1411,6 +1444,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
+                if np.isnan(ucs2[i]) or ucs2[i]==0:
+                    ucs2[i] = horsud[i]
                 phi[i] = np.degrees(np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
@@ -1434,6 +1469,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
+                if np.isnan(ucs2[i]) or ucs2[i]==0:
+                    ucs2[i] = horsud[i]
                 phi[i] = np.degrees(np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
@@ -1454,7 +1491,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #ObgTgcc = np.array(ObgTgcc)
     #obgpsift = 0.4335275040012*ObgTgcc
     
-
+    #plt.plot(ucs2,md)
     #plt.plot(dtNormal)
     #plt.plot(dalm)
     ###plt.show()
@@ -1502,7 +1539,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     sgHMpsiU = np.zeros(len(tvd))
     psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        result = getSHMax_optimized(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,horsud[i],30,ilog[i])
+        result = getSHMax_optimized(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],30,ilog[i],mu2[i])
         sgHMpsi[i] = (result[2])*145.038
         sgHMpsiL[i] = (result[0])*145.038
         sgHMpsiU[i] = (result[1])*145.038
@@ -1547,7 +1584,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         spsipp[i] = sum2/(2*window)
         sum3 = np.sum(psipp[(i-window):i+(window)])
         spsipp[i] = sum3/(2*window)
-        sum4 = np.sum(horsud[(i-window):i+(window)])
+        sum4 = np.sum(ucs2[(i-window):i+(window)])
         shorsud[i] = sum4/(2*window)
         sum5 = np.sum(lal[(i-window):i+(window)])
         slal[i] = sum5/(2*window)
@@ -1583,10 +1620,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
         print(stresspolygon)
         print(phi[doiX])
-        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15)
-        sigmaHMaxmpa = getSHMax(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15,ilog_flag)
-        print("SigmaHM = ",sigmaHMaxmpa[2])
-        sigmas = [sigmaHMaxmpa[2],sigmahminmpa,sigmaVmpa]
+        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15,ilog_flag,mu2[doiX])
+        sigmaHMaxmpa = sgHMpsi[doiX]/145.038
+        print("SigmaHM = ",sigmaHMaxmpa)
+        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         print(sigmas)
 
         if sigmas[2]>sigmas[0]:
@@ -1594,16 +1631,18 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             beta = 0 #normal faulting regime
             gamma = 0
             print("normal")
-        if(sigmas[0]>sigmas[2] and sigmas[2]>sigmas[1]):
-            alpha = 90 #strike slip faulting regime
-            beta = 0
-            gamma = 90
-            print("Strike slip")
-        if(sigmas[0]>sigmas[2] and sigmas[1]>sigmas[2]):
-            alpha = 90
-            beta = 0 #reverse faulting regime
-            gamma = 0
-            print("reverse")
+        else:
+            if(sigmas[2]<sigmas[1]):
+                alpha = 90
+                beta = 0 #reverse faulting regime
+                gamma = 0
+                print("reverse")                  
+            else:
+                alpha = 0 #strike slip faulting regime
+                beta = 90
+                gamma = -90
+                print("Strike slip")
+        
         sigmas.sort()
         
         sigmas.append(bhpmpa-ppmpa)
@@ -1629,7 +1668,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     dtct = Curve(dtNormal, mnemonic='DTCT',units='us/ft', index=md, null=0)
     well.data['DTCT'] =  dtct
 
-    pp = Curve(spp, mnemonic='PP_DT_MILLER',units='G/C3', index=md, null=0)
+    pp = Curve(spp, mnemonic='PP_DT_Zhang',units='G/C3', index=md, null=0)
     well.data['PP'] =  pp
     fg = Curve(sfg, mnemonic='FG_DAINES',units='G/C3', index=md, null=0)
     well.data['FG'] =  fg
@@ -1813,7 +1852,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     splt[1].title.set_text("Gradients (g/cc)")
 
     splt[2].plot(fgpsi,tvd,color='blue',label='Sh min')
-    splt[2].plot(ssgHMpsi,tvd,color='pink',label='SH MAX')
+    splt[2].plot(ssgHMpsi,tvd,color='pink',label='SH MAX ML')
     splt[2].plot(obgpsi,tvd,color='green',label='Sigma V')
     splt[2].plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
     splt[2].plot(pppsi,tvd,color='red',label='Pore Pressure')

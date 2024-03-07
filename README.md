@@ -28,6 +28,8 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 * Option to include ascii file with observations from resistivity image logs (or others like ultrasonic calipers) to include tensile fractures and breakouts, which are then used internally to better constrain SHMax
 
+* Override nu, mu, and UCS from the lithology file 
+
 ## Installation:
 
 You can download the setup file from the release section, and install it like any normal program.

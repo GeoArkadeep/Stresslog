@@ -363,7 +363,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     new_labels = [f"{value * conversion_constantSG:.1f}" for value in current_ticks]  # Create custom labels
     cb.set_ticklabels(new_labels)  # Set new labels without changing positions
     #plt2.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(round(nu,2)) , loc="center")
-    cb.set_label("Mud Weight Headroom")
+    cb.set_label("Mud Weight Headroom in SG")
     
     aws = fig.add_subplot(122,projection='polar')
     aws.grid(False)
