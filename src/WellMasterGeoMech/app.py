@@ -1807,7 +1807,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt.rcParams['xtick.top'] = True
     plt.rcParams['xtick.labelbottom'] = False
     
-    graph, splt = plt.subplots(1, 4,sharey=True)
+    graph, splt = plt.subplots(1, 5,sharey=True)
     graph.suptitle(well.name,fontsize=18)
     #splt[0].invert_yaxis()
     splt[0].set_ylim([tango,zulu])
@@ -1889,6 +1889,16 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #xmin, xmax = splt[3].get_xlim()
     #splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N4)))
     splt[3].title.set_text("Strengths (MPa)")
+    from CasingPlotter import plotCasing
+    shoes = np.transpose(mud_weight)[1]
+    tvdshoes = [tvd[find_nearest_depth(md,shoe)[0]] for shoe in shoes]
+    plotCasing(tvdshoes,splt[4])
+    splt[4].set_ylim([tango,zulu])
+    splt[4].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[4].grid(which='both')
+    splt[4].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[4].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[4].title.set_text("Casings")
     
     #graph.tight_layout()
 
