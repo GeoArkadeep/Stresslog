@@ -13,7 +13,7 @@ import functools
 import os
 
 import matplotlib
-#matplotlib.use("svg")
+matplotlib.use("svg")
 from matplotlib import pyplot as plt    
 import math
 
@@ -1252,14 +1252,14 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         i+=1
     
     #check plot
-    plt.plot(lithotype,md)
+    """plt.plot(lithotype,md)
     plt.plot(nu3,md)
     plt.plot(nu2,md)
     plt.plot(mu2,md)
     plt.plot(ucs2,md)
     plt.plot(ilog,md)
     plt.show()
-    plt.clf()
+    plt.clf()"""
     
     print("air gap is ",agf,"feet")
     if glwd>=0:
