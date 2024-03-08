@@ -1059,7 +1059,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     try:
         zden2 = well.data[alias['density'][0]].values
-        gr = well.data[alias['gr'][0]]
+        gr = well.data[alias['gr'][0]].values
     except:
         zden2 = np.full(len(md),np.nan)
         gr = np.full(len(md),np.nan)
@@ -1077,12 +1077,12 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         radiff = (rdiff[:]*rdiff[:])**0.5
         #plt.plot(radiff)
         #plt.yscale('log')
-        i = 0
-        lradiff = np.zeros(len(radiff))
-        while i<len(radiff):
-            lradiff[i] = radiff[i]
-            i+=1
-        print("Rdiff :",lradiff)
+        #i = 0
+        lradiff = radiff
+        #while i<len(radiff):
+        #    lradiff[i] = radiff[i]
+        #    i+=1
+        #print("Rdiff :",lradiff)
     
         rediff = Curve(lradiff, mnemonic='ResD',units='ohm/m', index=md, null=0)
         well.data['ResDif'] =  rediff
@@ -1095,6 +1095,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     else:
         shaleflag = np.zeros(len(md))
         zoneflag = np.zeros(len(md))
+    shaleflagN = (np.max(shaleflag)-shaleflag[:])/np.max(shaleflag)
     flag = Curve(shaleflag, mnemonic='ShaleFlag',units='ohm/m', index=md, null=0)
     zone = Curve(zoneflag, mnemonic='ShaleFlag',units='ohm/m', index=md, null=0)
     well.data['Flag'] =  flag
@@ -1348,8 +1349,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     except:
         pass
     
-    coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=md, null=0)
-    litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=md, null=0)
+    coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=tvd, null=0)
+    litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=tvd, null=0)
     
     #zhangs
 
@@ -1807,98 +1808,132 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt.rcParams['xtick.top'] = True
     plt.rcParams['xtick.labelbottom'] = False
     
-    graph, splt = plt.subplots(1, 5,sharey=True)
+    graph, splt = plt.subplots(1, 6,sharey=True)
     graph.suptitle(well.name,fontsize=18)
     #splt[0].invert_yaxis()
-    splt[0].set_ylim([tango,zulu])
-    splt[0].plot(dalm,tvd,label='DT')
-    splt[0].plot(dtNormal,tvd,label='Normal DT (Zhang)')
-    splt[0].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[0].set_xlim([300,50])
-    splt[0].yaxis.set_major_locator(MultipleLocator(100))
-    splt[0].yaxis.set_minor_locator(MultipleLocator(10))
+    splt[2].set_ylim([tango,zulu])
+    splt[2].plot(dalm,tvd,label='DT')
+    splt[2].plot(dtNormal,tvd,label='Normal DT (Zhang)')
+    splt[2].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[2].set_xlim([300,50])
+    splt[2].yaxis.set_major_locator(MultipleLocator(100))
+    splt[2].yaxis.set_minor_locator(MultipleLocator(10))
     #splt[0].tick_params(axis='both', which='minor', length = 0)
     #splt[0].set_yticks([zulu,tango,10])
     #splt[0].set_yticks([zulu,tango,1],minor=True)
-    splt[0].grid(which='both')
-    splt[0].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[0].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[2].grid(which='both')
+    splt[2].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[2].grid(which='major', color = 'teal', alpha = 0.05)
     #N = 11
     #ymin, ymax = splt[0].get_ylim()
     #splt[0].set_yticks(np.round(np.linspace(ymin, ymax, N)))
     
     #N1 = 6
-    splt[0].xaxis.set_major_locator(MultipleLocator(100))
-    splt[0].xaxis.set_minor_locator(MultipleLocator(10))
+    splt[2].xaxis.set_major_locator(MultipleLocator(100))
+    splt[2].xaxis.set_minor_locator(MultipleLocator(10))
     #xmin, xmax = splt[0].get_xlim()
     #splt[0].set_xticks(np.round(np.linspace(xmin, xmax, N1)))
-    splt[0].title.set_text("Sonic (us/ft)")
+    splt[2].title.set_text("Sonic (us/ft)")
 
     
-    splt[1].plot(mudweight,tvd,color='brown',label='Mud Gradient')
-    splt[1].plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
+    splt[3].plot(mudweight,tvd,color='brown',label='Mud Gradient')
+    splt[3].plot(fg,tvd,color='blue',label='Shmin Gradient (Daines)')
     #splt[1].plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
-    splt[1].plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
-    splt[1].plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
-    splt[1].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[1].set_xlim([0,3])
-    splt[1].grid(which='both')
-    splt[1].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[1].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[1].xaxis.set_major_locator(MultipleLocator(1))
-    splt[1].xaxis.set_minor_locator(MultipleLocator(0.1))
-    N2 = 4
-    xmin, xmax = splt[1].get_xlim()
-    splt[1].set_xticks(np.round(np.linspace(xmin, xmax, N2),1))
-    splt[1].title.set_text("Gradients (g/cc)")
-
-    splt[2].plot(fgpsi,tvd,color='blue',label='Sh min')
-    splt[2].plot(ssgHMpsi,tvd,color='pink',label='SH MAX ML')
-    splt[2].plot(obgpsi,tvd,color='green',label='Sigma V')
-    splt[2].plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
-    splt[2].plot(pppsi,tvd,color='red',label='Pore Pressure')
-    splt[2].plot(mudpsi,tvd,color='brown',label='BHP')
-    splt[2].plot(sgHMpsiL,tvd,color='lime',label='SH MAX L')
-    splt[2].plot(sgHMpsiU,tvd,color='orange',label='SH MAX U')
-    splt[2].grid(which='both')
-    splt[2].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[2].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[2].set_xlim(left=0)
-    splt[2].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[2].xaxis.set_major_locator(MultipleLocator(5000))
-    splt[2].xaxis.set_minor_locator(MultipleLocator(500))
-    xlabels = ['{:,.0f}'.format(x) + 'K' for x in splt[2].get_xticks()/1000]
-    splt[2].set_xticklabels(xlabels)
-    #N3 = 4
-    #xmin, xmax = splt[2].get_xlim()
-    #splt[2].set_xticks(np.round(np.linspace(xmin, xmax, N3)))
-    splt[2].title.set_text("Pressures (psi)")
-
-    
-    splt[3].set_ylim([tango,zulu])
-    splt[3].plot(slal2,tvd,label='UCS (Lal)')
-    splt[3].plot(shorsud,tvd,label='UCS (Horsud)')
+    splt[3].plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
+    splt[3].plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
     splt[3].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[3].set_xlim([0,100])
+    splt[3].set_xlim([0,3])
     splt[3].grid(which='both')
     splt[3].grid(which='minor', color = 'teal', alpha = 0.025)
     splt[3].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[3].xaxis.set_major_locator(MultipleLocator(20))
-    splt[3].xaxis.set_minor_locator(MultipleLocator(2))
-    #N4 = 6
-    #xmin, xmax = splt[3].get_xlim()
-    #splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N4)))
-    splt[3].title.set_text("Strengths (MPa)")
-    from CasingPlotter import plotCasing
-    shoes = np.transpose(mud_weight)[1]
-    tvdshoes = [tvd[find_nearest_depth(md,shoe)[0]] for shoe in shoes]
-    plotCasing(tvdshoes,splt[4])
-    splt[4].set_ylim([tango,zulu])
-    splt[4].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[3].xaxis.set_major_locator(MultipleLocator(1))
+    splt[3].xaxis.set_minor_locator(MultipleLocator(0.1))
+    N2 = 4
+    xmin, xmax = splt[3].get_xlim()
+    splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N2),1))
+    splt[3].title.set_text("Gradients (g/cc)")
+
+    splt[4].plot(fgpsi,tvd,color='blue',label='Sh min')
+    splt[4].plot(ssgHMpsi,tvd,color='pink',label='SH MAX ML')
+    splt[4].plot(obgpsi,tvd,color='green',label='Sigma V')
+    splt[4].plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
+    splt[4].plot(pppsi,tvd,color='red',label='Pore Pressure')
+    splt[4].plot(mudpsi,tvd,color='brown',label='BHP')
+    splt[4].plot(sgHMpsiL,tvd,color='lime',lw=0.25,label='SH MAX L')
+    splt[4].plot(sgHMpsiU,tvd,color='orange',lw=0.25,label='SH MAX U')
     splt[4].grid(which='both')
     splt[4].grid(which='minor', color = 'teal', alpha = 0.025)
     splt[4].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[4].title.set_text("Casings")
+    splt[4].set_xlim(left=0)
+    splt[4].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[4].xaxis.set_major_locator(MultipleLocator(5000))
+    splt[4].xaxis.set_minor_locator(MultipleLocator(500))
+    xlabels = ['{:,.0f}'.format(x) + 'K' for x in splt[4].get_xticks()/1000]
+    splt[4].set_xticklabels(xlabels)
+    #N3 = 4
+    #xmin, xmax = splt[2].get_xlim()
+    #splt[2].set_xticks(np.round(np.linspace(xmin, xmax, N3)))
+    splt[4].title.set_text("Pressures (psi)")
+
+    
+    splt[5].set_ylim([tango,zulu])
+    splt[5].plot(slal2,tvd,label='UCS (Lal)')
+    splt[5].plot(shorsud,tvd,label='UCS (Horsud)')
+    splt[5].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[5].set_xlim([0,100])
+    splt[5].grid(which='both')
+    splt[5].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[5].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[5].xaxis.set_major_locator(MultipleLocator(20))
+    splt[5].xaxis.set_minor_locator(MultipleLocator(2))
+    #N4 = 6
+    #xmin, xmax = splt[3].get_xlim()
+    #splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N4)))
+    splt[5].title.set_text("Strengths (MPa)")
+    
+    from CasingPlotter import plotCasing
+    shoes = np.transpose(mud_weight)[1]
+    tvdshoes = [tvd[find_nearest_depth(md,shoe)[0]] for shoe in shoes]
+    plotCasing(tvdshoes,splt[0],(tango-zulu)/80)
+    splt[0].set_ylim([tango,zulu])
+    #splt[0].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    # Remove x-ticks and spines
+    splt[0].tick_params(axis='x',          # Changes apply to the x-axis
+                        which='both',      # Both major and minor ticks are affected
+                        bottom=False,      # Ticks along the bottom edge are off
+                        top=False,
+                        labeltop=False, # Ticks along the top edge are off
+                        labelbottom=False) # Labels along the bottom edge are off
+
+    #splt[0].spines['top'].set_visible(False)    # Top spine is invisible
+    #splt[0].spines['bottom'].set_visible(False) # Bottom spine is invisible
+
+    splt[0].title.set_text("Casings")
+    
+    splt[1].title.set_text("Lithology")
+    splt[1].set_ylim([tango,zulu])
+    cmap1 = plt.get_cmap('cool')  # Example colormap
+    cindex1 = [0,sfs,1,2]
+    for item in sorted(cindex1):
+        colorvalue1 = (item-0)/4
+        splt[1].fill_betweenx(tvd,gr,200,where=lradiff>=item, facecolor=cmap1(colorvalue1))
+    if lithos is not None:
+        cmap2 = plt.get_cmap('plasma_r')  # Example colormap
+        cindex2 = [-0.10,1,2,3]
+        for item in sorted(cindex2):
+            colorvalue2 = (item-0)/4
+            splt[1].fill_betweenx(tvd,-10,gr,where=lithotype>=item, facecolor=cmap2(colorvalue2))
+    
+    splt[1].plot(gr,tvd,label='GR',color='green',lw=0.25)
+    
+    
+    splt[1].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
+    splt[1].set_xlim([0,150])
+    splt[1].grid(which='both')
+    splt[1].grid(which='minor', color = 'teal', alpha = 0.025)
+    splt[1].grid(which='major', color = 'teal', alpha = 0.05)
+    splt[1].xaxis.set_major_locator(MultipleLocator(50))
+    splt[1].xaxis.set_minor_locator(MultipleLocator(10))
     
     #graph.tight_layout()
 
@@ -1920,15 +1955,15 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #Plot Image
         
     if frac_grad_data != [[0,0]]:
-        splt[1].scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
+        splt[3].scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
     if flow_grad_data != [[0,0]]:
-        splt[1].scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+        splt[3].scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     if frac_psi_data != [[0,0]]:
-        splt[2].scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
+        splt[4].scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
     if flow_psi_data != [[0,0]]:
-        splt[2].scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+        splt[4].scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
     if UCSs is not None:
-        splt[3].scatter(x_values5, y_values5, color='lime', marker='x', s=10)  # Add the custom plot to the second track
+        splt[5].scatter(x_values5, y_values5, color='lime', marker='x', s=10)  # Add the custom plot to the second track
     
     #mud_weight_x, mud_weight_y = zip(*mud_weight)
     #splt[1].plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
@@ -1937,7 +1972,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     #ax2.set_ylabel('MD')
     #secax = splt[2].secondary_yaxis('right')
     # Save the modified plot
-    plt.gcf().set_size_inches(8, 10)
+    plt.gcf().set_size_inches(15, 10)
     plt.savefig(output_file)#,dpi=600)
     return
 

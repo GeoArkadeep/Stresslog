@@ -1,4 +1,4 @@
-def plotCasing(depths,ax):
+def plotCasing(depths,ax,length=50):
     import matplotlib.pyplot as plt
     import numpy as np
     import matplotlib
@@ -7,7 +7,7 @@ def plotCasing(depths,ax):
     shoe_depths_md = depths
     sorted_depths = np.sort(shoe_depths_md)
     triangle_base = 0.5
-    triangle_height = 100
+    triangle_height = length
     gap = 0.3
 
     # Calculate positions
