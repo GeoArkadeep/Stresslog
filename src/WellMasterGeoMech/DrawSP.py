@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt3
 from matplotlib.patches import Polygon
 import numpy as np
 import math
@@ -30,7 +30,7 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     maxSt = 200
     minSt = 0
 
-    fig,ax = plt.subplots()
+    fig,ax = plt3.subplots()
     ax.axis([minSt,maxSt,minSt,maxSt])
     limit = np.array([(0,0),(maxSt,maxSt), (maxSt,0)])
     LM =  Polygon(limit, fill=False ,hatch='\\')
@@ -89,9 +89,9 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     upperucs = [Shm2,SHM2]
     
     #print(br1)
-    Breakout2 =  Polygon(br2, color='red', label = "UCS- "+str(UCShigh)+"MPa")
-    Breakout1 =  Polygon(br1, color='green', label = "UCS- "+str(UCS)+"MPa")
-    Breakout3 =  Polygon(br3, color='blue', label = "UCS- "+str(UCSlow)+"MPa")
+    Breakout2 =  Polygon(br2, color='red', label = "UCS- "+str(round(UCShigh))+"MPa")
+    Breakout1 =  Polygon(br1, color='green', label = "UCS- "+str(round(UCS))+"MPa")
+    Breakout3 =  Polygon(br3, color='blue', label = "UCS- "+str(round(UCSlow))+"MPa")
     ax.add_patch(Breakout2)
     ax.add_patch(Breakout1)
     ax.add_patch(Breakout3)
@@ -161,13 +161,13 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     minmin = np.array([(shmin,minSH),(shmin,maxSH)])
     Shmin =  Polygon(minmin, color='purple', label = 'Sh min')
     ax.add_patch(Shmin)
-    ax.legend()
-    plt.gca().set_aspect('equal')
-    plt.title("Stress Polygon")
-    plt.xlabel("Shmin")
-    plt.ylabel("SHmax")
-    plt.savefig(path)
-    plt.clf()
+    ax.legend(loc='lower right')
+    plt3.gca().set_aspect('equal')
+    plt3.title("Stress Polygon")
+    plt3.xlabel("Shmin")
+    plt3.ylabel("SHmax")
+    plt3.savefig(path)
+    plt3.clf()
 
 
 def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, mu=0.6):

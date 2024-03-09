@@ -275,7 +275,6 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
         plt2.show()
     return np.min(line)
 
-
 def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azimuthu=0,inclinationi=0):
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
@@ -399,4 +398,3 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     
     plt2.savefig(path,dpi=600)
     plt2.clf()
-    print(inclinationi,azimuthu)
