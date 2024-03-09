@@ -143,8 +143,8 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
             yd = np.array([DITFshmax3,DITFshmax4])
             if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
                 
-                minSH = np.interp(shmin, xucs, yucs)
-                maxSH = np.interp(shmin, xd, yd)
+                minSH = shmin
+                maxSH = np.interp(shmin, xucs, yucs)
             if flag > 1.5 and flag <2.5: #breakout observed on image log
                 minSH = np.interp(shmin, xulow, yulow)
                 maxSH = np.interp(shmin, xuhigh, yuhigh)
@@ -166,7 +166,7 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     plt3.title("Stress Polygon")
     plt3.xlabel("Shmin")
     plt3.ylabel("SHmax")
-    plt3.savefig(path)
+    plt3.savefig(path,dpi=600)
     plt3.clf()
 
 
@@ -340,8 +340,8 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             xd = np.array([Shm3,Shm4])
             yd = np.array([DITFshmax3,DITFshmax4])
             if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
-                minSH = np.interp(shmin, xucs, yucs)
-                maxSH = np.interp(shmin, xd, yd)
+                minSH = shmin
+                maxSH = np.interp(shmin, xucs, yucs)
             if flag > 1.5 and flag <2.5: #breakout observed on image log
                 minSH = np.interp(shmin, xulow, yulow)
                 maxSH = np.interp(shmin, xuhigh, yuhigh)
