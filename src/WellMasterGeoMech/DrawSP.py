@@ -10,7 +10,10 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
+def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
+    
+    PhiBr = 15
+    biot = 1
     maxSH = 0
     minSH = 0
     midSH = 0
@@ -68,6 +71,18 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
     print("TwoCosPhiB: ",TwoCosPhiB)
     #ShmP = UCS
+    print("Phi = ",math.degrees(phi))
+    twocos2Beta = 2 * (math.cos(PhiBr))
+    q = (1+np.sin(phi))/(1-np.sin(phi))
+    
+    SHM1 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+    SHM2 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+    SHM1H = ((UCShigh - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+    SHM2H = ((UCShigh - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+    SHM1L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+    SHM2L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+    
+    """
     SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     
@@ -75,7 +90,7 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     SHM2H = ((UCShigh + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM1L = ((UCSlow + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
     SHM2L = ((UCSlow + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-
+    """
     #print(SHM1)
     br1 = np.array([(Shm,SHM1),(Shm2,SHM2)])
     br2 = np.array([(Shm,SHM1H),(Shm2,SHM2H)])
@@ -138,9 +153,9 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
             yuhigh = np.array([SHM1L,SHM2L])
             xucs = np.array([Shm,Shm2])
             yucs = np.array([SHM1,SHM2])
-
             xd = np.array([Shm3,Shm4])
             yd = np.array([DITFshmax3,DITFshmax4])
+            
             if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
                 
                 minSH = shmin
@@ -159,7 +174,8 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     print("DITF :",ditf)
     ax.add_patch(DITF)
     minmin = np.array([(shmin,minSH),(shmin,maxSH)])
-    Shmin =  Polygon(minmin, color='purple', label = 'Sh min')
+    maxmaxsh = np.array([(shmin,minSH),(shmin,maxSH),(0,maxSH),(0,minSH)])
+    Shmin =  Polygon(maxmaxsh, color='purple', label = 'Sh min',alpha=0.2)
     ax.add_patch(Shmin)
     ax.legend(loc='lower right')
     plt3.gca().set_aspect('equal')
@@ -170,11 +186,15 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,PhiB = 0, flag = 0,mu = 0.6):
     plt3.clf()
 
 
-def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, mu=0.6):
+def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
+    
+    PhiBr = 15
+    biot = 1
     maxSH = 0
     minSH = 0
     midSH = 0
-    
+    sigmaV = Sv-Pp
+    sigmahmin = shmin-Pp
     ufac = ((((mu**2)+1)**0.5)+mu)**2
     #print("Mu factor: ",ufac)
 
@@ -182,10 +202,18 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, 
     SHMP = ((Sv-Pp)*ufac)+Pp
     #print("Corners: ",ShmP,SHMP)
 
-    maxSt = 1.05*SHMP
-    minSt = 0.90*ShmP
 
+    #maxSt = 1.02*SHMP
+    #minSt = 0.98*ShmP
+    
+    maxSt = 200
+    minSt = 0
+
+    #fig,ax = plt3.subplots()
+    #ax.axis([minSt,maxSt,minSt,maxSt])
     limit = np.array([(0,0),(maxSt,maxSt), (maxSt,0)])
+    #LM =  Polygon(limit, fill=False ,hatch='\\')
+    #ax.add_patch(LM)
 
     X = ShmP
     Y = SHMP
@@ -194,31 +222,51 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, 
     SScorners = np.array([(Sv,Sv),(X,Sv),(Sv,Y)])
     RRcorners = np.array([(Sv,Sv),(Sv,Y),(Y,Y)])
 
-    StrikeSlipE = Polygon(SScorners, fill=False)
-    NormalE =  Polygon(NNcorners, fill=False)
-    ReverseE =  Polygon(RRcorners, fill=False)
+    #StrikeSlipE = Polygon(SScorners, fill=False)
+    #NormalE =  Polygon(NNcorners, fill=False)
+    #ReverseE =  Polygon(RRcorners, fill=False)
 
-    StrikeSlip = Polygon(SScorners, color='blue', alpha=0.05)
-    Normal =  Polygon(NNcorners, color='green', alpha = 0.05)
-    Reverse =  Polygon(RRcorners, color='red', alpha = 0.05)
+    #StrikeSlip = Polygon(SScorners, color='blue', alpha=0.05)
+    #Normal =  Polygon(NNcorners, color='green', alpha = 0.05)
+    #Reverse =  Polygon(RRcorners, color='red', alpha = 0.05)
+
+    #ax.add_patch(StrikeSlip)
+    #ax.add_patch(Normal)
+    #ax.add_patch(Reverse)
+    #ax.add_patch(StrikeSlipE)
+    #ax.add_patch(NormalE)
+    #ax.add_patch(ReverseE)
 
     #UCS = 46
     UCShigh = UCS + (0.2*UCS)
     UCSlow = UCS - (0.2*UCS)
-    Shm = 1
-    Shm2 = maxSt
+    Shm = ShmP
+    Shm2 = SHMP
     #PhiB = 0.1 #degrees
-    PhiBr = math.radians(ThetaB)
+    PhiBr = math.radians(PhiB)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
-
-
-    SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM1H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM2H = ((UCShigh + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM1L = ((UCSlow + (2*Pp) + (bhp-Pp)) - (Shm*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-    SHM2L = ((UCSlow + (2*Pp) + (bhp-Pp)) - (Shm2*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
-
+    #print("TwoCosPhiB: ",TwoCosPhiB)
+    #ShmP = UCS
+    #print("Phi = ",math.degrees(phi))
+    twocos2Beta = 2 * (math.cos(PhiBr))
+    q = (1+np.sin(phi))/(1-np.sin(phi))
+    
+    SHM1 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+    SHM2 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+    SHM1H = ((UCShigh - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+    SHM2H = ((UCShigh - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+    SHM1L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+    SHM2L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+    
+    """
+    SHM1 = ((UCS + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM2 = ((UCS + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    
+    SHM1H = ((UCShigh + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM2H = ((UCShigh + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM1L = ((UCSlow + (2*Pp) + (bhp-Pp)) - ((Shm)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    SHM2L = ((UCSlow + (2*Pp) + (bhp-Pp)) - ((Shm2)*(1+TwoCosPhiB)))/(1-TwoCosPhiB)
+    """
     #print(SHM1)
     br1 = np.array([(Shm,SHM1),(Shm2,SHM2)])
     br2 = np.array([(Shm,SHM1H),(Shm2,SHM2H)])
@@ -230,63 +278,110 @@ def getSHMax(Sv,Pp,bhp,shmin, UCS = 0, ThetaB = 45, breakouts = 0, ditflag = 0, 
     upperuhigh = [Shm2,SHM2L]
     lowerucs = [Shm,SHM1]
     upperucs = [Shm2,SHM2]
-
-
-    Shm3 = 1
-    Shm4 = maxSt
-
+    
+    #print(br1)
+    #Breakout2 =  Polygon(br2, color='red', label = "UCS- "+str(round(UCShigh))+"MPa")
+    #Breakout1 =  Polygon(br1, color='green', label = "UCS- "+str(round(UCS))+"MPa")
+    #Breakout3 =  Polygon(br3, color='blue', label = "UCS- "+str(round(UCSlow))+"MPa")
+    #ax.add_patch(Breakout2)
+    #ax.add_patch(Breakout1)
+    #ax.add_patch(Breakout3)
+    
+    Shm3 = ShmP
+    Shm4 = Y
+    
     #DITFshmax3 = 3*Shm3 - 2*Pp
     #DITFshmax4 = 3*Shm4 - 2*Pp
     DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp)
     DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
+    DITF =  Polygon(ditf, color='aqua', label = 'DITF')
     lowerd = [Shm3,DITFshmax3]
     upperd = [Shm4,DITFshmax4]
     
-    if(shmin<ShmP):
-        return[ShmP,ShmP,ShmP]
     if(shmin>Sv):
         minSH = Sv
         maxSH = SHMP
-        #return [Sv,shmin,(shmin+Sv)/2]
+        return [Sv,shmin,(shmin+Sv)/2]
+    if shmin > Sv:
+        minSH = Sv
+        maxSH = SHMP
     else:
-        lower = [ShmP,Sv]
-        upper = [Sv,SHMP]
-        I1 = np.interp(shmin,lower,upper)
-        #print("Intercept is: ",I1)
+        #lower = np.array([ShmP, Sv])
+        #upper = np.array([Sv, SHMP])
+        y = np.array([Sv,SHMP])
+        x = np.array([ShmP,Sv])
+        I1 = np.interp(shmin, x, y)
+        #print(shmin,Sv,I1)
         minSH = shmin
         maxSH = I1
-        #return [shmin,I1,(shmin+I1)/2]
     
-    if ditflag>0 and breakouts>0:
-        minSH = loweruhigh[1]+(shmin-loweruhigh[0])*(upperuhigh[1]-loweruhigh[1])/(upperuhigh[0]-loweruhigh[0])
-        maxSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])
-    else:
-        if ditflag>0:
-            minSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])#np.interp(shmin,lowerd,upperd)
-        else:
-            maxSH = lowerd[1]+(shmin-lowerd[0])*(upperd[1]-lowerd[1])/(upperd[0]-lowerd[0])#np.interp(shmin,lowerd,upperd)
-        if breakouts>0:
-            maxSH = loweruhigh[1]+(shmin-loweruhigh[0])*(upperuhigh[1]-loweruhigh[1])/(upperuhigh[0]-loweruhigh[0])
-            minSH = lowerulow[1]+(shmin-lowerulow[0])*(upperulow[1]-lowerulow[1])/(upperulow[0]-lowerulow[0])
-        else:
-            maxSH = lowerucs[1]+(shmin-lowerucs[0])*(upperucs[1]-lowerucs[1])/(upperucs[0]-lowerucs[0])#np.interp(shmin,lowerucs,upperucs)
-            #print("nobreak")
-            #print(lowerucs,upperucs,maxSH)
-    midSH=(minSH+maxSH)/2    
-    return [minSH,maxSH,midSH]
+    
+        if flag>0.5:
+            UCShigh = UCS + (0.2 * UCS)
+            UCSlow = UCS - (0.2 * UCS)
+            maxSt = 1.1*SHMP
+            minSt = 0.90*ShmP
+            
+            xulow = np.array([Shm,Shm2])
+            yulow = np.array([SHM1H,SHM2H])
+            xuhigh = np.array([Shm,Shm2])
+            yuhigh = np.array([SHM1L,SHM2L])
+            xucs = np.array([Shm,Shm2])
+            yucs = np.array([SHM1,SHM2])
+            xd = np.array([Shm3,Shm4])
+            yd = np.array([DITFshmax3,DITFshmax4])
+            
+            if flag > 0.5 and flag < 1.5: #no breakouts or tensile fractures seen on existing image log
+                
+                minSH = shmin
+                maxSH = np.interp(shmin, xucs, yucs)
+            if flag > 1.5 and flag <2.5: #breakout observed on image log
+                minSH = np.interp(shmin, xulow, yulow)
+                maxSH = np.interp(shmin, xuhigh, yuhigh)
+            if flag > 2.5 and flag < 3.5: #tensile fractures observed on image log
+                minSH = np.interp(shmin, xucs, yucs)
+                maxSH = np.interp(shmin, xd, yd)
+            if flag>3.5:
+                maxSH = np.interp(shmin, xd, yd)
+                minSH = np.interp(shmin, xucs, yucs)
+    if maxSH<minSH:
+        maxSH=minSH
+    midSH = (minSH + maxSH) / 2
+
+    return [minSH, maxSH, midSH]
+    #print([maxSH,minSH,shmin,Sv])
+    #print("DITF :",ditf)
+    #ax.add_patch(DITF)
+    #minmin = np.array([(shmin,minSH),(shmin,maxSH)])
+    #maxmaxsh = np.array([(shmin,minSH),(shmin,maxSH),(0,maxSH),(0,minSH)])
+    #Shmin =  Polygon(maxmaxsh, color='purple', label = 'Sh min',alpha=0.2)
+    #ax.add_patch(Shmin)
+    #ax.legend(loc='lower right')
+    #plt3.gca().set_aspect('equal')
+    #plt3.title("Stress Polygon")
+    #plt3.xlabel("Shmin")
+    #plt3.ylabel("SHmax")
+    #plt3.savefig(path,dpi=600)
+    #plt3.clf()
+
+
 from BoreStab import draw
 from BoreStab import drawStab
 import numpy as np
 import math
 
-def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
+def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6):
+    
+    ThetaB=15
+    biot=1
+    
     ufac = ((((mu**2) + 1)**0.5) + mu)**2
 
     ShmP = ((Sv - Pp) / ufac) + Pp
     SHMP = ((Sv - Pp) * ufac) + Pp
 
-
+    
 
     if shmin<ShmP or shmin>SHMP:
         return [np.nan, np.nan, np.nan]
@@ -309,19 +404,29 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             UCSlow = UCS - (0.2 * UCS)
             maxSt = 1.1*SHMP
             minSt = 0.90*ShmP
-            Shm = 1
-            Shm2 = maxSt
+            Shm = ShmP
+            Shm2 = SHMP
 
             PhiBr = math.radians(ThetaB)
             TwoCosPhiB = 2 * (math.cos((math.pi) - (PhiBr)))
-
+            twocos2Beta = 2 * (math.cos((math.pi) - (2*(PhiBr))))
+            q = (1+math.sin(phi))/(1-math.sin(phi))
+            
+            SHM1 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+            SHM2 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+            SHM1H = ((UCShigh - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+            SHM2H = ((UCShigh - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
+            SHM1L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
+            SHM2L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)          
+            
+            """
             SHM1 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
             SHM2 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
             SHM1H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
             SHM2H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
             SHM1L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
             SHM2L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
-            
+            """
             xulow = np.array([Shm,Shm2])
             yulow = np.array([SHM1H,SHM2H])
             xuhigh = np.array([Shm,Shm2])
@@ -351,5 +456,7 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, ThetaB=45, flag=0, mu=0.6):
             if flag>3.5:# Both breakouts and tensile fractures on log
                 maxSH = np.interp(shmin, xd, yd)
                 minSH = np.interp(shmin, xucs, yucs)
+    #if maxSH<minSH:        
+    #    maxSH=minSH
     midSH = (minSH + maxSH) / 2
     return [minSH, maxSH, midSH]

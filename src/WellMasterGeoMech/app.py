@@ -1455,7 +1455,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 horsud[i] = horsuda*(vp[i]**horsude)
                 if np.isnan(ucs2[i]) or ucs2[i]==0:
                     ucs2[i] = horsud[i]
-                phi[i] = np.degrees(np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
+                phi[i] = (np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
@@ -1539,8 +1539,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     psimes = ((psifg+obgpsi)/2)+psipp
     
     
-    from DrawSP import getSHMax
-    from DrawSP import getSHMax_optimized
+    #from DrawSP import getSHMax_optimized
+    from DrawSP import getSP
     from DrawSP import drawSP
     
     i=0
@@ -1549,7 +1549,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     sgHMpsiU = np.zeros(len(tvd))
     psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        result = getSHMax_optimized(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],30,ilog[i],mu2[i])
+        result = getSP(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],phi[i],ilog[i],mu2[i])
         sgHMpsi[i] = (result[2])*145.038
         sgHMpsiL[i] = (result[0])*145.038
         sgHMpsiU[i] = (result[1])*145.038
@@ -1630,7 +1630,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
         print(stresspolygon)
         print(phi[doiX])
-        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,15,ilog_flag,mu2[doiX])
+        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX])
         sigmaHMaxmpa = sgHMpsi[doiX]/145.038
         print("SigmaHM = ",sigmaHMaxmpa)
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
