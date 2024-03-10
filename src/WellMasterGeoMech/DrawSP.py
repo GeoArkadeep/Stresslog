@@ -345,8 +345,8 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
             if flag>3.5:
                 maxSH = np.interp(shmin, xd, yd)
                 minSH = np.interp(shmin, xucs, yucs)
-    if maxSH<minSH:
-        maxSH=minSH
+        if maxSH<minSH:
+            maxSH=minSH
     midSH = (minSH + maxSH) / 2
 
     return [minSH, maxSH, midSH]

@@ -61,7 +61,7 @@ depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
 
 modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,tilt,nu_shale,su_sst,nu_lst,dt_lst"
-defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,2500,2900,1.025,True,0,3500,0,0,0.32,0.27,0.25,65"
+defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,2500,2900,1.025,1,0,3500,0,0,0.32,0.27,0.25,65"
 print(os.getcwd())
 try:
     data = pd.read_csv(modelpath,index_col=False)
@@ -295,7 +295,7 @@ class MyApp(toga.App):
             {'label': 'Start', 'default_value': str(model[8])},
             {'label': 'Stop', 'default_value': str(model[9])},
             {'label': 'WaterDensity', 'default_value': str(model[10])},
-            {'label': 'No Subhydrostatic', 'default_value': str(model[11])},
+            {'label': 'PP Gr. L.Limit', 'default_value': str(model[11])},
             {'label': 'TectonicFactor', 'default_value': str(model[12])},
             {'label': 'Analysis TVD', 'default_value': "0"},
             {'label': 'Fast Shear Azimuth', 'default_value': "0"},
@@ -826,7 +826,7 @@ class MyApp(toga.App):
         #model.append(tail2)
         #model.append(tail3)
         #model.append(tail4)
-        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),model[11],float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
         file = open(modelpath,'w')
         file.write(modelheader+'\n')
         for item in model:
@@ -1438,17 +1438,15 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 if shaleflag[i]<0.5:
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if str(underbalancereject).upper() == 'TRUE':# and gccmiller[i]<water:
-                        if gccmiller[i]<water:
-                            gccmiller[i]=water
+                    if gccmiller[i]<underbalancereject:
+                        gccmiller[i]=underbalancereject
                 else:
                     gccmiller[i] = np.nan
                 if lithotype[i]>1.5:
                     dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject:# and gccmiller[i]<water:
-                        if gccmiller[i]<water:
-                            gccmiller[i]=water
+                    if gccmiller[i]<underbalancereject:
+                        gccmiller[i]=underbalancereject
                 ppgmiller[i] = gccmiller[i]*8.33
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
