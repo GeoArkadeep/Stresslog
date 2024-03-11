@@ -18,7 +18,7 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 * Model saved to and read from model.csv, calibrate model on analog well and run it on current well using sonic velocity from seismic and/or LWD/MWD data 
 
-* Stress Polygon, Wellbore Stability Plots and Kirsch Plots at drainhole analysis depth
+* Plot Stress Polygon, Wellbore Stability ~~and Kirsch Plots~~ at drainhole analysis depth
 
 * Plot the data in user configurable intervals
 
