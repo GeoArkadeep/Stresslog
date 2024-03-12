@@ -1424,7 +1424,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     
     #ObgTppg[0] = np.nan
     print("ObgTppg:",ObgTppg)
-    print("Reject Subhydrostatic = ",underbalancereject)
+    print("Reject Subhydrostatic below ",underbalancereject)
 
     if UCSs is not None:
         ucss = UCSs.to_numpy()
@@ -1433,21 +1433,24 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     print("IMAGE: ",flags)
     
     while i<(len(ObgTppg)-1):
-        if glwd>=0:
+        if glwd>=0: #Onshore Cases
             if tvdbgl[i]>0:
-                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
-                if shaleflag[i]<0.5:
+                if shaleflag[i]<0.5: #Shale PorePressure
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if gccmiller[i]<underbalancereject:
-                        gccmiller[i]=underbalancereject
+                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 else:
-                    gccmiller[i] = np.nan
-                if lithotype[i]>1.5:
+                    gccmiller[i] = np.nan #Hydraulic Pore Pressure
+                
+                if lithotype[i]>1.5: #Carbonate PorePressure
                     dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if gccmiller[i]<underbalancereject:
-                        gccmiller[i]=underbalancereject
+                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                
+                if gccmiller[i]<underbalancereject: #underbalance reject
+                    gccmiller[i]=underbalancereject
+                
                 ppgmiller[i] = gccmiller[i]*8.33
+                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
@@ -1462,15 +1465,22 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 psipp[i] = psiftpp[i]*tvdf[i]
                 #if psipp[i]<hydropsi[i]:
                 #   psipp[i] = hydropsi[i]
-        else:
+        else: #Offshore Cases
             if tvdbgl[i]>0:
-                if shaleflag[i]<0.5:
+                if shaleflag[i]<0.5:#Shale Pore Pressure
                     gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    if underbalancereject:# and gccmiller[i]<water:
-                        if gccmiller[i]<water:
-                            gccmiller[i]=water
+                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 else:
-                    gccmiller[i] = np.nan
+                    gccmiller[i] = np.nan #Hydraulic Pore Pressure
+                
+                if lithotype[i]>1.5: #Carbonate PorePressure
+                    dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+                    gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                
+                if gccmiller[i]<underbalancereject: #underbalance reject
+                    gccmiller[i]=underbalancereject
+                
                 ppgmiller[i] = gccmiller[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
@@ -1809,6 +1819,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     from matplotlib import ticker
     from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
     
+    #minindex = find_nearest_depth(tvdm,zulu)[0]
+    #maxindex = find_nearest_depth(tvdm,tango)[0]
     #Presentation Plot
     plt.rcParams['xtick.labeltop'] = True
     plt.rcParams['xtick.top'] = True
@@ -1877,7 +1889,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     xlabels = ['{:,.0f}'.format(x) + 'K' for x in splt[4].get_xticks()/1000]
     splt[4].set_xticklabels(xlabels)
     #N3 = 4
-    #xmin, xmax = splt[2].get_xlim()
+    xmin, xmax = splt[4].get_xlim()
     #splt[2].set_xticks(np.round(np.linspace(xmin, xmax, N3)))
     splt[4].title.set_text("Pressures (psi)")
 
