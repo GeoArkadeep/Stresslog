@@ -1,3 +1,5 @@
+
+![BG1](https://github.com/GeoArkadeep/WellMasterGeoMech/assets/160126374/27efa304-817d-4520-a5f5-65e63e679c15)
 # Well Master GeoMech
 
 A *libre* application to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary semi-realtime stress prediction (for example if the wellsite geologist fetches and updates the las from MWD/LWD provider every single or so). A Pro version with improved features, including true realtime capabilities from streaming data, will be made available seperately under a commercial licence later on.
@@ -16,7 +18,7 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 * Model saved to and read from model.csv, calibrate model on analog well and run it on current well using sonic velocity from seismic and/or LWD/MWD data 
 
-* Stress Polygon, Wellbore Stability Plots and Kirsch Plots at drainhole analysis depth
+* Plot Stress Polygon, Wellbore Stability ~~and Kirsch Plots~~ at drainhole analysis depth
 
 * Plot the data in user configurable intervals
 
@@ -49,6 +51,8 @@ briefcase package
 For more help, consult the BeeWare documentation.
 
 ## Acknowledgements
+
+Jon Jincai Zhang, for his awesome work on pore pressure prediction, and geomechanics at large. This software uses his algorithms wherever possible.
 
 This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. The GUI is written using Toga, and built using Briefcase, which are both components of the BeeWare Project. Other libraries used include Pandas, Numpy and Matplotlib.
 
