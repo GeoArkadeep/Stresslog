@@ -54,6 +54,9 @@ For more help, consult the BeeWare documentation.
 
 Jon Jincai Zhang, for his awesome work on pore pressure prediction, and geomechanics at large. This software uses his algorithms wherever possible.
 
+In more detail:
+The Stability Analysis Plots are after [Peska and Zoback, 1995](https://doi.org/10.1029/95JB00319). The Stress Polygon Technique for constraining SHMax is after [Zoback et al., 2003](https://doi.org/10.1029/95JB00319) The Pore Pressure equation is from [Zhang, 2011](https://doi.org/10.1016/j.earscirev.2011.06.001) The shmin is calculated in accordance with [Dianes, 1982](https://doi.org/10.2118/9254-PA), as well as [Zoback and Healy,1992](https://doi.org/10.1029/91JB02175)
+
 This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. The GUI is written using Toga, and built using Briefcase, which are both components of the BeeWare Project. Other libraries used include Pandas, Numpy and Matplotlib.
 
 ## Disclaimer
