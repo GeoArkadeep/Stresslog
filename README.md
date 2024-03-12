@@ -41,7 +41,7 @@ Or, you can compile from source. To compile from source, you need toga and brief
 pip install toga
 pip install briefcase
 ````
-Once these are installed, you can build using the briefcase commands
+Once these are installed, you can build using the briefcase commands from the folder containing the pyproject.toml file
 ````
 briefcase create
 briefcase build
