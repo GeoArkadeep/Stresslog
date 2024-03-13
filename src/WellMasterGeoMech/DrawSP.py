@@ -10,7 +10,9 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
+def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
+    
+    #mu = (1-(2*nu))/(2*((nu*(1-nu))**0.5))
     
     PhiBr = 15
     biot = 1

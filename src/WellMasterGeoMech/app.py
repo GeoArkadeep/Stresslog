@@ -1219,9 +1219,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         if lithos is not None:
             if md[i]<lithot[k][0]:
                 lithotype[i] = int(lithot[k-1][1])
-                if len(lithot[k])>2:
+                if len(lithot[k])>2 and lithot[k-1][2]>0:
                     try:
-                        nu3[i] = lithot[k-1][2]
+                        nu2[i] = lithot[k-1][2]
                     except:
                         pass
                     try:
@@ -1235,11 +1235,11 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                         pass
                 else:
                     numodel = int(lithotype[i]) + 16
-                    nu3[i] = float(model[numodel])
+                    nu2[i] = float(model[numodel])
             else:
                 lithotype[i] = int(lithot[k][1])
                 try:
-                    nu3[i] = float(lithot[k][2])
+                    nu2[i] = float(lithot[k][2])
                 except:
                     pass
                 try:
@@ -1321,7 +1321,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     rhoppg[0] = rhoappg
     #rhoppg = interpolate_nan(rhoppg)
     rhogcc =  0.11982642731*rhoppg
-#    rhogcc[0] = 0.01
+    #rhogcc[0] = 0.01
     
     i=1
     maxwaterppg = wdf*8.34540426515252*water
