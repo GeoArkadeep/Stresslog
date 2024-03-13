@@ -1651,9 +1651,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             print("normal")
         else:
             if(sigmas[2]<sigmas[1]):
-                alpha = 90
-                beta = 0 #reverse faulting regime
-                gamma = 0
+                alpha = 0
+                beta = -90 #reverse faulting regime
+                gamma = 180
                 print("reverse")                  
             else:
                 alpha = 0 #strike slip faulting regime

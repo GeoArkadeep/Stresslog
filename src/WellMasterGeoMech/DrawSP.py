@@ -130,7 +130,7 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
         maxSH = SHMP
         #return [Sv,shmin,(shmin+Sv)/2]
     if shmin > Sv:
-        minSH = Sv
+        minSH = shmin
         maxSH = SHMP
     else:
         #lower = np.array([ShmP, Sv])
@@ -301,12 +301,9 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
     lowerd = [Shm3,DITFshmax3]
     upperd = [Shm4,DITFshmax4]
     
-    if(shmin>Sv):
-        minSH = Sv
-        maxSH = SHMP
-        return [Sv,shmin,(shmin+Sv)/2]
+
     if shmin > Sv:
-        minSH = Sv
+        minSH = shmin
         maxSH = SHMP
     else:
         #lower = np.array([ShmP, Sv])
@@ -388,7 +385,7 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6):
     if shmin<ShmP or shmin>SHMP:
         return [np.nan, np.nan, np.nan]
     if shmin > Sv:
-        minSH = Sv
+        minSH = shmin
         maxSH = SHMP
     else:
         #lower = np.array([ShmP, Sv])
