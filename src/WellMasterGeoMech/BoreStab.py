@@ -275,7 +275,14 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
         plt2.show()
     return np.min(line)
 
-def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,azimuthu=0,inclinationi=0):
+def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
+    #phi = 183-(163*nu) ## wayy too high
+    #phi = np.arcsin(1-(nu/(1-nu))) #Still too high
+    phi = np.arcsin(1-(2*nu)) #unModified Zhang
+    mui = (1+np.sin(phi))/(1-np.sin(phi))
+    #mui = 1.9
+    print("Mu_i = ",mui)
+    fmui = ((((mui**2)+1)**0.5)+mui)**2
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
     inclination = np.zeros((10,37))
@@ -308,7 +315,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
                 widthR[pointer] = (pointer/360)*0.67827 #in metres
                 pointer+=1
                 
-                if STM>UCS:
+                if UCS<((STM)-(fmui*(deltaP))):
                     width2+=0.5
                     
             #if width>0:

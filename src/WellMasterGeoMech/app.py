@@ -1072,6 +1072,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         zden2 = np.full(len(md),np.nan)
         gr = np.full(len(md),np.nan)
     
+    lradiff = np.full(len(md),np.nan)
+    
     if alias['resshal'] != [] and alias['resdeep'] != []:
         rS = well.data[alias['resshal'][0]].values
         rD = well.data[alias['resdeep'][0]].values
@@ -1488,7 +1490,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 horsud[i] = horsuda*(vp[i]**horsude)
                 if np.isnan(ucs2[i]) or ucs2[i]==0:
                     ucs2[i] = horsud[i]
-                phi[i] = np.degrees(np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
+                phi[i] = np.arcsin((vp[i]+lala)/(vp[i]+lalb))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
@@ -1661,12 +1663,12 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
                 gamma = -90
                 print("Strike slip")
         
-        sigmas.sort()
+        sigmas.sort(reverse=True)
         
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu3[doiX],incdoi,azmdoi)
+        draw(output_fileS,tvd[doiX],sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu2[doiX],incdoi,azmdoi)
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
