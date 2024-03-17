@@ -47,16 +47,19 @@ devpath = None
 lithopath = None
 ucspath = None
 flagpath = None
+formpath = None
 wella = None
 #well2 =None
 deva = None
 lithos = None
 UCSs = None
 flags = None
+forms=None
 h1 = None
 h2 = None
 h3 = None
 h4 = None
+h5 = None
 currentstatus = "Ready"
 depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
@@ -224,6 +227,9 @@ class MyApp(toga.App):
         
         self.page2_btn5 = toga.Button("Load Breakouts/DITFs from csv", on_press=self.open_flags, style=Pack(padding=10))
         self.page2.add(self.page2_btn5)
+        
+        self.page2_btn6 = toga.Button("Load Formations from csv", on_press=self.open_formations, style=Pack(padding=10))
+        self.page2.add(self.page2_btn6)
         
         self.page2_btn1 = toga.Button("Back", on_press=self.show_page1, style=Pack(padding=10))
         self.page2.add(self.page2_btn1)
@@ -688,7 +694,15 @@ class MyApp(toga.App):
         else:
             print("No flag file loaded")
 
-
+    def on_result5(self, widget):
+        global h5, formpath
+        if formpath is not None:               
+            h5 = readFormFromAscii(formpath)
+            print("Loaded formation file:", formpath)
+            print(h5)           
+            
+        else:
+            print("No formation file loaded")
 
     async def open_litho(self, widget):
         global lithopath
@@ -713,7 +727,15 @@ class MyApp(toga.App):
             self.on_result4(widget)
         except Exception as e:
             print("Error:", e)
-            
+    
+    async def open_formations(self, widget):
+        global formpath
+        try:
+            formpath = await self.main_window.open_file_dialog(title="Select a Formation file", multiselect=False)
+            self.on_result5(widget)
+        except Exception as e:
+            print("Error:", e)
+    
     def save_las(self,widget):
         #global wella
         #well = wella
@@ -1141,6 +1163,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     global lithos
     global UCSs
     global flags
+    global forms
     
     glwd = float(attrib[1])
     glf = glwd*(3.28084)
@@ -1177,6 +1200,8 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     nulitho = np.zeros(len(tvdbgl))
     dtlitho = np.zeros(len(tvdbgl))
     ilog = np.zeros(len(tvdbgl))
+    formtvd = np.full(len(tvd),np.nan)
+    hydrotvd = np.full(len(tvd),np.nan)
     
     if lithos is not None:
         lithot = lithos.values.tolist()
@@ -1191,9 +1216,47 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         lastimg = [final_depth,0]
         imagelog.insert(0,firstimg)
         imagelog.append(lastimg)
+    
+    if forms is not None:
+        formlist = forms.values.tolist()
+        ttvdlist = np.transpose(formlist)[4]
+        ftvdlist = np.transpose(formlist)[0]
+        ttvdlist = np.append(0,ttvdlist)
+        fttvdlist = np.append(0,ftvdlist)
+        difftvd = np.zeros(len(fttvdlist))
+        hydrldiff = np.zeros(len(fttvdlist))
+        htvdlist = np.zeros(len(fttvdlist))
+        
+        i=0
+        while i<len(fttvdlist):
+            difftvd[i] = float(fttvdlist[i])-float(ttvdlist[i])
+            fttvdlist[i] = float(fttvdlist[i])
+            ttvdlist[i] = float(ttvdlist[i])
+            hydrldiff[i]= float(difftvd[i])
+            if hydrldiff[i]<0:
+                hydrldiff[i]=0
+            htvdlist[i] = float(fttvdlist[i])+float(hydrldiff[i])
+            i+=1
+        difftvd = np.append(difftvd,difftvd[-1])
+        hydrldiff = np.append(hydrldiff,hydrldiff[-1])
+        fttvdlist = np.append(fttvdlist,final_depth)
+        ttvdl = float(fttvdlist[-1])-float(difftvd[-1])
+        htvdl = float(fttvdlist[-1])-float(hydrldiff[-1])
+        ttvdlist = np.append(ttvdlist,ttvdl)
+        htvdlist = np.append(htvdlist,htvdl)
+        
+        fttvdlist=fttvdlist.astype(float)
+        ttvdlist=ttvdlist.astype(float)
+        htvdlist=htvdlist.astype(float)
+        print("Differential TVD list:")
+        print([difftvd,fttvdlist,ttvdlist])
+    
+
+    
     j=0
     k=0
     m=0
+    n=0
     i=0
     nu3 = [nu] * (len(tvd))
     mu2 = [0.6] * (len(tvd))
@@ -1261,6 +1324,10 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
             else:
                 ilog[i] = imagelog[m][1]
                 m+=1
+        if forms is not None:
+            formtvd[i] = np.interp(tvd[i],fttvdlist,ttvdlist)
+            hydrotvd[i] = np.interp(tvd[i],fttvdlist,htvdlist)
+
         i+=1
     
     #check plot
@@ -1272,6 +1339,9 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     plt.plot(ilog,md)
     plt.show()
     plt.clf()"""
+    #plt.plot(hydrotvd,tvd)
+    #plt.show()
+    #plt.clf()
     
     print("air gap is ",agf,"feet")
     if glwd>=0:
@@ -2034,6 +2104,14 @@ def readFlagFromAscii(flagpath, delim = r'[ ,	]'):
     flags=flag
     flagheader = list(flag.columns)
     return flag
+
+def readFormFromAscii(formpath, delim = r'[ ,	]'):
+    global forms
+    form=pd.read_csv(formpath, sep=delim)
+    forms=form
+    formheader = list(form.columns)
+    return form
+
 
 def datasets_to_las(path, datasets, **kwargs):
     """
