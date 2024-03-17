@@ -31,6 +31,7 @@ os.makedirs(input_dir, exist_ok=True)
 output_file = os.path.join(output_dir, "PlotFigure.png")
 output_fileS = os.path.join(output_dir, "PlotStability.png")
 output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
+output_fileVec = os.path.join(output_dir, "PlotVec.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
@@ -1645,30 +1646,43 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
         print("SigmaHM = ",sigmaHMaxmpa)
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         print(sigmas)
-
+        
+        
         if sigmas[2]>sigmas[0]:
-            alpha = 90
-            beta = 0 #normal faulting regime
+            alpha = 0
+            beta = 90 #normal faulting regime
             gamma = 0
             print("normal")
         else:
             if(sigmas[2]<sigmas[1]):
                 alpha = 0
-                beta = -90 #reverse faulting regime
-                gamma = 180
+                beta = 0 #reverse faulting regime
+                gamma = 0
                 print("reverse")                  
             else:
                 alpha = 0 #strike slip faulting regime
-                beta = 90
-                gamma = -90
+                beta = 0
+                gamma = 90
                 print("Strike slip")
         
-        sigmas.sort(reverse=True)
         
+        sigmas.sort(reverse=True)
+        alpha = alpha + offset
+        beta= beta+tilt
+        #gamma=0
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
+        
+        from PlotVec import plotVectors
+        from BoreStab import getStens
+        
+        m = np.min([sigmas[0],sigmas[1],sigmas[2]])
+        sten = getStens(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        sn,se,sd = np.linalg.eigh(sten)[0]
+        on,oe,od = np.linalg.eigh(sten)[1]
+        plotVectors(on,oe,od,2,sn,se,sd,output_fileVec)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,offset,nu2[doiX],incdoi,azmdoi)
+        draw(output_fileS,tvd[doiX],sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,0,nu2[doiX],incdoi,azmdoi)
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     

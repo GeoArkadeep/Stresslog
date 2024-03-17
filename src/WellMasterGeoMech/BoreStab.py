@@ -17,6 +17,39 @@ import math
 #theta = 37
 #deltaP = 3
 
+def getStens(s1,s2,s3,alpha,beta,gamma):
+    Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
+    #print(Ss)
+
+    alpha = np.radians(alpha)
+    beta = np.radians(beta)
+    gamma = np.radians(gamma)
+
+    Rs = np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
+                   [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
+                   [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
+    #print(Rs)
+    RsT = np.transpose(Rs)
+    Sg = RsT@Ss@Rs
+    return Sg[0],Sg[1],Sg[2]
+
+def getOrit(s1,s2,s3,alpha,beta,gamma):
+    Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
+    #print(Ss)
+
+    alpha = np.radians(alpha)
+    beta = np.radians(beta)
+    gamma = np.radians(gamma)
+
+    Rs = np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
+                   [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
+                   [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
+    #print(Rs)
+    RsT = np.transpose(Rs)
+    Sg = RsT@Ss@Rs
+    orit = np.linalg.eigh(Sg)[1]
+    return(orit)
+
 def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     #print(Ss)
@@ -32,22 +65,32 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     sVo = np.array([[0.0],[0.0],[1.0]])
     sNo = np.array([[1.0],[0.0],[0.0]])
     sEo = np.array([[0.0],[1.0],[0.0]])
-
-    sVr = Rs@sVo
-    sNr = Rs@sNo
-    sEr = Rs@sEo
+    
+    uvec = getOrit(s1,s2,s3,alpha,beta,gamma)
+    sVr = uvec[0]#Rs@sVo
+    sNr = uvec[1]#Rs@sNo
+    sEr = uvec[2]#Rs@sEo
 
     sNt1 = np.degrees(np.arctan2(sNr[1],sNr[0]))
-    sNt2 =np.degrees(np.arctan2(((sNr[0]**2)+(sNr[1]**2))**0.5,sNr[2]))
+    sNt2 =np.degrees(np.arctan2((np.hypot(sNr[0],sNr[1])),sNr[2]))
     sEt1 =np.degrees(np.arctan2(sEr[1],sEr[0]))
-    sEt2 =np.degrees(np.arctan2(((sEr[0]**2)+(sEr[1]**2))**0.5,sEr[2]))
-    sVt1 =np.degrees(np.arctan2(((sVr[0]**2)+(sVr[1]**2))**0.5,sVr[2]))
-    sVt2 =np.degrees(np.arctan2(sVr[1],sVr[0]))
-    orit = [sVt2,sVt1,sNt1,sNt2,sEt1,sEt2]
+    sEt2 =np.degrees(np.arctan2(((np.hypot(sEr[0],sEr[1]))),sEr[2]))
+    sVt2 =np.degrees(np.arctan2(((np.hypot(sVr[0],sVr[1]))),sVr[2]))
+    sVt1 =np.degrees(np.arctan2(sVr[1],sVr[0]))
+    if sVt1>90:
+        #print("Hey",sVt2)
+        sVt1=180-sVt1
+        
+    if sNt1>90:
+        sNt1=180-sNt1
+    if sEt1>90:
+        sEt1=180-sEt1
+    
+    orit = [sNt1,sNt2,sEt1,sEt2,sVt2,sVt1]
     
     delta = math.radians(azim)
     phi   = math.radians(inc)
-
+ 
     Rb = np.array([[(-1)*math.cos(delta)*math.cos(phi), (-1)*math.sin(delta)*math.cos(phi), math.sin(phi)],
                    [math.sin(delta), (-1)*math.cos(delta), 0],
                    [math.cos(delta)*math.sin(phi), math.sin(delta)*math.sin(phi), math.cos(phi)]])
@@ -334,7 +377,9 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
         #print(round((inc/10)*100),"%")
         inc+=1
 
-
+        
+    print(orit)
+    
     fig = plt2.figure()
     ax = fig.add_subplot(121,projection='polar')
     ax.grid(False)
@@ -346,20 +391,22 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     levels = np.linspace(0,np.min([s1,s2,s3]),1000)
     cax = ax.contourf(azimuth, inclination, values, 1000, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 1)
     ax.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
-    ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
-    if(orit[3]<=90):
-        ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
-    else:
-        ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
-    if(orit[5]<=90):
-        ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-        ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
-    else:
-        ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
+
+    
+    #ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
+    #ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
+    #if(orit[3]<=90):
+    #ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
+    #ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
+    #else:
+    #    ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
+    #    ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
+    #if(orit[5]<=90):
+    #ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
+    #ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
+    #else:
+    #    ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
+    #    ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     conversion_constantSG = 0.102/(tvd/1000)  # Change this to your desired conversion constant
     conversion_constantPPG = 0.102*8.345/(tvd/1000)  # Change this to your desired conversion constant
     ticks = np.linspace(0, np.min([s1,s2,s3]), 7)  # 10 evenly spaced ticks from 0 to s3
@@ -382,21 +429,21 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     cax2 = aws.contourf(azimuth, inclination, values2, 1300, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
     print(orit)
     aws.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
-    aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
-    aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
-    if(orit[3]<90):
-        aws.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-        aws.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
-    else:
-        aws.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-        aws.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
-    if(orit[5]<90):
-        aws.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-        aws.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
-    else:
-        aws.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
+    #aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
+    #aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
+    #aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
+    #if(orit[3]<90):
+    #aws.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
+    #aws.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
+    #else:
+    #    aws.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
+    #    aws.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
+    #if(orit[5]<90):
+    #aws.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
+    #aws.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
+    #else:
+    #    aws.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
+    #    ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     cb2 = fig.colorbar(cax2, ticks=[0,20,40,60,80,100,120], orientation = 'horizontal')
     cb2.set_label("Breakout Widths in Degrees")
     fig.suptitle("Stability Plot at "+str(round(tvd,2))+"m TVD")
