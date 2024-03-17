@@ -119,9 +119,9 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     Stmin = 0.5*(Szz + Stt - (((Szz-Stt)**2)+(4*(Ttz**2)))**0.5)
     #omega = np.degrees(np.arctan2(Szz,(((STMax**2)-(Szz**2))**0.5)))
     omega = np.degrees(np.arctan2(Stt,Szz))
-    if theta>math.radians(180):
+    #if theta>math.radians(180):
         #omega = np.degrees(np.arctan2((((Stt**2)-(Szz**2))**0.5),-Szz))
-        omega = 180-np.degrees(np.arctan2(Stt,Szz))
+        #omega = 180-np.degrees(np.arctan2(Stt,Szz))
     #print(STMax-Stmin, np.degrees(theta))
     return Stt,Szz,Ttz,STMax,Stmin,omega,orit
 
@@ -286,20 +286,23 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt2.show()
 
-def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
+def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     values = np.zeros((10,37))
     
     pointer= 0
     line = np.zeros(3610)
+    line2 = np.zeros(3610)
     angle= np.zeros(3610)
     width= 0
     frac = np.zeros(3610)
     widthR = np.zeros(3610)
+    ts = ucs/10
     while pointer<3610:
-        STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer/10, deltaP)
-        line[pointer] = STT
+        STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer/10, deltaP,Pp,nu)
+        line[pointer] = stm
+        line2[pointer] = STM
         angle[pointer] = omega
-        if STT<0:
+        if stm<ts:
             width+=1
             frac[pointer] = frac[pointer-1]+(1/math.tan(math.radians(omega)))
         else:
@@ -311,8 +314,9 @@ def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, alpha=0,beta=0,gamma=0,nu=0.35):
     if width>0:
         print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
         #plt2.scatter(np.array(range(0,3610)),frac)
-        #plt2.plot(angle)
+        plt2.plot(angle)
         plt2.plot(line)
+        plt2.plot(line2)
         #plt2.xlim((0,0.67827))
         #plt2.ylim((1,151))
         plt2.show()
