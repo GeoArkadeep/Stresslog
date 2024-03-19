@@ -18,7 +18,8 @@ matplotlib.use("svg")
 from matplotlib import pyplot as plt    
 import math
 
-
+import concurrent.futures
+#executor = concurrent.futures.ProcessPoolExecutor()
 
 user_home = os.path.expanduser("~/documents")
 app_data = os.getenv("APPDATA")
@@ -373,7 +374,7 @@ class MyApp(toga.App):
         self.page4.add(self.dbox)
         self.page4.add(button_box4)
         
-        self.main_window = toga.MainWindow(title=self.formal_name)
+        self.main_window = toga.MainWindow(title=self.formal_name,size=[1200,600])
         self.main_window.content = self.page1
         self.main_window.show()
         
@@ -851,30 +852,15 @@ class MyApp(toga.App):
         #model.append(tail2)
         #model.append(tail3)
         #model.append(tail4)
-        ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
-        file = open(modelpath,'w')
-        file.write(modelheader+'\n')
-        for item in model:
-            file.write(str(item)+",")
-        file.close()
-        print("Great Success!! :D")
-        image_path = 'PlotFigure.png'
         
-        self.progress.text = "Status: Done! Program Ready"
-        yield 0.1
+        executor = concurrent.futures.ThreadPoolExecutor()
+        future = executor.submit(plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15])))
+        future.add_done_callback(lambda f: on_plotPPmiller_done(self, f))
+        #ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+                
         
-        self.bg3.image = toga.Image(output_file)
-        self.bg3.refresh()
-        if float(model[13])>0:
-            
-            self.page3_btn5.enabled = True
-            self.bg4.image = toga.Image(output_fileS)
-            self.bg5.image = toga.Image(output_fileSP)
-            self.bg4.refresh()
-            self.bg5.refresh()
-            #self.show_page4(widget)
-        else:
-            self.page3_btn5.enabled = False
+        
+    
     
     def wellisvertical(self,widget):
         global depth_track
@@ -2286,7 +2272,22 @@ def datasets_to_las(path, datasets, **kwargs):
     with open(path, mode='w') as f:
         las.write(f, **kwargs)
 
-
+def on_plotPPmiller_done(self,future):
+    #result = future.result()  # Get the result from plotPPmiller
+    # Update the GUI with the result
+    # This might involve displaying the plot or showing a notification
+    self.bg3.image = toga.Image(output_file)
+    self.bg3.refresh()
+    if float(model[13])>0:
+        
+        self.page3_btn5.enabled = True
+        self.bg4.image = toga.Image(output_fileS)
+        self.bg5.image = toga.Image(output_fileSP)
+        self.bg4.refresh()
+        self.bg5.refresh()
+        #self.show_page4(widget)
+    else:
+        self.page3_btn5.enabled = False
 
 
 
