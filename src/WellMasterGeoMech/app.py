@@ -18,8 +18,8 @@ matplotlib.use("svg")
 from matplotlib import pyplot as plt    
 import math
 
-import concurrent.futures
-#executor = concurrent.futures.ProcessPoolExecutor()
+import threading
+import time
 
 user_home = os.path.expanduser("~/documents")
 app_data = os.getenv("APPDATA")
@@ -45,6 +45,7 @@ class BackgroundImageView(toga.ImageView):
         self.style.update(flex=1)
 
 #Global Variables
+toggle=0
 laspath = None
 devpath = None
 lithopath = None
@@ -90,7 +91,7 @@ model = data_into_list[0]
 print(model)
 class MyApp(toga.App):
     def startup(self):
-
+        
         self.page1 = toga.Box(style=Pack(direction=COLUMN, flex=1))
         self.bg1 = BackgroundImageView("BG1.png", style=Pack(flex = 5))
         self.page1.add(self.bg1)
@@ -241,11 +242,6 @@ class MyApp(toga.App):
         #Page 3
         self.page3 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
         
-        progressbox = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.progress = toga.Label("Status: Program Ready",style=Pack(alignment='center'))
-        progressbox.add(self.progress)
-        self.page3.add(progressbox)
-        
         # Create a container with ROW direction for plot and frac_grad_data
         plot_and_data_box = toga.Box(style=Pack(direction=ROW, flex=1))
         
@@ -290,6 +286,12 @@ class MyApp(toga.App):
         self.add_flow_grad_data_row(None, row_type='flow_psi')
 
         self.page3.add(plot_and_data_box)
+        
+        progressbox = toga.Box(style=Pack(direction=ROW, alignment='center'))
+        self.progress = toga.ProgressBar(max=None,style=Pack(alignment='center', width=400))
+        progressbox.add(self.progress)
+        self.progress.stop()
+        self.page3.add(progressbox)
         
         # Define the labels and default values
         global model
@@ -823,8 +825,39 @@ class MyApp(toga.App):
         print(attrib)
         print(wella.location.egl)
         #wella.unify_basis(keys=None, alias=None, basis=md)
-
-
+    
+    def plotppwrapper(self,*args, **kwargs):
+        #global model
+        result = plotPPmiller(*args, **kwargs)
+        
+        print("starting post")
+        self.bg3.image = toga.Image(output_file)
+        self.bg3.refresh()
+        self.progress.stop()
+        if float(model[13])>0:
+        
+            self.page3_btn5.enabled = True
+            self.bg4.image = toga.Image(output_fileS)
+            self.bg5.image = toga.Image(output_fileSP)
+            self.bg4.refresh()
+            self.bg5.refresh()
+            #self.show_page4(widget)
+        else:
+            self.page3_btn5.enabled = False
+        #self.progress.text = "Status: Done! Program Ready"
+        global toggle
+        toggle.join()
+        print("Wrapper done")
+        #time.sleep(2)
+        
+        return
+        
+    def start_plotPPmiller_thread(self,*args, **kwargs):
+    # Create a Thread to run plotPPmiller in the background
+        global toggle
+        toggle = threading.Thread(target=self.plotppwrapper, args=args, kwargs=kwargs)
+        toggle.start()
+        return
     
     def get_textbox_values(self,widget):
         global wella
@@ -832,7 +865,7 @@ class MyApp(toga.App):
         global model
         
         self.progress.text = "Status: Calculating, Standby"
-        yield 0.1
+        #yield 0.1
         self.getwelldev()
         data = pd.read_csv(modelpath,index_col=False)
         data_into_list = data.values.tolist()
@@ -846,16 +879,31 @@ class MyApp(toga.App):
         self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
         self.bg5.image = toga.Image('BG1.png')
+        #self.bg3.refresh()
+        #self.bg4.refresh()
+        #self.bg5.refresh()
         model = tv
         model = model + tail
         print(model)
         #model.append(tail2)
         #model.append(tail3)
         #model.append(tail4)
+        file = open(modelpath,'w')
+        file.write(modelheader+'\n')
+        for item in model:
+            file.write(str(item)+",")
+        file.close()
+        print("Great Success!! :D")
+        image_path = 'PlotFigure.png'
         
-        executor = concurrent.futures.ThreadPoolExecutor()
-        future = executor.submit(plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15])))
-        future.add_done_callback(lambda f: on_plotPPmiller_done(self, f))
+        self.progress.start()
+        #executor = concurrent.futures.ProcessPoolExecutor()
+        #loop = asyncio.get_event_loop()
+        ih = self.start_plotPPmiller_thread(self,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+
+        
+        #self.progress.text = "Status: Done! Program Ready"
+        #future.add_done_callback(lambda f: on_plotPPmiller_done(self, f))
         #ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
                 
         
@@ -1015,7 +1063,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPmiller(app_instance, well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -2124,7 +2172,7 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     # Save the modified plot
     plt.gcf().set_size_inches(15, 10)
     plt.savefig(output_file)#,dpi=600)
-    return
+    return df3
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
     dev=pd.read_csv(devpath, sep=delim)
@@ -2272,22 +2320,11 @@ def datasets_to_las(path, datasets, **kwargs):
     with open(path, mode='w') as f:
         las.write(f, **kwargs)
 
-def on_plotPPmiller_done(self,future):
+#def on_plotPPmiller_done(self,future):
     #result = future.result()  # Get the result from plotPPmiller
     # Update the GUI with the result
     # This might involve displaying the plot or showing a notification
-    self.bg3.image = toga.Image(output_file)
-    self.bg3.refresh()
-    if float(model[13])>0:
-        
-        self.page3_btn5.enabled = True
-        self.bg4.image = toga.Image(output_fileS)
-        self.bg5.image = toga.Image(output_fileSP)
-        self.bg4.refresh()
-        self.bg5.refresh()
-        #self.show_page4(widget)
-    else:
-        self.page3_btn5.enabled = False
+
 
 
 
