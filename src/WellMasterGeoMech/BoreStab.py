@@ -286,41 +286,53 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt2.show()
 
-def getHoopMin(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
-    values = np.zeros((10,37))
+def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
+    phi = np.arcsin(1-(2*nu)) #unModified Zhang
+    mui = (1+np.sin(phi))/(1-np.sin(phi))
+    fmui = ((((mui**2)+1)**0.5)+mui)**2
+    
+    #values = np.zeros((10,37))
     
     pointer= 0
-    line = np.zeros(3610)
-    line2 = np.zeros(3610)
-    angle= np.zeros(3610)
+    line = np.zeros(361)
+    line2 = np.zeros(361)
+    angle= np.zeros(361)
     width= 0
-    frac = np.zeros(3610)
-    widthR = np.zeros(3610)
-    ts = ucs/10
-    while pointer<3610:
-        STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer/10, deltaP,Pp,nu)
+    frac = np.zeros(361)
+    crush = np.zeros(361)
+    widthR = np.zeros(361)
+    ts = -ucs/10
+    while pointer<361:
+        STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer, deltaP,Pp,nu)
         line[pointer] = stm
         line2[pointer] = STM
         angle[pointer] = omega
         if stm<ts:
             width+=1
-            frac[pointer] = frac[pointer-1]+(1/math.tan(math.radians(omega)))
+            frac[pointer] = 1
         else:
             frac[pointer] = 0
+        
+        if ucs<((STM)-(fmui*(deltaP))):
+            crush[pointer] = 1
+        else:
+            crush[pointer] = 0
         #if pointer>180:
             #frac[pointer] = frac[360-pointer]
         widthR[pointer] = (pointer/360)*0.67827 #in metres
         pointer+=1
-    if width>0:
-        print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
-        #plt2.scatter(np.array(range(0,3610)),frac)
-        plt2.plot(angle)
-        plt2.plot(line)
-        plt2.plot(line2)
-        #plt2.xlim((0,0.67827))
-        #plt2.ylim((1,151))
-        plt2.show()
-    return np.min(line)
+        
+    #print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
+    #plt2.scatter(np.array(range(0,3610)),frac)
+    #plt2.plot(angle)
+    #plt2.plot(line)
+    #plt2.plot(line2)
+    #plt2.plot(frac)
+    #plt2.plot(crush)
+    #plt2.xlim((0,0.67827))
+    #plt2.ylim((1,151))
+    #plt2.show()
+    return crush,frac
 
 def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
     #phi = 183-(163*nu) ## wayy too high

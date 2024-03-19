@@ -18,6 +18,8 @@ matplotlib.use("svg")
 from matplotlib import pyplot as plt    
 import math
 
+
+
 user_home = os.path.expanduser("~/documents")
 app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "pp_app_plots")
@@ -1821,6 +1823,64 @@ def plotPPmiller(well,app_instance, rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     lasheader = well.header
     datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
     #well.to_las('output.las')
+    
+    from BoreStab import getHoop
+  
+    if doi>0:
+        doiactual = find_nearest_depth(tvdm,doi-100)
+        doiS = doiactual[0]
+        doiactual2 = find_nearest_depth(tvdm,doi+100)
+        doiF = doiactual2[0]
+        frac = np.zeros([doiF-doiS,361])
+        crush = np.zeros([doiF-doiS,361])
+        i=doiS
+        j=0
+        while i <doiF:
+            sigmaVmpa = obgpsi[i]/145.038
+            sigmahminmpa = psifg[i]/145.038
+            sigmaHMaxmpa = sgHMpsi[i]/145.038
+            ppmpa = psipp[i]/145.038
+            bhpmpa = mudpsi[i]/145.038
+            ucsmpa = horsud[i]
+            deltaP = bhpmpa-ppmpa
+            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+            devdoi = well.location.deviation[i]
+            incdoi = devdoi[2]
+            azmdoi = devdoi[1]
+            if sigmas[2]>sigmas[0]:
+                alpha = 0
+                beta = 90 #normal faulting regime
+                gamma = 0
+                #print("normal")
+            else:
+                if(sigmas[2]<sigmas[1]):
+                    alpha = 0
+                    beta = 0 #reverse faulting regime
+                    gamma = 0
+                    #print("reverse")                  
+                else:
+                    alpha = 0 #strike slip faulting regime
+                    beta = 0
+                    gamma = 90
+                    #print("Strike slip")
+            sigmas.sort(reverse=True)
+            alpha = alpha + offset
+            beta= beta+tilt
+
+            cr,fr = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
+            crush[j] = cr
+            frac[j] = fr
+            i+=1
+            j+=1
+        plt.imshow(frac)
+        plt.savefig("fracs.png")
+        plt.clf()
+        plt.imshow(crush)
+        plt.savefig("crush.png")
+        plt.clf()
+        print(crush)
+        print(frac)
+        
     
     """
     #Preview Plot

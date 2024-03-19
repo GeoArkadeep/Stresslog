@@ -7,30 +7,77 @@ y = [1, 3, 5]
 z = [1, 2, 3]
 
 def plotVectors(x, y, z, m,lx,ly,lz,path):
+    
+    #x += [2, 0, 0]
+    #y += [0, 2, 0]
+    #z += [0, 0, 2]
+
+    
     fig = plt.figure(figsize=(6,6))
     ax = fig.add_subplot(projection='3d')
 
-    # Colors and labels for each vector
-    colors = ['r', 'g', 'b']
-    labels = [str(round(lx))+"MPa", str(round(ly))+"MPa", str(round(lz))+"MPa"]
+    # Original colors and labels for each vector
+    original_colors = ['r', 'g', 'b']
+    original_labels = [
+        f"{round(lx)}MPa", 
+        f"{round(ly)}MPa", 
+        f"{round(lz)}MPa"
+    ]
 
-    # Plotting the vectors
+    # Plotting the original vectors
     for i in range(len(x)):
-        ax.quiver(0, 0, 0, x[i], y[i], z[i], color=colors[i], arrow_length_ratio=0.1, linewidth=1)
-        # Adding labels to the vectors
-        ax.text(x[i], y[i], z[i], labels[i], color=colors[i])
+        ax.quiver(0, 0, 0, x[i], y[i], z[i], color=original_colors[i], arrow_length_ratio=0.1, linewidth=1)
+        ax.text(x[i], y[i], z[i], original_labels[i], color=original_colors[i])
 
-    # Setting the axis limits to be centered at (0, 0, 0) and extend from -m to +m
+    # Unit vectors (N, E, D)
+    unit_vectors = [(0.5, 0, 0), (0,0.5, 0), (0, 0, 0.5)]
+    unit_colors = ['k', 'k', 'k']  # 'k' for black for the unit vectors
+    unit_labels = ["N", "E", "D"]
+    
+    # Plotting the original vectors
+    for i in range(len(x)):
+        ax.quiver(0, 0, 0, -x[i], -y[i], -z[i], color=original_colors[i], arrow_length_ratio=0.1, linewidth=1)
+        ax.text(x[i], y[i], z[i], original_labels[i], color=original_colors[i])
+
+    # Unit vectors (N, E, D)
+    unit_vectors = [(0.5, 0, 0), (0,0.5, 0), (0, 0, 0.5)]
+    unit_colors = ['k', 'k', 'k']  # 'k' for black for the unit vectors
+    unit_labels = ["N", "E", "D"]
+
+    # Plotting the unit vectors
+    for i, (ux, uy, uz) in enumerate(unit_vectors):
+        ax.quiver(0, 0, 0, ux, uy, uz, color=unit_colors[i], arrow_length_ratio=0.1, linewidth=1)
+        ax.text(ux, uy, uz, unit_labels[i], color=unit_colors[i])
+
     ax.set_xlim([-m, m])
     ax.set_ylim([-m, m])
     ax.set_zlim([-m, m])
     ax.set_xlabel('N axis')
     ax.set_ylabel('E axis')
     ax.set_zlabel('D axis')
-    ax.set_box_aspect([1,1,1])  # Ensuring a 1:1:1 aspect ratio
+    
+    unit_vectors = [(-0.5, 0, 0), (0,-0.5, 0), (0, 0, -0.5)]
+    unit_colors = ['k', 'k', 'k']  # 'k' for black for the unit vectors
+    unit_labels = ["S", "W", "U"]
+    
+    # Plotting the unit vectors
+    for i, (ux, uy, uz) in enumerate(unit_vectors):
+        ax.quiver(0, 0, 0, ux, uy, uz, color=unit_colors[i], arrow_length_ratio=0.1, linewidth=1)
+        ax.text(ux, uy, uz, unit_labels[i], color=unit_colors[i])
+
+    ax.set_xlim([-m, m])
+    ax.set_ylim([-m, m])
+    ax.set_zlim([-m, m])
+    ax.set_xlabel('N axis')
+    ax.set_ylabel('E axis')
+    ax.set_zlabel('D axis')
+    
+    
+    ax.set_box_aspect([1,1,1])
     ax.view_init(elev=45, azim=45)
-    plt.savefig(path,dpi=600)
+    plt.savefig(path, dpi=600)
     return plt
 
 # Example usage
-#plotVectors(x, y, z, 2).show()
+#plotVectors(x, y, z, 2, 23,30,40).show()
+
