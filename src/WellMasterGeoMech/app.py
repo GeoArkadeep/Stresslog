@@ -19,6 +19,10 @@ from matplotlib import pyplot as plt
 import math
 
 import threading
+import asyncio
+import concurrent.futures
+from threading import Lock
+model_lock = Lock()
 import time
 
 user_home = os.path.expanduser("~/documents")
@@ -45,7 +49,6 @@ class BackgroundImageView(toga.ImageView):
         self.style.update(flex=1)
 
 #Global Variables
-toggle=0
 laspath = None
 devpath = None
 lithopath = None
@@ -64,6 +67,11 @@ h2 = None
 h3 = None
 h4 = None
 h5 = None
+mwvalues = None
+flowgradvals = None
+fracgradvals= None
+flowpsivals = None
+fracpsivals = None
 currentstatus = "Ready"
 depth_track = None
 attrib = [1,0,0,0,0,0,0,0]
@@ -827,10 +835,16 @@ class MyApp(toga.App):
         #wella.unify_basis(keys=None, alias=None, basis=md)
     
     def plotppwrapper(self,*args, **kwargs):
-        #global model
-        result = plotPPmiller(*args, **kwargs)
-        
-        print("starting post")
+        print("thread spawn")
+        try:
+            result = plotPPmiller(*args, **kwargs)
+        except Exception as e:
+            print(f"Error in thread: {e}")
+        self.loop.call_soon_threadsafe(self.onplotfinish)
+        print("Thread despawn")
+        return
+    
+    def onplotfinish(self):
         self.bg3.image = toga.Image(output_file)
         self.bg3.refresh()
         self.progress.stop()
@@ -845,21 +859,18 @@ class MyApp(toga.App):
         else:
             self.page3_btn5.enabled = False
         #self.progress.text = "Status: Done! Program Ready"
-        global toggle
-        toggle.join()
         print("Wrapper done")
-        #time.sleep(2)
-        
-        return
-        
-    def start_plotPPmiller_thread(self,*args, **kwargs):
-    # Create a Thread to run plotPPmiller in the background
-        global toggle
-        toggle = threading.Thread(target=self.plotppwrapper, args=args, kwargs=kwargs)
-        toggle.start()
         return
     
-    def get_textbox_values(self,widget):
+    def start_plotPPmiller_thread(self,*args, **kwargs):
+    # Create a Thread to run plotPPmiller in the background
+        #self.loop = asyncio.get_event_loop()
+        thread = threading.Thread(target=self.plotppwrapper, args=args, kwargs=kwargs)#, on_close=self.onplotfinish)
+        thread.start()
+        #time.sleep(1)
+        return
+    
+    async def get_textbox_values(self,widget):
         global wella
         global attrib
         global model
@@ -896,12 +907,24 @@ class MyApp(toga.App):
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
         
+        global mwvalues
+        global flowgradvals
+        global fracgradvals
+        global flowpsivals
+        global fracpsivals
+        
+        mwvalues = self.get_depth_mw_data_values()
+        fracgradvals = self.get_frac_grad_data_values()[0]
+        flowgradvals = self.get_flow_grad_data_values()[0]
+        fracpsivals = self.get_frac_grad_data_values()[1]
+        flowpsivals = self.get_flow_grad_data_values()[1]
+        
         self.progress.start()
         #executor = concurrent.futures.ProcessPoolExecutor()
-        #loop = asyncio.get_event_loop()
-        ih = self.start_plotPPmiller_thread(self,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
-
-        
+        self.loop = asyncio.get_event_loop()
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            ih = await self.loop.run_in_executor(pool,self.start_plotPPmiller_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+        #self.onplotfinish()
         #self.progress.text = "Status: Done! Program Ready"
         #future.add_done_callback(lambda f: on_plotPPmiller_done(self, f))
         #ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
@@ -1063,7 +1086,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(app_instance, well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1085,7 +1108,13 @@ def plotPPmiller(app_instance, well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
     
-    detail = app_instance.get_depth_mw_data_values()
+    global mwvalues
+    global flowgradvals
+    global fracgradvals
+    global flowpsivals
+    global fracpsivals
+    
+    detail = mwvalues
     print(detail)
     i = 0
     mud_weight = []
@@ -1095,10 +1124,10 @@ def plotPPmiller(app_instance, well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu 
     print(mud_weight)
     first = [mud_weight[0][0],0]
     last = [mud_weight[-1][0],final_depth]
-    frac_grad_data = app_instance.get_frac_grad_data_values()[0]
-    flow_grad_data = app_instance.get_flow_grad_data_values()[0]
-    frac_psi_data = app_instance.get_frac_grad_data_values()[1]
-    flow_psi_data = app_instance.get_flow_grad_data_values()[1]
+    frac_grad_data = fracgradvals
+    flow_grad_data = flowgradvals
+    frac_psi_data = fracpsivals
+    flow_psi_data = flowpsivals
     
     mud_weight.insert(0,first)
     mud_weight.append(last)
