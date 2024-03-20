@@ -296,10 +296,10 @@ class MyApp(toga.App):
         self.page3.add(plot_and_data_box)
         
         progressbox = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.progress = toga.ProgressBar(max=None,style=Pack(alignment='center', width=400))
+        self.progress = toga.ProgressBar(max=None,style=Pack(alignment='center', width = 512, height=5, flex=1))
         progressbox.add(self.progress)
         self.progress.stop()
-        self.page3.add(progressbox)
+        self.page3.add(self.progress)
         
         # Define the labels and default values
         global model
@@ -384,7 +384,7 @@ class MyApp(toga.App):
         self.page4.add(self.dbox)
         self.page4.add(button_box4)
         
-        self.main_window = toga.MainWindow(title=self.formal_name,size=[1200,600])
+        self.main_window = toga.MainWindow(title=self.formal_name,size=[1240,620])
         self.main_window.content = self.page1
         self.main_window.show()
         
@@ -847,6 +847,10 @@ class MyApp(toga.App):
     def onplotfinish(self):
         self.bg3.image = toga.Image(output_file)
         self.bg3.refresh()
+        self.page3_btn1.enabled = True
+        self.page3_btn2.enabled = True
+        self.page3_btn3.enabled = True
+        self.page3_btn4.enabled = True
         self.progress.stop()
         if float(model[13])>0:
         
@@ -906,6 +910,12 @@ class MyApp(toga.App):
         file.close()
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
+        
+        self.page3_btn1.enabled = False
+        self.page3_btn2.enabled = False
+        self.page3_btn3.enabled = False
+        self.page3_btn4.enabled = False
+        self.page3_btn5.enabled = False
         
         global mwvalues
         global flowgradvals
@@ -1888,14 +1898,15 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     #well.to_las('output.las')
     
     from BoreStab import getHoop
-  
-    if doi>0:
-        doiactual = find_nearest_depth(tvdm,doi-100)
+    from plotangle import plotfracs
+    def drawBHimage(doi):
+        doiactual = find_nearest_depth(tvdm,doi-5)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+100)
+        doiactual2 = find_nearest_depth(tvdm,doi+5)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,361])
         crush = np.zeros([doiF-doiS,361])
+        data=np.zeros([doiF-doiS,3])
         i=doiS
         j=0
         while i <doiF:
@@ -1930,20 +1941,26 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
             alpha = alpha + offset
             beta= beta+tilt
 
-            cr,fr = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
+            cr,fr,minazi,maxazi,minangle,maxangle = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
             crush[j] = cr
             frac[j] = fr
+            data[j] = [tvd[i],minazi,minangle] 
             i+=1
             j+=1
-        plt.imshow(frac)
+        plt.imshow(frac,cmap='jet')
         plt.savefig("fracs.png")
         plt.clf()
-        plt.imshow(crush)
+        plt.imshow(crush,cmap='jet')
         plt.savefig("crush.png")
         plt.clf()
+        plotu = plotfracs(data)
+        plotu.savefig("patterns.png",dpi=3600)
+        plotu.clf()
         print(crush)
         print(frac)
-        
+    
+    if doi>0:
+        drawBHimage(doi)
     
     """
     #Preview Plot

@@ -321,7 +321,10 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
             #frac[pointer] = frac[360-pointer]
         widthR[pointer] = (pointer/360)*0.67827 #in metres
         pointer+=1
-        
+    minstress = np.argmin(line[0:180])
+    maxstress = np.argmax(line2[0:180])
+    minstress2 = minstress+180
+    maxstress2 = maxstress+180
     #print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
     #plt2.scatter(np.array(range(0,3610)),frac)
     #plt2.plot(angle)
@@ -332,7 +335,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     #plt2.xlim((0,0.67827))
     #plt2.ylim((1,151))
     #plt2.show()
-    return crush,frac
+    return crush,frac,minstress,maxstress,angle[minstress],angle[maxstress]
 
 def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
     #phi = 183-(163*nu) ## wayy too high
