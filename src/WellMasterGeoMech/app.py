@@ -39,6 +39,7 @@ output_file = os.path.join(output_dir, "PlotFigure.png")
 output_fileS = os.path.join(output_dir, "PlotStability.png")
 output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
 output_fileVec = os.path.join(output_dir, "PlotVec.png")
+output_fileBHI = os.path.join(output_dir, "PlotBHI.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
@@ -364,11 +365,18 @@ class MyApp(toga.App):
         
         self.page4 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
         self.dbox = toga.Box(style=Pack(direction=ROW, alignment='center',flex=1))
+        self.dbox2 = toga.Box(style=Pack(direction=ROW, alignment='center',flex=1))
         self.bg5 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
         self.dbox.add(self.bg5)
 
         self.bg4 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
         self.dbox.add(self.bg4)
+        
+        self.bg6 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        self.dbox2.add(self.bg6)
+
+        self.bg7 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        self.dbox2.add(self.bg7)
         
         button_box4 = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
         
@@ -382,6 +390,7 @@ class MyApp(toga.App):
         button_box4.add(self.page4_btn3)
         
         self.page4.add(self.dbox)
+        self.page4.add(self.dbox2)
         self.page4.add(button_box4)
         
         self.main_window = toga.MainWindow(title=self.formal_name,size=[1240,620])
@@ -857,8 +866,12 @@ class MyApp(toga.App):
             self.page3_btn5.enabled = True
             self.bg4.image = toga.Image(output_fileS)
             self.bg5.image = toga.Image(output_fileSP)
+            self.bg6.image = toga.Image(output_fileVec)
+            self.bg7.image = toga.Image(output_fileBHI)
             self.bg4.refresh()
             self.bg5.refresh()
+            self.bg6.refresh()
+            self.bg7.refresh()
             #self.show_page4(widget)
         else:
             self.page3_btn5.enabled = False
@@ -894,6 +907,8 @@ class MyApp(toga.App):
         self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
         self.bg5.image = toga.Image('BG1.png')
+        self.bg6.image = toga.Image('BG1.png')
+        self.bg7.image = toga.Image('BG1.png')
         #self.bg3.refresh()
         #self.bg4.refresh()
         #self.bg5.refresh()
@@ -1151,17 +1166,19 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     vs = 0
     vpvs = 0
     nu2 = []
+    
+    dt = well.data[alias['sonic'][0]]
+    
+    md = well.data['MD'].values
     try:
         nu2 = getNu(well, nu)
     except:
-        nu2 = [nu] * (len(well.data[alias['sonic'][0]]))
+        nu2 = [nu] * (len(md))
     
     
     #kth = well.data['KTH']
         
-    dt = well.data[alias['sonic'][0]]
-    
-    md = well.data['MD'].values
+
     
     try:
         zden2 = well.data[alias['density'][0]].values
@@ -1604,7 +1621,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
                 horsud[i] = horsuda*(vp[i]**horsude)
                 if np.isnan(ucs2[i]) or ucs2[i]==0:
                     ucs2[i] = horsud[i]
-                phi[i] = (np.arcsin((vp[i]+lala)/(vp[i]+lalb)))
+                phi[i] = np.arcsin(1-(2*nu2[i]))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
@@ -1636,7 +1653,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
                 horsud[i] = horsuda*(vp[i]**horsude)
                 if np.isnan(ucs2[i]) or ucs2[i]==0:
                     ucs2[i] = horsud[i]
-                phi[i] = np.arcsin((vp[i]+lala)/(vp[i]+lalb))
+                phi[i] = np.arcsin(1-(2*nu2[i]))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
@@ -1713,9 +1730,8 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         i+=1
     sgHMpsi = interpolate_nan(sgHMpsi)
     #psisfl = (psimes[:]*H[:])+K[:]
-    from BoreStab import drawStab
-    from BoreStab import drawBreak
-    from BoreStab import drawDITF
+
+    from BoreStab import get_optimal
     from BoreStab import draw
     
     
@@ -1783,16 +1799,15 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         bhpmpa = mudpsi[doiX]/145.038
         ucsmpa = shorsud[doiX]
         ilog_flag=ilog[doiX]
-        stresspolygon = [sigmaVmpa,ppmpa,bhpmpa,ucsmpa]
-        print(stresspolygon)
-        print(phi[doiX])
+        print("nu is ",nu2[doiX])
+        print("phi is ",np.degrees(phi[doiX]))
         drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX])
         sigmaHMaxmpa = sgHMpsi[doiX]/145.038
         print("SigmaHM = ",sigmaHMaxmpa)
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         print(sigmas)
         
-        
+        """
         if sigmas[2]>sigmas[0]:
             alpha = 0
             beta = 90 #normal faulting regime
@@ -1810,24 +1825,30 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
                 gamma = 90
                 print("Strike slip")
         
+        """
         
-        sigmas.sort(reverse=True)
-        alpha = alpha + offset
-        beta= beta+tilt
-        #gamma=0
+        alpha = offset
+        beta= tilt
+        gamma=0
+        from BoreStab import getRota
+        Rmat = getRota(alpha,beta,gamma)
+        #sigmas[2] = sigmaVmpa+(sigmaVmpa - sigmaVmpa*Rmat[2][2])/Rmat[2][2]
+        print(sigmas)
+        #sigmas.sort(reverse=True)
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
         
-        from PlotVec import plotVectors
+        from PlotVec import savevec
         from BoreStab import getStens
         
         m = np.min([sigmas[0],sigmas[1],sigmas[2]])
-        sten = getStens(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        sten = getStens(osx,osy,osz,alpha,beta,gamma)
         sn,se,sd = np.linalg.eigh(sten)[0]
         on,oe,od = np.linalg.eigh(sten)[1]
-        plotVectors(on,oe,od,2,sn,se,sd,output_fileVec)
+        savevec(on,oe,od,2,sn,se,sd,output_fileVec)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],sigmas[0],sigmas[1],sigmas[2],sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,0,nu2[doiX],incdoi,azmdoi)
+        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,0,nu2[doiX],incdoi,azmdoi)
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
@@ -1900,9 +1921,9 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     from BoreStab import getHoop
     from plotangle import plotfracs
     def drawBHimage(doi):
-        doiactual = find_nearest_depth(tvdm,doi-5)
+        doiactual = find_nearest_depth(tvdm,doi-25)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+5)
+        doiactual2 = find_nearest_depth(tvdm,doi+25)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,361])
         crush = np.zeros([doiF-doiS,361])
@@ -1917,10 +1938,11 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
             bhpmpa = mudpsi[i]/145.038
             ucsmpa = horsud[i]
             deltaP = bhpmpa-ppmpa
-            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+            sigmas = [osx,osy,osz]
             devdoi = well.location.deviation[i]
             incdoi = devdoi[2]
             azmdoi = devdoi[1]
+            """
             if sigmas[2]>sigmas[0]:
                 alpha = 0
                 beta = 90 #normal faulting regime
@@ -1940,24 +1962,19 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
             sigmas.sort(reverse=True)
             alpha = alpha + offset
             beta= beta+tilt
-
+            """
             cr,fr,minazi,maxazi,minangle,maxangle = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
             crush[j] = cr
             frac[j] = fr
             data[j] = [tvd[i],minazi,minangle] 
             i+=1
             j+=1
-        plt.imshow(frac,cmap='jet')
-        plt.savefig("fracs.png")
+        plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
+        plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
+        plt.savefig(output_fileBHI)
         plt.clf()
-        plt.imshow(crush,cmap='jet')
-        plt.savefig("crush.png")
-        plt.clf()
-        plotu = plotfracs(data)
-        plotu.savefig("patterns.png",dpi=3600)
-        plotu.clf()
-        print(crush)
-        print(frac)
+        #print(crush)
+        #print(frac)
     
     if doi>0:
         drawBHimage(doi)

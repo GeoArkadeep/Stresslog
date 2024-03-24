@@ -6,14 +6,14 @@ x = [2, 1, 4]
 y = [1, 3, 5]
 z = [1, 2, 3]
 
-def plotVectors(x, y, z, m,lx,ly,lz,path):
+def plotVectors(x, y, z, m,lx,ly,lz):
     
     #x += [2, 0, 0]
     #y += [0, 2, 0]
     #z += [0, 0, 2]
 
     
-    fig = plt.figure(figsize=(6,6))
+    fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
 
     # Original colors and labels for each vector
@@ -75,9 +75,15 @@ def plotVectors(x, y, z, m,lx,ly,lz,path):
     
     ax.set_box_aspect([1,1,1])
     ax.view_init(elev=45, azim=45)
-    plt.savefig(path, dpi=600)
+    #plt.savefig(path, dpi=600)
+    #plt.show()
     return plt
 
 # Example usage
 #plotVectors(x, y, z, 2, 23,30,40).show()
-
+def showvec(x, y, z, m,lx,ly,lz):
+    plotVectors(x, y, z, m,lx,ly,lz).show()
+    return
+def savevec(x, y, z, m,lx,ly,lz,path):
+    plotVectors(x, y, z, m,lx,ly,lz).savefig(path, dpi=600)
+    return

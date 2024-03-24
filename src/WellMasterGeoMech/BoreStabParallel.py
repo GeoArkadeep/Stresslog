@@ -1,70 +1,25 @@
 import numpy as np
-import matplotlib.pyplot as plt2
+from joblib import Parallel, delayed
 import math
+import matplotlib.pyplot as plt2
+#from numba import jit
 
-from scipy.optimize import minimize
+#s1 = 45
+#s2 = 34
+#s3 = 29
+#alpha = 5.4
+#beta = 2.3
+#gamma = 13.5
 
-def get_optimal(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
-    """
-    Optimizes the largest and second largest of sx, sy, sz to achieve a specified SV
-    under given angular conditions without modifying the smallest of the three.
-    The ordering of variables is maintained when calling the getVertical function.
-    
-    Parameters:
-    - sx, sy: The input values along with specified_SV, one of which will be optimized.
-    - specified_SV: The target sigmaV value to achieve through optimization.
-    - alpha, beta, gamma: Euler angles for rotation.
-    
-    Returns:
-    - Optimized values in the order of sx, sy, sz and Euler angles if successful; 
-      otherwise, returns a message indicating failure.
-    """
-    # Determine the smallest of the three and sort the values to find initial guesses
-    sorted_indices = np.argsort([sx, sy, specified_SV])
-    values = [sx, sy, specified_SV]
-    sorted_values = np.sort([sx, sy, specified_SV])
-    s3 = sorted_values[0]  # Smallest value, kept fixed
-    initial_s2, initial_s1 = sorted_values[1:]  # Initial guesses for optimization
-    
-    # Define the objective function to minimize: difference from the specified_SV
-    def objective(x):
-        # Prepare the inputs maintaining the original order
-        inputs = [0, 0, 0]
-        inputs[sorted_indices[0]] = s3
-        inputs[sorted_indices[1]] = x[0]
-        inputs[sorted_indices[2]] = x[1]
-        calculated_SV = getVertical(*inputs, alpha, beta, gamma)
-        return np.abs(calculated_SV - specified_SV)
-    
-    # Constraints: s2 and s1 are bound by their relationship to s3 and each other
-    constraints = (
-        {'type': 'ineq', 'fun': lambda x: x[0] - s3},    # s2 >= s3
-        {'type': 'ineq', 'fun': lambda x: x[1] - x[0]},  # s1 >= s2
-    )
-    
-    # Bounds for s2 and s1, ensuring they do not exceed practical limits
-    bounds = [(s3, 3*s3), (s3, 3*s3)]
-    
-    # Initial guess for the optimization
-    initial_guess = [initial_s2, initial_s1]
-    
-    # Perform the optimization
-    result = minimize(objective, initial_guess, method='SLSQP', tol=0.1)
-    
-    if result.success:
-        optimized = [0, 0, 0]
-        optimized[sorted_indices[0]] = s3
-        optimized[sorted_indices[1]] = result.x[0]
-        optimized[sorted_indices[2]] = result.x[1]
-        return optimized[0], optimized[1], optimized[2]#, alpha, beta, gamma
-    else:
-        return values[0], values[1], values[2], "Optimization failed to converge. Using initial estimates."# Assuming the definition of getVertical is as previously discussed
-# Example call (placeholders for actual values):
-# optimized_s1, optimized_s2 = optimize_s1_s2(s3=..., specified_SV=..., alpha=..., beta=..., gamma=..., initial_s1=..., initial_s2=...
-        
+#azim = 187
+#inc  = 16
 
-def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
-    from PlotVec import showvec
+#nu = 0.35
+#theta = 37
+#deltaP = 3
+
+
+def getVertical(s1,s2,s3,alpha=0,beta=0,gamma=0):
     alpha = np.radians(alpha)
     beta = np.radians(beta)
     gamma = np.radians(gamma)
@@ -75,16 +30,12 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     #print(Rs)
     RsT = np.transpose(Rs)
     #s3 = s3 + (s3 - s3*Rs[2][2])/Rs[2][2]
-    Ss = np.array([[sx,0,0],[0,sy,0],[0,0,sz]])
+    Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     Sg = RsT@Ss@Rs
-    #print(Sg)
-    b,a = np.linalg.eigh(Sg)
-    [uvx,uvy,uvz] = a
-    [sGx,sGy,sGz] = b
+    uvx,uvy,uvz = np.linalg.eigh(Sg)[1]
     uvzT = np.transpose(uvz)
     sigmaV = uvzT@Sg@uvz
-    #showvec(uvx,uvy,uvz,2,sGx,sGy,sGz)
-    return Sg[2][2]
+    return sigmaV
     
 
 def getRota(alpha,beta,gamma):
@@ -117,10 +68,7 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
     Sg = RsT@Ss@Rs
     print(Sg)
     print(np.linalg.eigh(Sg))
-    print("Vector Dip is:",np.degrees(np.arccos(Rs[2][2])))
-    dip_direction = np.degrees(np.arctan2(Rs[2][1], Rs[2][0]))
-    print("Dip Direction is:", dip_direction)
-    print("Vertical Component is:", Sg[2][2])
+    print("phi is:",np.degrees(np.arccos(Rs[2][2])))
     return Sg[0],Sg[1],Sg[2]
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):
@@ -427,67 +375,66 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     #plt2.show()
     return crush,frac,minstress,maxstress,angle[minstress],angle[maxstress]
 
-def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
-    #phi = 183-(163*nu) ## wayy too high
-    #phi = np.arcsin(1-(nu/(1-nu))) #Still too high
-    phi = np.arcsin(1-(2*nu)) #unModified Zhang
+def loop_body(inc, UCS, tvd, deltaP, Pp, s1, s2, s3, alpha, beta, gamma, offset, nu):
+    phi = np.arcsin(1-(2*nu))
     mui = (1+np.sin(phi))/(1-np.sin(phi))
-    #mui = 1.9
-    print("Mu_i = ",mui)
     fmui = ((((mui**2)+1)**0.5)+mui)**2
-    values = np.zeros((10,37))
-    values2 = np.zeros((10,37))
-    inclination = np.zeros((10,37))
-    azimuth = np.zeros((10,37))
-    inc = 0
     TS = -UCS/10
     TS = 0
-    while inc<10:
-        azim = 0
-        while azim<37:
-            pointer= 0
-            line = np.zeros(361)
-            line2 = np.zeros(361)
-            angle= np.zeros(361)
-            width= 0
-            width2 = 0
-            frac = np.zeros(361)
-            widthR = np.zeros(361)
-            while pointer<361:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
-                line[pointer] = STT
-                angle[pointer] = omega
-                if stm<TS:
-                    width+=1
-                    frac[pointer] = frac[pointer-1]+(1/math.tan(math.radians(omega)))
-                else:
-                    frac[pointer] = 0
-                #if pointer>180:
-                    #frac[pointer] = frac[360-pointer]
-                widthR[pointer] = (pointer/360)*0.67827 #in metres
-                pointer+=1
-                
-                if UCS<((STM)-(fmui*(deltaP))):
-                    width2+=0.5
-                    
-            #if width>0:
-                #print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
-                #plt2.scatter(np.array(range(0,361)),frac)
-                #plt2.plot(angle)
-                #plt2.plot(line)
-                #plt2.xlim((0,0.67827))
-                #plt2.ylim((1,151))
-                #plt2.show()
-            values[inc][azim] = np.min(line)
-            values2[inc][azim] = width2
-            inclination[inc][azim] = inc*10
-            azimuth[inc][azim] = math.radians(azim*10+offset)
-            azim+=1
-        #print(round((inc/10)*100),"%")
-        inc+=1
+    values = np.zeros(37)
+    values2 = np.zeros(37)
+    inclination = np.zeros(37)
+    azimuth = np.zeros(37)
+    azim = 0
+    while azim < 37:
+        pointer = 0
+        line = np.zeros(361)
+        line2 = np.zeros(361)
+        angle = np.zeros(361)
+        width = 0
+        width2 = 0
+        frac = np.zeros(361)
+        widthR = np.zeros(361)
+        while pointer < 361:
+            STT, SZZ, TTZ, STM, stm, omega, orit = getSigmaTT(s1, s2, s3, alpha, beta, gamma, azim*10, inc*10, pointer, deltaP, Pp, nu)
+            line[pointer] = STT
+            angle[pointer] = omega
+            if stm < TS:
+                width += 1
+                frac[pointer] = frac[pointer-1] + (1 / math.tan(math.radians(omega)))
+            else:
+                frac[pointer] = 0
+            widthR[pointer] = (pointer / 360) * 0.67827
+            pointer += 1
+            
+            if UCS < ((STM) - (fmui * (deltaP))):
+                width2 += 0.5
 
-        
-    print(orit)
+        values[azim] = np.min(line)
+        values2[azim] = width2
+        inclination[azim] = inc * 10
+        azimuth[azim] = math.radians(azim * 10 + offset)
+        azim += 1
+    
+    return values, values2, inclination, azimuth
+
+# The function you originally provided, slightly modified to use parallel processing
+def draw(path,tvd, s1, s2, s3, deltaP, Pp, UCS=0, alpha=0, beta=0, gamma=0, offset=0, nu=0.35, azimuthu=0, inclinationi=0):
+    # phi and other calculations
+    phi = np.arcsin(1-(2*nu))
+    mui = (1+np.sin(phi))/(1-np.sin(phi))
+    fmui = ((((mui**2)+1)**0.5)+mui)**2
+    
+    # Parallel execution
+    num_cores = -1  # Use all available cores
+    results = Parallel(n_jobs=num_cores)(delayed(loop_body)(inc, UCS, tvd, deltaP, Pp, s1, s2, s3, alpha, beta, gamma, offset,nu) for inc in range(10))
+    
+    # Combine results (this is an example, adjust as necessary)
+    # Note: You might need to adjust the aggregation based on your specific requirements.
+    values = np.array([result[0] for result in results])
+    values2 = np.array([result[1] for result in results])
+    inclination = np.array([result[2] for result in results])
+    azimuth = np.array([result[3] for result in results])
     
     fig = plt2.figure()
     ax = fig.add_subplot(121,projection='polar')
@@ -501,21 +448,6 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     cax = ax.contourf(azimuth, inclination, values, 1000, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 1)
     ax.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
 
-    
-    #ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    #ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
-    #if(orit[3]<=90):
-    #ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-    #ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
-    #else:
-    #    ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-    #    ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
-    #if(orit[5]<=90):
-    #ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-    #ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
-    #else:
-    #    ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-    #    ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
     conversion_constantSG = 0.102/(tvd/1000)  # Change this to your desired conversion constant
     conversion_constantPPG = 0.102*8.345/(tvd/1000)  # Change this to your desired conversion constant
     ticks = np.linspace(0, np.min([s1,s2,s3]), 7)  # 10 evenly spaced ticks from 0 to s3
@@ -536,7 +468,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     aws.set_theta_direction(-1)
     levels = np.linspace(0,120,1300)
     cax2 = aws.contourf(azimuth, inclination, values2, 1300, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
-    print(orit)
+    #print(orit)
     aws.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
     #aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     #aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
@@ -560,4 +492,8 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
          ha='center', fontsize=10)
     
     plt2.savefig(path,dpi=600)
+    #plt2.show()
     plt2.clf()
+
+#draw(1000,13,14,25,3,12,15)
+

@@ -69,13 +69,13 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
     Shm = ShmP
     Shm2 = SHMP
     #PhiB = 0.1 #degrees
-    PhiBr = math.radians(PhiB)
+    PhiBr = math.radians(PhiBr)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
     print("TwoCosPhiB: ",TwoCosPhiB)
     #ShmP = UCS
     print("Phi = ",math.degrees(phi))
     twocos2Beta = 2 * (math.cos(PhiBr))
-    q = (1+np.sin(phi))/(1-np.sin(phi))
+    q = (1+np.sin(phi))/(1-np.sin(phi)) #Zhang 6.70
     
     SHM1 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
     SHM2 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
@@ -245,13 +245,13 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
     Shm = ShmP
     Shm2 = SHMP
     #PhiB = 0.1 #degrees
-    PhiBr = math.radians(PhiB)
+    PhiBr = math.radians(PhiBr)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
     #print("TwoCosPhiB: ",TwoCosPhiB)
     #ShmP = UCS
     #print("Phi = ",math.degrees(phi))
-    twocos2Beta = 2 * (math.cos(PhiBr))
-    q = (1+np.sin(phi))/(1-np.sin(phi))
+    twocos2Beta = 2 * (np.cos(PhiBr))
+    q = (1+np.sin(phi))/(1-np.sin(phi)) # zhang 6.70
     
     SHM1 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm))/(1+twocos2Beta)
     SHM2 = ((UCS - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)
