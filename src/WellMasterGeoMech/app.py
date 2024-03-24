@@ -1445,6 +1445,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     ##print(attrib[1])
     
     rhoppg = np.zeros(len(tvdf))
+    rhogcc = np.zeros(len(tvdf))
     ObgTppg = np.zeros(len(tvdf))
     hydrostatic = np.zeros(len(tvd))
     mudhydrostatic = np.zeros(len(tvd))
@@ -1457,24 +1458,37 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         if glwd<0:
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdf[i]-agf-wdf)/3125)**a)
+                rhogcc[i] =  0.11982642731*rhoppg[i]
+                if np.isfinite(zden2[i]):
+                    if zden2[i]<4:
+                        rhoppg[i] = zden2[i]/0.11982642731
+                        rhogcc[i] = zden2[i]
                 hydrostatic[i] = water
                 mudhydrostatic[i] = 1.0*mudweight[i]
             else:
                 if(tvdmsl[i]<0):
                     rhoppg[i] = 8.34540426515252*water
+                    rhogcc[i] =  0.11982642731*rhoppg[i]
                     hydrostatic[i] = 0
                     mudhydrostatic[i] = 0
                 else:
                     rhoppg[i] = 0
+                    rhogcc[i] = 0
                     hydrostatic[i] = water
                     mudhydrostatic[i] = 1.0*mudweight[i]
         else:
             if(tvdbgl[i]>=0):
                 rhoppg[i] = rhoappg +(((tvdbglf[i])/3125)**a)
+                rhogcc[i] =  0.11982642731*rhoppg[i]
+                if np.isfinite(zden2[i]):
+                    if zden2[i]<4:
+                        rhoppg[i] = zden2[i]/0.11982642731
+                        rhogcc[i] = zden2[i]
                 hydrostatic[i]= water
                 mudhydrostatic[i] = 1.0*mudweight[i]
             else:
                 rhoppg[i] = 0
+                rhogcc[i] = 0
                 hydrostatic[i] = 0
                 mudhydrostatic[i] = 0
         i+=1
@@ -1484,8 +1498,9 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     lithostatic =  (2.6*9.80665/6.89476) * tvd
     gradient = lithostatic/(tvdf)*1.48816
     rhoppg[0] = rhoappg
+    rhogcc[0] = rhoappg*0.11982642731
     #rhoppg = interpolate_nan(rhoppg)
-    rhogcc =  0.11982642731*rhoppg
+    
     #rhogcc[0] = 0.01
     
     i=1
@@ -1494,13 +1509,13 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         if glwd<0:
             if(tvdbgl[i]>0):
                 if(tvdmsl[i]>0):
-                    ObgTppg[i] =((maxwaterppg + ((rhoppg[i])*(tvdbglf[i])))/tvdmslf[i])
+                    ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[0:i]))*(tvdbglf[i])))/tvdmslf[i])
             else:
                 if(tvdmsl[i]>0):
                     ObgTppg[i] =(8.34540426515252*water)
         else:
             if (tvdbgl[i]>0):
-                ObgTppg[i] =((rhoppg[i])*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
+                ObgTppg[i] =((np.mean(rhoppg[0:i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
                 #ObgTppg[i] =rhoppg[i] #Flat Top Obg Gradient
         i+=1
     #ObgTppg = interpolate_nan(ObgTppg)
@@ -1938,6 +1953,8 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
             bhpmpa = mudpsi[i]/145.038
             ucsmpa = horsud[i]
             deltaP = bhpmpa-ppmpa
+            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+            osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
             sigmas = [osx,osy,osz]
             devdoi = well.location.deviation[i]
             incdoi = devdoi[2]
@@ -1973,8 +1990,8 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.savefig(output_fileBHI)
         plt.clf()
-        #print(crush)
-        #print(frac)
+        print(crush)
+        print(frac)
     
     if doi>0:
         drawBHimage(doi)
