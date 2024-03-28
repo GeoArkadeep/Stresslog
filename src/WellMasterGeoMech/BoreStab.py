@@ -120,7 +120,7 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
     print("Vector Dip is:",np.degrees(np.arccos(Rs[2][2])))
     dip_direction = np.degrees(np.arctan2(Rs[2][1], Rs[2][0]))
     print("Dip Direction is:", dip_direction)
-    print("Vertical Component is:", Sg[2][2])
+    print("Calculated Vertical Component is:", Sg[2][2])
     return Sg[0],Sg[1],Sg[2]
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):
@@ -383,7 +383,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     
     #values = np.zeros((10,37))
     
-    pointer= 0
+    pointer= alpha
     line = np.zeros(361)
     line2 = np.zeros(361)
     angle= np.zeros(361)
@@ -392,24 +392,24 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     crush = np.zeros(361)
     widthR = np.zeros(361)
     ts = -ucs/10
-    while pointer<361:
+    while pointer<361+alpha:
         STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer, deltaP,Pp,nu)
-        line[pointer] = stm
-        line2[pointer] = STM
-        angle[pointer] = omega
+        line[round(pointer%360)] = stm
+        line2[round(pointer%360)] = STM
+        angle[round(pointer%360)] = omega
         if stm<ts:
             width+=1
-            frac[pointer] = 1
+            frac[round(pointer%360)] = 1
         else:
-            frac[pointer] = 0
+            frac[round(pointer%360)] = 0
         
         if ucs<((STM)-(fmui*(deltaP))):
-            crush[pointer] = 1
+            crush[round(pointer%360)] = 1
         else:
-            crush[pointer] = 0
+            crush[round(pointer%360)] = 0
         #if pointer>180:
             #frac[pointer] = frac[360-pointer]
-        widthR[pointer] = (pointer/360)*0.67827 #in metres
+        widthR[round(pointer%360)] = ((round(pointer%360))/360)*0.67827 #in metres
         pointer+=1
     minstress = np.argmin(line[0:180])
     maxstress = np.argmax(line2[0:180])
@@ -425,7 +425,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     #plt2.xlim((0,0.67827))
     #plt2.ylim((1,151))
     #plt2.show()
-    return crush,frac,minstress,maxstress,angle[minstress],angle[maxstress]
+    return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360]
 
 def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
     #phi = 183-(163*nu) ## wayy too high

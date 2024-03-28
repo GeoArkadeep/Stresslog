@@ -1942,7 +1942,8 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,361])
         crush = np.zeros([doiF-doiS,361])
-        data=np.zeros([doiF-doiS,3])
+        data=np.zeros([doiF-doiS,4])
+        data2=np.zeros([doiF-doiS,3])
         i=doiS
         j=0
         while i <doiF:
@@ -1983,12 +1984,17 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
             cr,fr,minazi,maxazi,minangle,maxangle = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
             crush[j] = cr
             frac[j] = fr
-            data[j] = [tvd[i],minazi,minangle] 
+            if np.max(frac[j])>0:
+                data[j] = [tvd[i],minazi,minangle,maxangle]
+                #data2[j+1] = [tvd[i+1],round((minazi+180)%360),minangle+180]
             i+=1
             j+=1
+        from plotangle import plotfracs
+        plotfracs(data)
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
-        plt.savefig(output_fileBHI)
+        plt.title("Synthetic Borehole Image")
+        plt.savefig(output_fileBHI,dpi=3200)
         plt.clf()
         print(crush)
         print(frac)
