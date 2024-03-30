@@ -1,3 +1,7 @@
+import sys
+# caution: path[0] is reserved for script path (or '' in REPL)
+sys.path.insert(1, '../src/wellmastergeomech')
+
 import unittest
 from DrawSP import getSP  # Adjust this import based on your actual file organization
 from BoreStab import getSigmaTT, getHoop  # Adjust this import based on your actual file organization

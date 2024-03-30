@@ -25,16 +25,18 @@ def get_optimal(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     sorted_values = np.sort([sx, sy, specified_SV])
     s3 = sorted_values[0]  # Smallest value, kept fixed
     initial_s2, initial_s1 = sorted_values[1:]  # Initial guesses for optimization
-    
+    specified_SH = np.max([sx,sy])
     # Define the objective function to minimize: difference from the specified_SV
     def objective(x):
         # Prepare the inputs maintaining the original order
+        alpha=0.1
         inputs = [0, 0, 0]
         inputs[sorted_indices[0]] = s3
         inputs[sorted_indices[1]] = x[0]
         inputs[sorted_indices[2]] = x[1]
         calculated_SV = getVertical(*inputs, alpha, beta, gamma)
-        return np.abs(calculated_SV - specified_SV)
+        return np.abs(calculated_SV - complex(specified_SV,specified_SH))
+    
     
     # Constraints: s2 and s1 are bound by their relationship to s3 and each other
     constraints = (
@@ -43,13 +45,13 @@ def get_optimal(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     )
     
     # Bounds for s2 and s1, ensuring they do not exceed practical limits
-    bounds = [(s3, 3*s3), (s3, 3*s3)]
+    bounds = [(s3+0.1, 3*s3), (s3+0.1, 3*s3)]
     
     # Initial guess for the optimization
     initial_guess = [initial_s2, initial_s1]
     
     # Perform the optimization
-    result = minimize(objective, initial_guess, method='SLSQP', tol=0.1)
+    result = minimize(objective, initial_guess, method='SLSQP', bounds=bounds,tol=0.01)
     
     if result.success:
         optimized = [0, 0, 0]
@@ -83,8 +85,9 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     [sGx,sGy,sGz] = b
     uvzT = np.transpose(uvz)
     sigmaV = uvzT@Sg@uvz
+    #sigmaH = np.max([Sg[0][0],Sg[1][1]])
     #showvec(uvx,uvy,uvz,2,sGx,sGy,sGz)
-    return Sg[2][2]
+    return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     
 
 def getRota(alpha,beta,gamma):
@@ -112,7 +115,6 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
                    [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
     #print(Rs)
     RsT = np.transpose(Rs)
-    s3 = s3 + (s3 - s3*Rs[2][2])/Rs[2][2]
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     Sg = RsT@Ss@Rs
     print(Sg)
@@ -121,6 +123,8 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
     dip_direction = np.degrees(np.arctan2(Rs[2][1], Rs[2][0]))
     print("Dip Direction is:", dip_direction)
     print("Calculated Vertical Component is:", Sg[2][2])
+    print("Calculated Max Horizontal Component is:", max(Sg[1][1],Sg[0][0]))
+    print("Calculated Min Horizontal Component is:", min(Sg[1][1],Sg[0][0]))    
     return Sg[0],Sg[1],Sg[2]
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):

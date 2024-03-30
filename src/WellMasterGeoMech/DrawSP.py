@@ -175,16 +175,35 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
     print([maxSH,minSH,shmin,Sv])
     print("DITF :",ditf)
     ax.add_patch(DITF)
-    minmin = np.array([(shmin,minSH),(shmin,maxSH)])
-    maxmaxsh = np.array([(shmin,minSH),(shmin,maxSH),(0,maxSH),(0,minSH)])
-    Shmin =  Polygon(maxmaxsh, color='purple', label = 'Sh min',alpha=0.2)
-    ax.add_patch(Shmin)
+    # Draw a vertical purple line for Shmin
+    ax.plot([shmin, shmin], [minSH, maxSH], color='purple', linewidth=1)
+    ax.hlines(y=minSH, xmin=0, xmax=shmin, colors='black', linestyles='dotted', linewidth=0.5)
+    ax.hlines(y=maxSH, xmin=0, xmax=shmin, colors='black', linestyles='dotted', linewidth=0.5)
+    ax.hlines(y=midSH, xmin=0, xmax=shmin, colors='black', linestyles='dotted', linewidth=1)
+
+    # Adjustments to move the annotations further away from the axes to avoid collision with the main axis labels
+    # Determine offsets
+    x_offset = 0.019 * (ax.get_xlim()[1] - ax.get_xlim()[0])  # 2% of the x-axis range
+    y_offset = 0.019 * (ax.get_ylim()[1] - ax.get_ylim()[0])  # 2% of the y-axis range
+
+    # For the x-axis
+    #ax.text(round(shmin), ax.get_ylim()[0] - 4 * y_offset, '{:.0f}'.format(shmin), ha='center', va='top', rotation=0)
+    ax.text(round(Sv), ax.get_ylim()[0] - 4 * y_offset, '{:.0f}'.format(Sv), ha='center', va='top', rotation=0)
+
+    # For the y-axis
+    # Adjust the x coordinate for y-axis labels to move them further from the axis
+    if maxSH-minSH>25:
+        ax.text(ax.get_xlim()[0] - 5 * x_offset, round(minSH), '{:.0f}'.format(minSH), ha='right', va='center', rotation=90)
+        ax.text(ax.get_xlim()[0] - 5 * x_offset, round(midSH), '{:.0f}'.format(midSH), ha='right', va='center', rotation=90)
+        ax.text(ax.get_xlim()[0] - 5 * x_offset, round(maxSH), '{:.0f}'.format(maxSH), ha='right', va='center', rotation=90)
+    else:
+        ax.text(ax.get_xlim()[0] - 5 * x_offset, round(midSH), '{:.0f}'.format(midSH), ha='right', va='center', rotation=90)
     ax.legend(loc='lower right')
-    plt3.gca().set_aspect('equal')
+    plt3.gca().set_aspect('equal', adjustable='box')
     plt3.title("Stress Polygon")
-    plt3.xlabel("Shmin")
-    plt3.ylabel("SHmax")
-    plt3.savefig(path,dpi=600)
+    plt3.xlabel("Shmin", labelpad=10)  # Increase labelpad as needed
+    plt3.ylabel("SHmax", labelpad=10)  # Increase labelpad as needed
+    plt3.savefig(path, dpi=600)
     plt3.clf()
 
 
@@ -203,7 +222,9 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
     ShmP = ((Sv-Pp)/ufac)+Pp
     SHMP = ((Sv-Pp)*ufac)+Pp
     #print("Corners: ",ShmP,SHMP)
-
+    
+    if shmin<ShmP or shmin>SHMP:
+        return [np.nan, np.nan, np.nan]
 
     #maxSt = 1.02*SHMP
     #minSt = 0.98*ShmP

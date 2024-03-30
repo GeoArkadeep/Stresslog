@@ -1854,8 +1854,9 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         sigmas.append(ppmpa)
         
         from PlotVec import savevec
+        from PlotVec import showvec
         from BoreStab import getStens
-        
+        print("Actual Sv is ",sigmas[2],"Mpa")
         m = np.min([sigmas[0],sigmas[1],sigmas[2]])
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
         sten = getStens(osx,osy,osz,alpha,beta,gamma)
@@ -1994,7 +1995,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.title("Synthetic Borehole Image")
-        plt.savefig(output_fileBHI,dpi=3200)
+        plt.savefig(output_fileBHI,dpi=300)
         plt.clf()
         print(crush)
         print(frac)
