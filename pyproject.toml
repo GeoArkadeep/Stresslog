@@ -19,6 +19,9 @@ sources = [
     "src/WellMasterGeoMech/app.py",
     "src/WellMasterGeoMech/DrawSP.py",
     "src/WellMasterGeoMech/BoreStab.py",
+    "src/WellMasterGeoMech/plotangle.py",
+    "src/WellMasterGeoMech/PlotVec.py",
+    "src/WellMasterGeoMech/CasingPlotter.py"
 ]
 installer_icon = "src/WellMasterGeoMech/resources/instal"
 installer_background = "src/WellMasterGeoMech/resources/ibg"
