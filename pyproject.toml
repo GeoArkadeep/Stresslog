@@ -13,7 +13,7 @@ formal_name = "WellMasterGeoMech"
 description = "An application to calculate and plot pore pressure from p-wave velocity from las files."
 long_description = """More details about the app should go here.
 """
-icon = "src/WellMasterGeoMech/resources/WellMasterGeoMech"
+icon = "src/WellMasterGeoMech/resources/WellMasterGeoMechC"
 sources = [
     "src/WellMasterGeoMech",
     "src/WellMasterGeoMech/app.py",
@@ -23,7 +23,7 @@ sources = [
     "src/WellMasterGeoMech/PlotVec.py",
     "src/WellMasterGeoMech/CasingPlotter.py"
 ]
-installer_icon = "src/WellMasterGeoMech/resources/instal"
+installer_icon = "src/WellMasterGeoMech/resources/WellMasterGeoMech"
 installer_background = "src/WellMasterGeoMech/resources/ibg"
 splash = "src/WellMasterGeoMech/resources/splash"
 test_sources = [
