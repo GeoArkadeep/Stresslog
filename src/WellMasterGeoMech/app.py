@@ -255,14 +255,14 @@ class MyApp(toga.App):
         plot_and_data_box = toga.Box(style=Pack(direction=ROW, flex=1))
         
         # Move the frac_grad_data related components inside the plot_and_data_box
-        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN, padding_right=10))
+        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
         plot_and_data_box.add(self.frac_grad_data_box)
         
         
         # Add the buttons for Add row and Remove row
         row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(padding=10))
-        self.add_frac_psi_button = toga.Button("Add Frac PSI", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_psi'), style=Pack(padding=10))
+        self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(flex=1))
+        self.add_frac_psi_button = toga.Button("Add Frac PSI", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_psi'), style=Pack(flex=1))
         row_button_box.add(self.add_frac_grad_button)
         row_button_box.add(self.add_frac_psi_button)
         self.frac_grad_data_box.add(row_button_box)
@@ -278,13 +278,13 @@ class MyApp(toga.App):
         #plot_and_data_box.add(spacer_box)
 
         # Create a container for flow_grad_data rows
-        self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN, padding_left=10))
+        self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
         plot_and_data_box.add(self.flow_grad_data_box)
 
         # Add the buttons for Add row and Remove row
         flow_row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.add_flow_grad_button = toga.Button("Add Flow Grad", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_grad'), style=Pack(padding=10))
-        self.add_flow_psi_button = toga.Button("Add Flow PSI", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_psi'), style=Pack(padding=10))
+        self.add_flow_grad_button = toga.Button("Add Flow Grad", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_grad'), style=Pack(flex=1))
+        self.add_flow_psi_button = toga.Button("Add Flow PSI", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_psi'), style=Pack(flex=1))
         flow_row_button_box.add(self.add_flow_grad_button)
         flow_row_button_box.add(self.add_flow_psi_button)
         self.flow_grad_data_box.add(flow_row_button_box)
@@ -770,7 +770,8 @@ class MyApp(toga.App):
         df3 = df3.reset_index()
         lasheader = wella.header
         print(lasheader,df3)
-        datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
+        c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_DT_Zhang":"G/C3","FG_DAINES":"G/C3","GEOPRESSURE":"PSI","FRACTURE_PRESSURE":"PSI", "SHMAX_PRESSURE":"PSI", "shmin_PRESSURE":"PSI","MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
+        datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3}, c_units)
         
         #well2 = wella.from_df(df3)
         #wella.to_las(output_file4)
@@ -1931,7 +1932,8 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     df3 = df3.reset_index()
     header = well._get_curve_mnemonics()
     lasheader = well.header
-    datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3})
+    c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_DT_Zhang":"G/C3","FG_DAINES":"G/C3","GEOPRESSURE":"PSI","FRACTURE_PRESSURE":"PSI", "SHMAX_PRESSURE":"PSI", "shmin_PRESSURE":"PSI","MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
+    datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
     #well.to_las('output.las')
     
     from BoreStab import getHoop
@@ -2294,7 +2296,7 @@ def readFormFromAscii(formpath, delim = r'[ ,	]'):
     return form
 
 
-def datasets_to_las(path, datasets, **kwargs):
+def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     """
     Write datasets to a LAS file on disk.
 
@@ -2302,7 +2304,8 @@ def datasets_to_las(path, datasets, **kwargs):
         path (Str): Path to write LAS file to
         datasets (Dict['<name>': pd.DataFrame]): Dictionary maps a
             dataset name (e.g. 'Curves') or 'Header' to a pd.DataFrame.
-
+        curve_units (Dict[str, str], optional): Dictionary mapping curve names to their units.
+            If a curve's unit is not specified, it defaults to an empty string.
     Returns:
         Nothing, only writes in-memory object to disk as .las
     """
@@ -2331,7 +2334,21 @@ def datasets_to_las(path, datasets, **kwargs):
 
     # set header df as variable to later retrieve curve meta data from
     header = datasets['Header']
+    
+    extracted_units = {}
+    if not header.empty:
+        curve_header = header[header['section'] == 'Curves']
+        for _, row in curve_header.iterrows():
+            if row['unit']:  # Ensure there is a unit specified
+                extracted_units[row['original_mnemonic']] = row['unit']
 
+    # Combine extracted units with custom units, custom units take precedence
+    all_units = {**extracted_units, **custom_units}
+    
+    column_fmt = {}
+    for curve in las.curves:
+        column_fmt[curve.mnemonic] = "%10.5f"
+    
     # unpack datasets
     for dataset_name, df in datasets.items():
 
@@ -2380,12 +2397,13 @@ def datasets_to_las(path, datasets, **kwargs):
             header_curves = header[header.section == dataset_name]
             for column_name in df.columns:
                 curve_data = df[column_name]
+                curve_unit = all_units.get(column_name, '')  # Use combined units
                 # Assuming header information for each curve is not available
                 # You might need to customize this part based on your requirements
                 # You can set default values for unit, description, and value or extract from the header if available.
                 las.append_curve(mnemonic=column_name,
                                  data=curve_data,
-                                 unit='',
+                                 unit=curve_unit,
                                  descr='',
                                  value='')
 
@@ -2394,14 +2412,14 @@ def datasets_to_las(path, datasets, **kwargs):
     try:
         null_value = header[header.original_mnemonic == 'NULL'].value.iloc[0]
     except IndexError:
-        null_value = None
+        null_value = -999.25
+    las.null_value = null_value
 
     # las.write defaults to %.5 decimal points. We want to retain the
     # number of decimals. We first construct a column formatter based
     # on the max number of decimal points found in each curve.
     if 'column_fmt' not in kwargs:
-        kwargs['column_fmt'] = get_columns_decimal_formatter(
-            data=las.data, null_value=null_value)
+        kwargs['column_fmt'] = column_fmt
 
     # write file to disk
     with open(path, mode='w') as f:
