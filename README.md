@@ -4,7 +4,7 @@
 
 A *libre* application to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary semi-realtime stress prediction (for example if the wellsite geologist fetches and updates the las from MWD/LWD provider every single or so).
 
-## Features:
+## Features
 
 * Import las files, deviation files, ucs and lithology files
 
@@ -32,7 +32,7 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 * Override nu, mu, and UCS from the lithology file 
 
-## Installation:
+## Installation
 
 You can download the setup file from the release section, and install it like any normal program.
 
@@ -50,7 +50,7 @@ briefcase package
 
 For more help, consult the BeeWare documentation.
 
-## Acknowledgements:
+## Acknowledgements
 
 Jon Jincai Zhang, for his awesome work on pore pressure prediction, and geomechanics at large. This software uses his algorithms wherever possible.
 
@@ -59,7 +59,7 @@ The Stability Analysis Plots are after [Peska and Zoback, 1995](https://doi.org/
 
 This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. The GUI is written using Toga, and built using Briefcase, which are both components of the BeeWare Project. Other libraries used include Pandas, Numpy and Matplotlib.
 
-## Disclaimer:
+## Disclaimer
 
 IN MAKING INTERPRETATIONS OF LOGS THIS SOFTWARE AND ITS AUTHOR(S) WILL GIVE USERS THE BENEFIT OF THEIR BEST JUDGEMENT. BUT SINCE ALL INTERPRETATIONS ARE OPINIONS BASED ON INFERENCES FROM ELECTRICAL OR OTHER MEASUREMENTS, WE CANNOT, AND WE DO NOT GUARANTEE THE ACCURACY OR CORRECTNESS OF ANY INTERPRETATION. WE SHALL NOT BE LIABLE OR RESPONSIBLE FOR ANY LOSS, COST, DAMAGES, OR EXPENSES WHATSOEVER INCURRED OR SUSTAINED BY THE USER RESULTING FROM ANY INTERPRETATION MADE BY THE SOFTWARE OR ITS AUTHOR(S).
 
