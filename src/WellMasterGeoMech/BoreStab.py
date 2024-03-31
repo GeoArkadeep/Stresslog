@@ -4,7 +4,14 @@ import math
 
 from scipy.optimize import minimize
 
-def get_optimal(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
+def get_optimal(sx,sy,sz,alpha=0, beta=0, gamma=0):
+    if min(sx,sy,sz)==sz:#reverse faulting
+        optimal = get_optimalRF(sx,sy,sz,alpha, beta, gamma)
+    else: #normal and strike slip
+        optimal = get_optimalNS(sx,sy,sz,alpha, beta, gamma)
+    return optimal[0],optimal[1],optimal[2]
+
+def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     """
     Optimizes the largest and second largest of sx, sy, sz to achieve a specified SV
     under given angular conditions without modifying the smallest of the three.
@@ -35,7 +42,13 @@ def get_optimal(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         inputs[sorted_indices[1]] = x[0]
         inputs[sorted_indices[2]] = x[1]
         calculated_SV = getVertical(*inputs, alpha, beta, gamma)
-        return np.abs(calculated_SV - complex(specified_SV,specified_SH))
+        if sorted_values[0]==specified_SV:#normal slip
+            return np.abs(calculated_SV - complex(specified_SV,specified_SH))
+        else:#if sorted_values[1]==specified_SV:#strike slip
+            return np.abs(calculated_SV - complex(specified_SV,specified_SH/10))
+        #if sorted_values[2]==specified_SV:#reverse slip handled seperately
+        #    return np.abs(calculated_SV - complex(specified_SV,specified_SH/100000))
+        
     
     
     # Constraints: s2 and s1 are bound by their relationship to s3 and each other
@@ -61,16 +74,55 @@ def get_optimal(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         return optimized[0], optimized[1], optimized[2]#, alpha, beta, gamma
     else:
         return values[0], values[1], values[2], "Optimization failed to converge. Using initial estimates."# Assuming the definition of getVertical is as previously discussed
-# Example call (placeholders for actual values):
-# optimized_s1, optimized_s2 = optimize_s1_s2(s3=..., specified_SV=..., alpha=..., beta=..., gamma=..., initial_s1=..., initial_s2=...
-        
+       
+def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
+    """
+    Optimizes sx, sy, sz for reverse faulting, allowing all three to vary,
+    with the condition that osx > osy > osz.
+    """
+    # Initial setup
+    initial_guess = [sx, sy, specified_SV]  # All three can vary
 
+    # Define constraints to ensure osx > osy > osz
+    def constraint_osx_osy(vars):
+        # osx should be greater than osy
+        return vars[0] - vars[1]
+    
+    def constraint_osy_osz(vars):
+        # osy should be greater than osz
+        return vars[1] - vars[2]
+
+    constraints = (
+        {'type': 'ineq', 'fun': constraint_osx_osy},
+        {'type': 'ineq', 'fun': constraint_osy_osz},
+    )
+
+    # Objective function for reverse faulting with all variables flexible
+    def objective_reverse_faulting(vars):
+        sx, sy, sz = vars  # Now optimizing sx, sy, sz directly
+        calculated_SV = getVertical(sx, sy, sz, alpha, beta, gamma)
+        # Objective: minimize the difference from the specified SV
+        # Adjusted to only consider real part of calculated_SV for comparison
+        return abs(calculated_SV.real - specified_SV)
+
+    # Perform the optimization without bounds
+    result = minimize(objective_reverse_faulting, initial_guess, method='SLSQP', constraints=constraints)
+
+    # Process the optimization result
+    if result.success:
+        optimized_sx, optimized_sy, optimized_sz = result.x
+        return optimized_sx, optimized_sy, optimized_sz
+    else:
+        return "Optimization failed to converge. Using initial estimates."
+    
 def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     from PlotVec import showvec
     alpha = np.radians(alpha)
     beta = np.radians(beta)
     gamma = np.radians(gamma)
-
+    
+    sorted_values = np.sort([sx, sy, sz])
+    
     Rs = np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
                    [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
                    [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
@@ -87,7 +139,13 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     sigmaV = uvzT@Sg@uvz
     #sigmaH = np.max([Sg[0][0],Sg[1][1]])
     #showvec(uvx,uvy,uvz,2,sGx,sGy,sGz)
-    return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
+    if sorted_values[0]==sz:#normal slip
+        return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
+    if sorted_values[1]==sz:#strike slip
+        return complex(Sg[2][2],max(Sg[1][1],Sg[0][0])/10)
+    if sorted_values[2]==sz:#reverse slip
+        return complex(Sg[2][2],0)
+    #return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     
 
 def getRota(alpha,beta,gamma):
@@ -126,6 +184,28 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
     print("Calculated Max Horizontal Component is:", max(Sg[1][1],Sg[0][0]))
     print("Calculated Min Horizontal Component is:", min(Sg[1][1],Sg[0][0]))    
     return Sg[0],Sg[1],Sg[2]
+
+def getStrikeDip(beta,gamma):
+    alpha = 0#np.radians(alpha)
+    beta = np.radians(beta)
+    gamma = np.radians(gamma)
+    Rs = np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
+                   [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
+                   [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
+    dip_direction = np.degrees(np.arctan2(Rs[2][1], Rs[2][0]))
+    dip_angle = np.degrees(np.arccos(Rs[2][2]))
+    strike_direction = (dip_direction+90)%360
+    return strike_direction,dip_angle,dip_direction
+
+def getEuler(strike, dip):
+    def objective_function(x, strike, dip):
+        beta, gamma = x
+        estimated_strike, estimated_dip, _ = getStrikeDip(beta, gamma)
+        return (estimated_strike - strike)**2 + (estimated_dip - dip)**2
+    initial_guess = [0, 0]  # Initial guess for beta and gamma
+    result = minimize(objective_function, initial_guess, args=(strike, dip), method='Nelder-Mead')
+    beta_opt, gamma_opt = result.x
+    return beta_opt, gamma_opt
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])

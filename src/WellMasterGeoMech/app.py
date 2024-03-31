@@ -1995,7 +1995,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.title("Synthetic Borehole Image")
-        plt.savefig(output_fileBHI,dpi=300)
+        plt.savefig(output_fileBHI,dpi=1200)
         plt.clf()
         print(crush)
         print(frac)
