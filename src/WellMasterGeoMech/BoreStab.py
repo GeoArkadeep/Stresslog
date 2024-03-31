@@ -24,7 +24,7 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     
     Returns:
     - Optimized values in the order of sx, sy, sz and Euler angles if successful; 
-      otherwise, returns a message indicating failure.
+      otherwise, returns original values and a message indicating failure.
     """
     # Determine the smallest of the three and sort the values to find initial guesses
     sorted_indices = np.argsort([sx, sy, specified_SV])
@@ -45,7 +45,7 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         if sorted_values[0]==specified_SV:#normal slip
             return np.abs(calculated_SV - complex(specified_SV,specified_SH))
         else:#if sorted_values[1]==specified_SV:#strike slip
-            return np.abs(calculated_SV - complex(specified_SV,specified_SH/10))
+            return np.abs(calculated_SV - complex(specified_SV,specified_SH))
         #if sorted_values[2]==specified_SV:#reverse slip handled seperately
         #    return np.abs(calculated_SV - complex(specified_SV,specified_SH/100000))
         
@@ -64,7 +64,7 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     initial_guess = [initial_s2, initial_s1]
     
     # Perform the optimization
-    result = minimize(objective, initial_guess, method='SLSQP', bounds=bounds,tol=0.01)
+    result = minimize(objective, initial_guess, method='SLSQP', constraints=constraints,bounds=bounds,tol=0.01)
     
     if result.success:
         optimized = [0, 0, 0]
@@ -96,11 +96,10 @@ def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         {'type': 'ineq', 'fun': constraint_osx_osy},
         {'type': 'ineq', 'fun': constraint_osy_osz},
     )
-
     # Objective function for reverse faulting with all variables flexible
     def objective_reverse_faulting(vars):
         sx, sy, sz = vars  # Now optimizing sx, sy, sz directly
-        calculated_SV = getVertical(sx, sy, sz, alpha, beta, gamma)
+        calculated_SV = getVertical(abs(sx), abs(sy), abs(sz), alpha, beta, gamma)
         # Objective: minimize the difference from the specified SV
         # Adjusted to only consider real part of calculated_SV for comparison
         return abs(calculated_SV.real - specified_SV)
@@ -142,7 +141,7 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     if sorted_values[0]==sz:#normal slip
         return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     if sorted_values[1]==sz:#strike slip
-        return complex(Sg[2][2],max(Sg[1][1],Sg[0][0])/10)
+        return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     if sorted_values[2]==sz:#reverse slip
         return complex(Sg[2][2],0)
     #return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
