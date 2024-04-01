@@ -1055,29 +1055,29 @@ def getNu(well, nun):
     
     return nu
 
+
+
 def read_aliases_from_file(file_path=aliaspath):
+    import json
     try:
         with open(file_path, 'r') as file:
-            aliases = eval(file.read())  # Note: Using eval to parse the dictionary from the file
+            aliases = json.load(file)  # Use json.load() to parse the file content
         return aliases
     except:
-        aliases = {'sonic': ['none','DTC', 'DT24','DTCO','DT','AC','AAC','DTHM'],
- 'ssonic': ['none','DTSM'],
- 'gr': ['none','GR', 'GRD','CGR','GRR','GRCFM'],
- 'resdeep': ['none','HDRS','LLD', 'M2RX', 'MLR4C','RD','RT90','RLA1','RDEP','RLLD','RILD','ILD','RT_HRLT','RACELM'],
- 'resshal': ['none','LLS','HMRS','M2R1','RS','RFOC','ILM','RSFL','RMED','RACEHM'],
- 'density': ['none','ZDEN','RHOB','RHOZ','RHO','DEN','RHO8','BDCFM'],
- 'neutron': ['none','CNCF','NPHI','NEU']}
-        defaultalias = """{'sonic': ['none','DTC', 'DT24','DTCO','DT','AC','AAC','DTHM'],
- 'ssonic': ['none','DTSM'],
- 'gr': ['none','GR', 'GRD','CGR','GRR','GRCFM'],
- 'resdeep': ['none','HDRS','LLD', 'M2RX', 'MLR4C','RD','RT90','RLA1','RDEP','RLLD','RILD','ILD','RT_HRLT','RACELM'],
- 'resshal': ['none','LLS','HMRS','M2R1','RS','RFOC','ILM','RSFL','RMED','RACEHM'],
- 'density': ['none','ZDEN','RHOB','RHOZ','RHO','DEN','RHO8','BDCFM'],
- 'neutron': ['none','CNCF','NPHI','NEU']}"""
+        aliases = {
+            'sonic': ['none', 'DTC', 'DT24', 'DTCO', 'DT', 'AC', 'AAC', 'DTHM'],
+            'ssonic': ['none', 'DTSM'],
+            'gr': ['none', 'GR', 'GRD', 'CGR', 'GRR', 'GRCFM'],
+            'resdeep': ['none', 'HDRS', 'LLD', 'M2RX', 'MLR4C', 'RD', 'RT90', 'RLA1', 'RDEP', 'RLLD', 'RILD', 'ILD', 'RT_HRLT', 'RACELM'],
+            'resshal': ['none', 'LLS', 'HMRS', 'M2R1', 'RS', 'RFOC', 'ILM', 'RSFL', 'RMED', 'RACEHM'],
+            'density': ['none', 'ZDEN', 'RHOB', 'RHOZ', 'RHO', 'DEN', 'RHO8', 'BDCFM'],
+            'neutron': ['none', 'CNCF', 'NPHI', 'NEU']
+        }
+        # Convert aliases dictionary to JSON string and write to the file
         with open(file_path, 'w') as file:
-            file.write(defaultalias)  # Note: Using eval to parse the dictionary from the file
+            json.dump(aliases, file, indent=4)
         return aliases
+
 
 def pad_val(array_like,value):
     array = array_like.copy()
