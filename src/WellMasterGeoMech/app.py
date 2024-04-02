@@ -463,9 +463,13 @@ class MyApp(toga.App):
             
     
     def show_page1(self, widget):
-        global devpath,laspath,h1
+        global flagpath,formpath,ucspath,lithopath,devpath,laspath,h1
         devpath = None
         laspath = None
+        ucspath = None
+        lithopath = None
+        flagpath = None
+        formpath = None
         h1 = None
         self.dropdown1.items = []
         self.dropdown2.items = []
@@ -2118,7 +2122,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     tango = min(tango,finaldepth)
     if zulu>finaldepth or zulu>tango:
         zulu=0
-    maxchartpressure = max(sgHMpsiU[find_nearest_depth(tvd,tango)[0]-2],obgpsi[find_nearest_depth(tvd,tango)[0]-2])
+    mogu1 = np.nanmax(sgHMpsiU[:find_nearest_depth(tvd,tango)[0]])
+    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd,tango)[0]])
+    
+    maxchartpressure = max(mogu1,mogu2)
     #minindex = find_nearest_depth(tvdm,zulu)[0]
     #maxindex = find_nearest_depth(tvdm,tango)[0]
     #Presentation Plot
