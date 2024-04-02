@@ -1547,7 +1547,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 ObgTppg[i] =((np.mean(rhoppg[0:i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
                 #ObgTppg[i] =rhoppg[i] #Flat Top Obg Gradient
         i+=1
-    
+     
     ObgTppg = integrhopsift*19.25
     ObgTgcc = 0.11982642731*ObgTppg
     ObgTppf = 0.4335275040012*ObgTgcc
@@ -2118,6 +2118,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     tango = min(tango,finaldepth)
     if zulu>finaldepth or zulu>tango:
         zulu=0
+    maxchartpressure = max(sgHMpsiU[find_nearest_depth(tvd,tango)[0]-2],obgpsi[find_nearest_depth(tvd,tango)[0]-2])
     #minindex = find_nearest_depth(tvdm,zulu)[0]
     #maxindex = find_nearest_depth(tvdm,tango)[0]
     #Presentation Plot
@@ -2169,7 +2170,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     xmin, xmax = splt[3].get_xlim()
     splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N2),1))
     splt[3].title.set_text("Gradients (g/cc)")
-
+    
+    splt[4].set_xlim([0,maxchartpressure])
     splt[4].plot(fgpsi,tvd,color='blue',label='Sh min')
     splt[4].plot(ssgHMpsi,tvd,color='pink',label='SH MAX ML')
     splt[4].plot(obgpsi,tvd,color='green',label='Sigma V')
