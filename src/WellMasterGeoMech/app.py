@@ -5,7 +5,7 @@ from toga import Window
 
 import lasio as laua
 import welly
-#from smoothass import readDevFromAsciiHeader, plotPPmiller
+#from smoothass import readDevFromAsciiHeader, plotPPzhang
 import pandas as pd
 import numpy as np
 
@@ -461,10 +461,21 @@ class MyApp(toga.App):
             row_to_remove = self.flow_grad_data_rows.pop()
             self.flow_grad_data_box.remove(row_to_remove)
             
-            
-    
     
     def show_page1(self, widget):
+        global devpath,laspath,h1
+        devpath = None
+        laspath = None
+        h1 = None
+        self.dropdown1.items = []
+        self.dropdown2.items = []
+        self.dropdown3.items = []
+        self.page1_btn4.enabled = False
+        self.page1_btn3.enabled = False
+        self.page1_btn2.enabled = False
+        self.dropdown1.enabled = False
+        self.dropdown2.enabled = False
+        self.dropdown3.enabled = False
         self.main_window.content = self.page1
 
     def show_page2(self, widget):
@@ -625,7 +636,7 @@ class MyApp(toga.App):
         wella.unify_basis(keys=None, alias=None, basis=md)
         
         #self.bg3.image = toga.Image('BG1.png')
-        #smoothass.plotPPmiller(wella)
+        #smoothass.plotPPzhang(wella)
         print("Great Success!! :D")
         #image_path = 'PlotFigure.png'
         #self.bg3.image = toga.Image(image_path)
@@ -775,7 +786,9 @@ class MyApp(toga.App):
         print(lasheader,df3)
         c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_DT_Zhang":"G/C3","FG_DAINES":"G/C3","GEOPRESSURE":"PSI","FRACTURE_PRESSURE":"PSI", "SHMAX_PRESSURE":"PSI", "shmin_PRESSURE":"PSI","MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
         datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3}, c_units)
-        
+        global devpath,laspath
+        devpath=None
+        laspath=None
         #well2 = wella.from_df(df3)
         #wella.to_las(output_file4)
         self.show_page1(widget)
@@ -794,8 +807,8 @@ class MyApp(toga.App):
     def populate_dropdowns(self):
         global h1
         self.dropdown1.items = h1
-        self.dropdown2.items = h1
-        self.dropdown3.items = h1
+        self.dropdown2.items = h1[1:] + h1[:1]
+        self.dropdown3.items = h1[2:] + h1[:2]
     
     def get_textbox2_values(self,widget):
         global wella
@@ -850,7 +863,7 @@ class MyApp(toga.App):
     def plotppwrapper(self,*args, **kwargs):
         print("thread spawn")
         try:
-            result = plotPPmiller(*args, **kwargs)
+            result = plotPPzhang(*args, **kwargs)
         except Exception as e:
             print(f"Error in thread: {e}")
         self.loop.call_soon_threadsafe(self.onplotfinish)
@@ -883,8 +896,8 @@ class MyApp(toga.App):
         print("Wrapper done")
         return
     
-    def start_plotPPmiller_thread(self,*args, **kwargs):
-    # Create a Thread to run plotPPmiller in the background
+    def start_plotPPzhang_thread(self,*args, **kwargs):
+    # Create a Thread to run plotPPzhang in the background
         #self.loop = asyncio.get_event_loop()
         thread = threading.Thread(target=self.plotppwrapper, args=args, kwargs=kwargs)#, on_close=self.onplotfinish)
         thread.start()
@@ -952,11 +965,11 @@ class MyApp(toga.App):
         #executor = concurrent.futures.ProcessPoolExecutor()
         self.loop = asyncio.get_event_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
-            ih = await self.loop.run_in_executor(pool,self.start_plotPPmiller_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+            ih = await self.loop.run_in_executor(pool,self.start_plotPPzhang_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
         #self.onplotfinish()
         #self.progress.text = "Status: Done! Program Ready"
-        #future.add_done_callback(lambda f: on_plotPPmiller_done(self, f))
-        #ih = plotPPmiller(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+        #future.add_done_callback(lambda f: on_plotPPzhang_done(self, f))
+        #ih = plotPPzhang(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
                 
         
         
@@ -1009,7 +1022,7 @@ class MyApp(toga.App):
         
         wella.unify_basis(keys=None, alias=None, basis=md3)
         self.bg3.image = toga.Image('BG1.png')
-        #plotPPmiller(wella,self)
+        #plotPPzhang(wella,self)
 
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
@@ -1117,7 +1130,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1510,18 +1523,26 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     
     #rhogcc[0] = 0.01
     
+    dtvd = np.zeros(len(tvd))
+    integrho = np.zeros(len(tvd))
     i=1
     maxwaterppg = wdf*8.34540426515252*water
     while(i<len(tvdf-1)):
         if glwd<0:
             if(tvdbgl[i]>0):
                 if(tvdmsl[i]>0):
+                    dtvd[i] = tvd[i]-tvd[i-1]
+                    integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
                     ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[0:i]))*(tvdbglf[i])))/tvdmslf[i])
             else:
                 if(tvdmsl[i]>0):
+                    dtvd[i] = tvd[i]-tvd[i-1]
+                    integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
                     ObgTppg[i] =(8.34540426515252*water)
         else:
             if (tvdbgl[i]>0):
+                dtvd[i] = tvd[i]-tvd[i-1]
+                integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
                 ObgTppg[i] =((np.mean(rhoppg[0:i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
                 #ObgTppg[i] =rhoppg[i] #Flat Top Obg Gradient
         i+=1
@@ -1592,10 +1613,10 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdbglf[i-1] for i in range(1, len(ObgTppf) + 1)])
         obgpsi= ObgTppf[:]*tvdbglf[:]
     mudpsi = mudppf[:]*tvdf[:]
-    
+
     i = 0
-    ppgmiller = np.zeros(len(tvdf))
-    gccmiller = np.zeros(len(tvdf))
+    ppgZhang = np.zeros(len(tvdf))
+    gccZhang = np.zeros(len(tvdf))
     psipp = np.zeros(len(tvdf))
     psiftpp = np.zeros(len(tvdf))
     horsud = np.zeros(len(tvdf))
@@ -1623,20 +1644,20 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         if glwd>=0: #Onshore Cases
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5: #Shale PorePressure
-                    gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 else:
-                    gccmiller[i] = np.nan #Hydraulic Pore Pressure
+                    gccZhang[i] = np.nan #Hydraulic Pore Pressure
                 
                 if lithotype[i]>1.5: #Carbonate PorePressure
                     dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
-                    gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 
-                if gccmiller[i]<underbalancereject: #underbalance reject
-                    gccmiller[i]=underbalancereject
+                if gccZhang[i]<underbalancereject: #underbalance reject
+                    gccZhang[i]=underbalancereject
                 
-                ppgmiller[i] = gccmiller[i]*8.33
+                ppgZhang[i] = gccZhang[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
@@ -1648,27 +1669,27 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
                 sm[i] = 0.03*(vp[i]**3.30)
-                psiftpp[i] = 0.4335275040012*gccmiller[i]
+                psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
                 #if psipp[i]<hydropsi[i]:
                 #   psipp[i] = hydropsi[i]
         else: #Offshore Cases
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:#Shale Pore Pressure
-                    gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 else:
-                    gccmiller[i] = np.nan #Hydraulic Pore Pressure
+                    gccZhang[i] = np.nan #Hydraulic Pore Pressure
                 
                 if lithotype[i]>1.5: #Carbonate PorePressure
                     dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
-                    gccmiller[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccmiller[i] = getGccMiller(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 
-                if gccmiller[i]<underbalancereject: #underbalance reject
-                    gccmiller[i]=underbalancereject
+                if gccZhang[i]<underbalancereject: #underbalance reject
+                    gccZhang[i]=underbalancereject
                 
-                ppgmiller[i] = gccmiller[i]*8.33
+                ppgZhang[i] = gccZhang[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
@@ -1680,17 +1701,17 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)
                 sm[i] = 0.03*(vp[i]**3.30)
-                psiftpp[i] = 0.4335275040012*gccmiller[i]
+                psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
         i+=1
-    #gccmiller[0] = np.nan
-    gccmiller[-1] = hydrostatic[-1]
-    gccmiller[np.isnan(gccmiller)] = water
-    ppgmiller[np.isnan(ppgmiller)] = water*8.33
+    #gccZhang[0] = np.nan
+    gccZhang[-1] = hydrostatic[-1]
+    gccZhang[np.isnan(gccZhang)] = water
+    ppgZhang[np.isnan(ppgZhang)] = water*8.33
     psiftpp = interpolate_nan(psiftpp)
     psipp = interpolate_nan(psipp)
-    print("GCCmiller: ",gccmiller)
-    psiftpp = 0.4335275040012*gccmiller
+    print("GCCZhang: ",gccZhang)
+    psiftpp = 0.4335275040012*gccZhang
     #psipp = psiftpp[:]*tvdf[:]
     #ObgTgcc = np.array(ObgTgcc)
     #obgpsift = 0.4335275040012*ObgTgcc
@@ -1708,16 +1729,16 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     if b > 10.0:
         b=0
   
-    fgppg = np.zeros(len(ppgmiller))
-    fgcc = np.zeros(len(ppgmiller))
-    mufgppg = np.zeros(len(ppgmiller))
-    mufgcc = np.zeros(len(ppgmiller))
+    fgppg = np.zeros(len(ppgZhang))
+    fgcc = np.zeros(len(ppgZhang))
+    mufgppg = np.zeros(len(ppgZhang))
+    mufgcc = np.zeros(len(ppgZhang))
 
     while i<(len(ObgTppg)-1):
         if tvdbgl[i]>0:
             if shaleflag[i]<0.5:
-                fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgmiller[i])+ppgmiller[i] +(b*ObgTppg[i])
-                mufgppg[i] = ((1/((((mu**2)+1)**0.5)+mu)**2)*(ObgTppg[i]-ppgmiller[i])) + ppgmiller[i]
+                fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgZhang[i])+ppgZhang[i] +(b*ObgTppg[i])
+                mufgppg[i] = ((1/((((mu**2)+1)**0.5)+mu)**2)*(ObgTppg[i]-ppgZhang[i])) + ppgZhang[i]
                 mufgcc[i] = 0.11982642731*mufgppg[i]
             else:
                 fgppg[i] = np.nan
@@ -1727,7 +1748,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         i+=1
     fgppg = interpolate_nan(fgppg)
     fgcc = interpolate_nan(fgcc)
-    #fgppg = (nu/(1-nu))(ObgTppg-ppgmiller)+ppgmiller
+    #fgppg = (nu/(1-nu))(ObgTppg-ppgZhang)+ppgZhang
     psiftfg = 0.4335275040012*fgcc
     
     psifg = psiftfg*tvdf
@@ -1773,7 +1794,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     #Smooth curves using moving averages
     i = window
     sfg = fgcc
-    spp = gccmiller
+    spp = gccZhang
     spsipp = psipp
     shorsud = horsud
     slal = lal
@@ -1782,7 +1803,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     spsifp = psifg
     ssgHMpsi = sgHMpsi
     while i<len(fgcc):
-        sum1 = np.sum(gccmiller[(i-window):i+(window)])
+        sum1 = np.sum(gccZhang[(i-window):i+(window)])
         spp[i] = sum1/(2*window)
         sum2 = np.sum(psipp[(i-window):i+(window)])
         spsipp[i] = sum2/(2*window)
@@ -1803,7 +1824,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         sum10 = np.sum(sgHMpsi[(i-window):i+(window)])
         ssgHMpsi[i] = sum10/(2*window)
         i+=1
-    
+    finaldepth = find_nearest_depth(tvdm,finaldepth)[1]
     doi = min(doi,finaldepth-1)
     if doi>0:
         doiactual = find_nearest_depth(tvdm,doi)
@@ -2441,8 +2462,8 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     with open(path, mode='w') as f:
         las.write(f, **kwargs)
 
-#def on_plotPPmiller_done(self,future):
-    #result = future.result()  # Get the result from plotPPmiller
+#def on_plotPPzhang_done(self,future):
+    #result = future.result()  # Get the result from plotPPzhang
     # Update the GUI with the result
     # This might involve displaying the plot or showing a notification
 
