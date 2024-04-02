@@ -75,6 +75,7 @@ flowpsivals = None
 fracpsivals = None
 currentstatus = "Ready"
 depth_track = None
+finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
 modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,tilt,nu_shale,su_sst,nu_lst,dt_lst"
@@ -254,37 +255,14 @@ class MyApp(toga.App):
         # Create a container with ROW direction for plot and frac_grad_data
         plot_and_data_box = toga.Box(style=Pack(direction=ROW, flex=1))
         
-        # Move the frac_grad_data related components inside the plot_and_data_box
-        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
-        plot_and_data_box.add(self.frac_grad_data_box)
-        
-        
-        # Add the buttons for Add row and Remove row
-        row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(flex=1))
-        self.add_frac_psi_button = toga.Button("Add Frac PSI", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_psi'), style=Pack(flex=1))
-        row_button_box.add(self.add_frac_grad_button)
-        row_button_box.add(self.add_frac_psi_button)
-        self.frac_grad_data_box.add(row_button_box)
-
-        # Initialize the list of frac_grad_data rows
-        self.frac_grad_data_rows = []
-        self.add_frac_grad_data_row(None, row_type='frac_grad')
-        self.add_frac_grad_data_row(None, row_type='frac_psi')
-
-        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
-        plot_and_data_box.add(self.bg3)
-        #spacer_box = toga.Box(style=Pack(flex=0.01))  # Add this spacer box
-        #plot_and_data_box.add(spacer_box)
-
         # Create a container for flow_grad_data rows
         self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
         plot_and_data_box.add(self.flow_grad_data_box)
 
         # Add the buttons for Add row and Remove row
         flow_row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.add_flow_grad_button = toga.Button("Add Flow Grad", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_grad'), style=Pack(flex=1))
-        self.add_flow_psi_button = toga.Button("Add Flow PSI", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_psi'), style=Pack(flex=1))
+        self.add_flow_grad_button = toga.Button("Add PP Grad", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_grad'), style=Pack(width=100))
+        self.add_flow_psi_button = toga.Button("Add PP BHP", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_psi'), style=Pack(width=100))
         flow_row_button_box.add(self.add_flow_grad_button)
         flow_row_button_box.add(self.add_flow_psi_button)
         self.flow_grad_data_box.add(flow_row_button_box)
@@ -293,6 +271,29 @@ class MyApp(toga.App):
         self.flow_grad_data_rows = []
         self.add_flow_grad_data_row(None, row_type='flow_grad')
         self.add_flow_grad_data_row(None, row_type='flow_psi')
+        
+        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        plot_and_data_box.add(self.bg3)
+        #spacer_box = toga.Box(style=Pack(flex=0.01))  # Add this spacer box
+        #plot_and_data_box.add(spacer_box)
+        
+        # Move the frac_grad_data related components inside the plot_and_data_box
+        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
+        plot_and_data_box.add(self.frac_grad_data_box)
+        
+        
+        # Add the buttons for Add row and Remove row
+        row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
+        self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(width=100))
+        self.add_frac_psi_button = toga.Button("Add Frac BHP", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_psi'), style=Pack(width=100))
+        row_button_box.add(self.add_frac_grad_button)
+        row_button_box.add(self.add_frac_psi_button)
+        self.frac_grad_data_box.add(row_button_box)
+
+        # Initialize the list of frac_grad_data rows
+        self.frac_grad_data_rows = []
+        self.add_frac_grad_data_row(None, row_type='frac_grad')
+        self.add_frac_grad_data_row(None, row_type='frac_psi')
 
         self.page3.add(plot_and_data_box)
         
@@ -399,23 +400,23 @@ class MyApp(toga.App):
         
     
     def add_frac_grad_data_row(self, widget, row_type='frac_grad'):
-        depth_label = toga.Label("Depth", style=Pack(text_align="center", width=100, padding_bottom=5))
+        depth_label = toga.Label("MD", style=Pack(text_align="center", width=100, padding_top=5))
         
         if row_type == 'frac_grad':
-            second_label = toga.Label("Fracture Gradient", style=Pack(text_align="center", width=100, padding_bottom=5))
+            second_label = toga.Label("Frac Grad gcc", style=Pack(text_align="center", width=100, padding_top=5))
         elif row_type == 'frac_psi':
-            second_label = toga.Label("Frac PSI", style=Pack(text_align="center", width=100, padding_bottom=5))
+            second_label = toga.Label("Frac BHP psi", style=Pack(text_align="center", width=100, padding_top=5))
         else:
             raise ValueError("Invalid row type")
 
         depth_input = toga.TextInput(style=Pack(width=100), value="0")
         second_input = toga.TextInput(style=Pack(width=100), value="0")
 
-        row_labels = toga.Box(style=Pack(direction=ROW, padding_bottom=5))
+        row_labels = toga.Box(style=Pack(direction=ROW, padding_top=5))
         row_labels.add(depth_label)
         row_labels.add(second_label)
 
-        row_inputs = toga.Box(style=Pack(direction=ROW, padding_bottom=5))
+        row_inputs = toga.Box(style=Pack(direction=ROW, padding_top=5))
         row_inputs.add(depth_input)
         row_inputs.add(second_input)
 
@@ -430,23 +431,23 @@ class MyApp(toga.App):
             self.frac_grad_data_box.remove(row[2])
             
     def add_flow_grad_data_row(self, widget, row_type='flow_grad'):
-        depth_label = toga.Label("Depth", style=Pack(text_align="center", width=100, padding_bottom=5))
+        depth_label = toga.Label("MD", style=Pack(text_align="center", width=100, padding_top=5))
         
         if row_type == 'flow_grad':
-            second_label = toga.Label("Flow Gradient", style=Pack(text_align="center", width=100, padding_bottom=5))
+            second_label = toga.Label("PP Grad gcc", style=Pack(text_align="center", width=100, padding_top=5))
         elif row_type == 'flow_psi':
-            second_label = toga.Label("Flow PSI", style=Pack(text_align="center", width=100, padding_bottom=5))
+            second_label = toga.Label("PP BHP psi", style=Pack(text_align="center", width=100, padding_top=5))
         else:
             raise ValueError("Invalid row type")
 
         depth_input = toga.TextInput(style=Pack(width=100), value="0")
         second_input = toga.TextInput(style=Pack(width=100), value="0")
 
-        row_labels = toga.Box(style=Pack(direction=ROW, padding_bottom=5))
+        row_labels = toga.Box(style=Pack(direction=ROW, padding_top=5))
         row_labels.add(depth_label)
         row_labels.add(second_label)
 
-        row_inputs = toga.Box(style=Pack(direction=ROW, padding_bottom=5))
+        row_inputs = toga.Box(style=Pack(direction=ROW, padding_top=5))
         row_inputs.add(depth_input)
         row_inputs.add(second_input)
 
@@ -551,7 +552,7 @@ class MyApp(toga.App):
         return depth_mw_values
     
     def getwelldev(self):
-        global laspath, devpath, wella, deva, depth_track
+        global laspath, devpath, wella, deva, depth_track, finaldepth
         print(self.dropdown1.value)
         print("Recalculating....   "+str(laspath))
         wella = welly.Well.from_las(laspath, index = "m")
@@ -611,6 +612,8 @@ class MyApp(toga.App):
         dz = pd.DataFrame(dz)
         dz = dz.dropna()
         print(dz)
+        finaldepth = dz.to_numpy()[-1][0]
+        print("Final depth is ",finaldepth)
         wella.location.add_deviation(dz, wella.location.td)
         tvdg = wella.location.tvd
         md = wella.location.md
@@ -960,7 +963,7 @@ class MyApp(toga.App):
     
     
     def wellisvertical(self,widget):
-        global depth_track
+        global depth_track, finaldepth
         # Print the updated self.output list to the console
         print("Blah")
         depth_track = wella.df().index.values
@@ -993,6 +996,8 @@ class MyApp(toga.App):
         dz = pd.DataFrame(dz)
         #dz = dz.dropna()
         print(dz)
+        finaldepth = dz.to_numpy()[-1][0]
+        print("Final depth is ",finaldepth)
         wella.location.add_deviation(dz, wella.location.td)
         tvdg = wella.location.tvd
         md3 = wella.location.md
@@ -1120,6 +1125,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     #print(well.location.location)
     start_depth = wella.df().index[0]
     final_depth = wella.df().index[-1]
+    global finaldepth
     plt.clf()
     #well.location.plot_3d()
     #well.location.plot_plan()
@@ -1798,7 +1804,7 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
         ssgHMpsi[i] = sum10/(2*window)
         i+=1
     
-    
+    doi = min(doi,finaldepth-1)
     if doi>0:
         doiactual = find_nearest_depth(tvdm,doi)
         print(doiactual)
@@ -2088,6 +2094,9 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     from matplotlib import ticker
     from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
     
+    tango = min(tango,finaldepth)
+    if zulu>finaldepth or zulu>tango:
+        zulu=0
     #minindex = find_nearest_depth(tvdm,zulu)[0]
     #maxindex = find_nearest_depth(tvdm,tango)[0]
     #Presentation Plot
@@ -2236,8 +2245,15 @@ def plotPPmiller(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1
     x_values3, y_values3 = zip(*frac_psi_data)
     x_values4, y_values4 = zip(*flow_psi_data)
     if UCSs is not None:
-        
         y_values5, x_values5 = zip(*ucss)
+        y_values5 = tvdm[find_nearest_depth(md,y_values5)[0]]
+    
+    #convert y values to tvd
+    y_values = tvdm[find_nearest_depth(md,y_values)[0]]
+    y_values2 = tvdm[find_nearest_depth(md,y_values2)[0]]
+    y_values3 = tvdm[find_nearest_depth(md,y_values3)[0]]
+    y_values4 = tvdm[find_nearest_depth(md,y_values4)[0]]
+    
     
     #Plot Image
         
