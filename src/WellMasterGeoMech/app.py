@@ -1523,31 +1523,32 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     
     #rhogcc[0] = 0.01
     
-    dtvd = np.zeros(len(tvd))
     integrho = np.zeros(len(tvd))
+    integrhopsift = np.zeros(len(tvd))
     i=1
     maxwaterppg = wdf*8.34540426515252*water
     while(i<len(tvdf-1)):
         if glwd<0:
             if(tvdbgl[i]>0):
                 if(tvdmsl[i]>0):
-                    dtvd[i] = tvd[i]-tvd[i-1]
-                    integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
+                    #integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
                     ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[0:i]))*(tvdbglf[i])))/tvdmslf[i])
+                    integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
+                    integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
             else:
                 if(tvdmsl[i]>0):
-                    dtvd[i] = tvd[i]-tvd[i-1]
-                    integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
+                    integrho[i] = integrho[i-1]+(water*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
+                    integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
                     ObgTppg[i] =(8.34540426515252*water)
         else:
             if (tvdbgl[i]>0):
-                dtvd[i] = tvd[i]-tvd[i-1]
-                integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
+                integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
+                integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
                 ObgTppg[i] =((np.mean(rhoppg[0:i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
                 #ObgTppg[i] =rhoppg[i] #Flat Top Obg Gradient
         i+=1
-    #ObgTppg = interpolate_nan(ObgTppg)
     
+    ObgTppg = integrhopsift*19.25
     ObgTgcc = 0.11982642731*ObgTppg
     ObgTppf = 0.4335275040012*ObgTgcc
     ObgTgcc[0] = 0.01
@@ -1606,14 +1607,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     
     if glwd<0:
         hydropsi = hydroppf[:]*tvdmslf[:]
-        obgpsi= ObgTppf[:]*tvdmslf[:]
+        obgpsi= integrho*0.000145038
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdmslf[i-1] for i in range(1, len(ObgTppf) + 1)])
     else:
         hydropsi = hydroppf[:]*tvdbglf[:]
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdbglf[i-1] for i in range(1, len(ObgTppf) + 1)])
-        obgpsi= ObgTppf[:]*tvdbglf[:]
+        obgpsi= integrho*0.000145038
     mudpsi = mudppf[:]*tvdf[:]
-
     i = 0
     ppgZhang = np.zeros(len(tvdf))
     gccZhang = np.zeros(len(tvdf))
