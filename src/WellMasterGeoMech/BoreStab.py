@@ -64,7 +64,7 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     initial_guess = [initial_s2, initial_s1]
     
     # Perform the optimization
-    result = minimize(objective, initial_guess, method='SLSQP', constraints=constraints,bounds=bounds,tol=0.01)
+    result = minimize(objective, initial_guess, method='SLSQP', constraints=constraints,bounds=bounds,tol=0.00001)
     
     if result.success:
         optimized = [0, 0, 0]
@@ -291,7 +291,8 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     STMax = 0.5*(Szz + Stt + (((Szz-Stt)**2)+(4*(Ttz**2)))**0.5)
     Stmin = 0.5*(Szz + Stt - (((Szz-Stt)**2)+(4*(Ttz**2)))**0.5)
     #omega = np.degrees(np.arctan2(Szz,(((STMax**2)-(Szz**2))**0.5)))
-    omega = np.degrees(np.arctan2(Stt,Szz))
+    tens2d = [[Stt,Ttz],[Ttz,Szz]]
+    omega = np.degrees(np.arctan2(np.linalg.eigh(tens2d)[1][0][0],np.linalg.eigh(tens2d)[1][0][1]))
     #if theta>math.radians(180):
         #omega = np.degrees(np.arctan2((((Stt**2)-(Szz**2))**0.5),-Szz))
         #omega = 180-np.degrees(np.arctan2(Stt,Szz))
@@ -308,8 +309,8 @@ def drawStab(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0):
         azim = 0
         while azim<37:
             pointer= 0
-            line = np.zeros(361)
-            while pointer<361:
+            line = np.zeros(360)
+            while pointer<360:
                 STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp)
                 line[pointer] = STM
                 pointer+=1
@@ -343,9 +344,9 @@ def drawBreak(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
         azim = 0
         while azim<37:
             pointer= 0
-            line = np.zeros(361)
+            line = np.zeros(360)
             width = 0
-            while pointer<361:
+            while pointer<360:
                 STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
                 if (STT-UCS)>0:
                     width+=1
@@ -397,12 +398,12 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
         azim = 0
         while azim<37:
             pointer= 0
-            line = np.zeros(361)
-            angle= np.zeros(361)
+            line = np.zeros(360)
+            angle= np.zeros(360)
             width= 0
-            frac = np.zeros(361)
-            widthR = np.zeros(361)
-            while pointer<361:
+            frac = np.zeros(360)
+            widthR = np.zeros(360)
+            while pointer<360:
                 STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
                 line[pointer] = STT
                 angle[pointer] = omega
@@ -417,7 +418,7 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
                 pointer+=1
             if width>0:
                 print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
-                #plt2.scatter(np.array(range(0,361)),frac)
+                #plt2.scatter(np.array(range(0,360)),frac)
                 #plt2.plot(angle)
                 #plt2.plot(line)
                 #plt2.xlim((0,0.67827))
@@ -459,7 +460,7 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt2.show()
 
-def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
+def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,path=None):
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
     mui = (1+np.sin(phi))/(1-np.sin(phi))
     fmui = ((((mui**2)+1)**0.5)+mui)**2
@@ -467,18 +468,20 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     #values = np.zeros((10,37))
     
     pointer= alpha
-    line = np.zeros(361)
-    line2 = np.zeros(361)
-    angle= np.zeros(361)
+    line = np.zeros(360)
+    line2 = np.zeros(360)
+    line1 = np.zeros(360)
+    angle= np.zeros(360)
     width= 0
-    frac = np.zeros(361)
-    crush = np.zeros(361)
-    widthR = np.zeros(361)
+    frac = np.zeros(360)
+    crush = np.zeros(360)
+    widthR = np.zeros(360)
     ts = -ucs/10
-    while pointer<361+alpha:
+    while pointer<360+alpha:
         STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer, deltaP,Pp,nu)
         line[round(pointer%360)] = stm
         line2[round(pointer%360)] = STM
+        line1[round(pointer%360)] = TTZ
         angle[round(pointer%360)] = omega
         if stm<ts:
             width+=1
@@ -498,17 +501,19 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35):
     maxstress = np.argmax(line2[0:180])
     minstress2 = minstress+180
     maxstress2 = maxstress+180
+    if path is not None:
     #print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
-    #plt2.scatter(np.array(range(0,3610)),frac)
-    #plt2.plot(angle)
-    #plt2.plot(line)
-    #plt2.plot(line2)
-    #plt2.plot(frac)
-    #plt2.plot(crush)
-    #plt2.xlim((0,0.67827))
-    #plt2.ylim((1,151))
-    #plt2.show()
-    return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360]
+        #plt2.scatter(np.array(range(0,360)),frac)
+        plt2.plot(angle)
+        plt2.plot(line)
+        plt2.plot(line2)
+        plt2.plot(line1)
+        #plt2.plot(frac)
+        #plt2.plot(crush)
+        #plt2.xlim((0,0.67827))
+        #plt2.ylim((1,151))
+        plt2.savefig(path)
+    return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle
 
 def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
     #phi = 183-(163*nu) ## wayy too high
@@ -529,14 +534,14 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
         azim = 0
         while azim<37:
             pointer= 0
-            line = np.zeros(361)
-            line2 = np.zeros(361)
-            angle= np.zeros(361)
+            line = np.zeros(360)
+            line2 = np.zeros(360)
+            angle= np.zeros(360)
             width= 0
             width2 = 0
-            frac = np.zeros(361)
-            widthR = np.zeros(361)
-            while pointer<361:
+            frac = np.zeros(360)
+            widthR = np.zeros(360)
+            while pointer<360:
                 STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
                 line[pointer] = STT
                 angle[pointer] = omega
@@ -555,7 +560,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
                     
             #if width>0:
                 #print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
-                #plt2.scatter(np.array(range(0,361)),frac)
+                #plt2.scatter(np.array(range(0,360)),frac)
                 #plt2.plot(angle)
                 #plt2.plot(line)
                 #plt2.xlim((0,0.67827))

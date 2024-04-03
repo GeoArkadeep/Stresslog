@@ -40,6 +40,7 @@ output_fileS = os.path.join(output_dir, "PlotStability.png")
 output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
 output_fileVec = os.path.join(output_dir, "PlotVec.png")
 output_fileBHI = os.path.join(output_dir, "PlotBHI.png")
+output_fileHoop = os.path.join(output_dir, "PlotHoop.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
@@ -79,7 +80,7 @@ finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
 modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,tilt,nu_shale,su_sst,nu_lst,dt_lst"
-defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,2500,2900,1.025,1,0,3500,0,0,0.32,0.27,0.25,65"
+defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,0,2900,1.025,1.0,0,3500,0,0,0.32,0.27,0.25,65"
 print(os.getcwd())
 try:
     data = pd.read_csv(modelpath,index_col=False)
@@ -1954,7 +1955,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #print(mana)
     #units = []
     
-    
     output_file4 = os.path.join(output_dir1,"GMech.las")
     output_fileCSV = os.path.join(output_dir1,"GMech.csv")
     df3 = well.df()
@@ -1966,18 +1966,17 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_DT_Zhang":"G/C3","FG_DAINES":"G/C3","GEOPRESSURE":"PSI","FRACTURE_PRESSURE":"PSI", "SHMAX_PRESSURE":"PSI", "shmin_PRESSURE":"PSI","MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
     datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
     #well.to_las('output.las')
-    
     from BoreStab import getHoop
-    from plotangle import plotfracs
+    from plotangle import plotfracs,plotfrac
     def drawBHimage(doi):
         doiactual = find_nearest_depth(tvdm,doi-25)
         doiS = doiactual[0]
         doiactual2 = find_nearest_depth(tvdm,doi+25)
         doiF = doiactual2[0]
-        frac = np.zeros([doiF-doiS,361])
-        crush = np.zeros([doiF-doiS,361])
+        frac = np.zeros([doiF-doiS,360])
+        crush = np.zeros([doiF-doiS,360])
         data=np.zeros([doiF-doiS,4])
-        data2=np.zeros([doiF-doiS,3])
+        #data2=np.zeros([doiF-doiS,3])
         i=doiS
         j=0
         while i <doiF:
@@ -2015,7 +2014,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
             alpha = alpha + offset
             beta= beta+tilt
             """
-            cr,fr,minazi,maxazi,minangle,maxangle = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
+            cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
             crush[j] = cr
             frac[j] = fr
             if np.max(frac[j])>0:
@@ -2023,17 +2022,54 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 #data2[j+1] = [tvd[i+1],round((minazi+180)%360),minangle+180]
             i+=1
             j+=1
-        from plotangle import plotfracs
+        from plotangle import plotfracs, plotfrac
+        i=find_nearest_depth(tvdm,doi)[0]
+        j=find_nearest_depth(tvdm,doi)[1]
+        sigmaVmpa = obgpsi[i]/145.038
+        sigmahminmpa = psifg[i]/145.038
+        sigmaHMaxmpa = sgHMpsi[i]/145.038
+        ppmpa = psipp[i]/145.038
+        bhpmpa = mudpsi[i]/145.038
+        ucsmpa = horsud[i]
+        deltaP = bhpmpa-ppmpa
+        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        sigmas = [osx,osy,osz]
+        devdoi = well.location.deviation[i]
+        incdoi = devdoi[2]
+        azmdoi = devdoi[1]
+        cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
+        data2 = j,fr,angles,minazi,maxazi
+        plotfrac(data2).savefig('frac.png')
         plotfracs(data)
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.title("Synthetic Borehole Image")
         plt.savefig(output_fileBHI,dpi=1200)
         plt.clf()
-        print(crush)
-        print(frac)
     
+    def plotHoop(doi):
+        doiactual = find_nearest_depth(tvdm,doi)
+        doiS = doiactual[0]
+        i=doiS
+        j=0
+        sigmaVmpa = obgpsi[i]/145.038
+        sigmahminmpa = psifg[i]/145.038
+        sigmaHMaxmpa = sgHMpsi[i]/145.038
+        ppmpa = psipp[i]/145.038
+        bhpmpa = mudpsi[i]/145.038
+        ucsmpa = horsud[i]
+        deltaP = bhpmpa-ppmpa
+        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        sigmas = [osx,osy,osz]
+        devdoi = well.location.deviation[i]
+        incdoi = devdoi[2]
+        azmdoi = devdoi[1]
+        getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],output_fileHoop)
+ 
     if doi>0:
+        plotHoop(doi)
         drawBHimage(doi)
     
     """

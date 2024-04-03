@@ -37,3 +37,45 @@ def plotfracs(data):
         
     return plt
 #plt.show()
+
+def plotfrac(data):
+    tvd,fr,angles,minangle,maxangle = data
+    i = 0
+    d = np.zeros(360)
+    yj = np.zeros(360)
+    img = np.zeros([360,100])
+    while(i<360):
+        if i>minangle+90 and i<minangle+270:
+            d[i] = (i-(minangle+180))
+        else:
+            if i<minangle+90:
+                d[i] = i-minangle
+            else:
+                d[i] = i-(360+minangle)
+        yj[i] = abs(np.tan(np.radians(angles[i]))*d[i])
+        if d[i-1]==0:
+            yj[i-1] = (yj[i-2]+yj[i])/2
+            spV = yj[i-1]
+        
+        if fr[i] <1:
+            yj[i] = np.nan
+        i+=1
+    
+    yj = yj-spV
+    yj[(maxangle-10)%360:(maxangle+15)%360]=np.nan
+    yj[(maxangle+170)%360:(maxangle+195)%360]=np.nan
+    print(yj)
+    print(d)
+    plt.figure(figsize=(10, 10))
+    plt.plot(yj)
+    """
+    while i<360:
+        if fr[i]>0:
+            plt.scatter(i, yj[i], color='black', marker='o')
+        i+=1
+    """
+    # Setting axis limits
+    plt.xlim(0, 360)
+    plt.ylim(-180, 180)
+    return plt
+#plt.show()
