@@ -1969,9 +1969,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     from BoreStab import getHoop
     from plotangle import plotfracs,plotfrac
     def drawBHimage(doi):
-        doiactual = find_nearest_depth(tvdm,doi-25)
+        doiactual = find_nearest_depth(tvdm,doi-5)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+25)
+        doiactual2 = find_nearest_depth(tvdm,doi+5)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,360])
         crush = np.zeros([doiF-doiS,360])
@@ -2040,10 +2040,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         azmdoi = devdoi[1]
         cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
         data2 = j,fr,angles,minazi,maxazi
-        plotfrac(data2).savefig('frac.png')
+        d,f = plotfrac(data2)
         plotfracs(data)
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
+        plt.plot(d)
+        plt.ylim(j+5, j-5)
         plt.title("Synthetic Borehole Image")
         plt.savefig(output_fileBHI,dpi=1200)
         plt.clf()
