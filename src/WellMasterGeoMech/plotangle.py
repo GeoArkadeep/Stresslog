@@ -49,6 +49,8 @@ def plotfrac(data):
     depths = np.zeros(360)
     midpoint1 = min(minangle+90,(minangle+270)%360)
     midpoint2 = max(minangle+90,(minangle+270)%360)
+    spVa = 360
+    spVb = 0
     while(i<360):
         if i>minangle+90 and i<minangle+269:
             d[i] = (i-(minangle+180))
@@ -59,42 +61,54 @@ def plotfrac(data):
                 d[i] = i-(360+minangle)
         if abs(d[i])==270:
             d[i]=90*(abs(d[i])/d[i])
-        yj[i] = abs(np.tan(np.radians(angles[i]))*d[i])
+        yj[i] = abs(np.tan(np.radians(angles[i]))*d[i]) #FlipVertN if abs
         depths[i] = (((yj[i]-180)/180)*(cm/2))
         if d[i-1]==0:
             yj[i-1] = (yj[i-2]+yj[i])/2
+            spV =  yj[i-1]
             depths[i-1] = (depths[i-2]+depths[i])/2
-            spV = yj[i-1]
+            spVa = min(depths[i-1],spVa)
+            spVb = max(depths[i-1],spVb)
         
-        if fr[i] <1:
-            yj[i] = np.nan
-            depths[i] = np.nan
+        #if fr[i] <1:
+            #yj[i] = np.nan
+            #depths[i] = np.nan
         i+=1
+    
+    yj = yj-spV
     plt.figure(figsize=(10, 10))
-    plt.plot(depths)
+    plt.plot(yj)
     #Setting axis limits
     plt.xlim(0, 360)
     #plt.ylim(-180, 180)
     plt.savefig('frac.png')
-    yj = yj-spV
+    print(yj)
     yj[(maxangle-10)%360:(maxangle+15)%360]=np.nan
     yj[(maxangle+170)%360:(maxangle+195)%360]=np.nan
     #depths[(maxangle-10)%360:(maxangle+15)%360]=np.nan
     #depths[(maxangle+170)%360:(maxangle+195)%360]=np.nan
     i=0
-    #av1 = np.nanmean(np.concatenate([depths[0:(midpoint1-1)],depths[midpoint2:360]]))
-    #av2 = np.nanmean(depths[midpoint1:(midpoint2-1)])
     cyj = yj
     cyj[midpoint1:midpoint2] = cyj[midpoint1:midpoint2][::-1]    
-    """while i<360:
-        if i<180:
+    while i<360: #ShiftVert
+        if i<midpoint1 or i>midpoint2-1:
+            depths[i] = depths[i]-spVa
+        else:
+            depths[i] = depths[i]-spVb
+        i+=1
+    av1 = np.nanmean(np.concatenate([depths[0:(midpoint1-1)],depths[midpoint2:360]]))
+    av2 = np.nanmean(depths[midpoint1:(midpoint2-1)])
+    i=0
+    while i<360: #ShiftVert
+        if i<midpoint1 or i>midpoint2-1:
             depths[i] = depths[i]-av1
         else:
             depths[i] = depths[i]-av2
-        i+=1"""
+        i+=1
     depths = depths-np.mean(depths)
     cdepths = depths+tvd
-    cdepths[midpoint1:midpoint2] = cdepths[midpoint1:midpoint2][::-1]
+    #cdepths[midpoint1:midpoint2] = cdepths[midpoint1:midpoint2][::-1] FlipHorzR
+    
     print(depths)
     print(d)
     
