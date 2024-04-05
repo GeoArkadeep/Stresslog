@@ -81,7 +81,7 @@ def plotVectors(x, y, z, m,lx,ly,lz):
 
 # Example usage
 #plotVectors(x, y, z, 2, 23,30,40).show()
-def showvec(x, y, z, m,lx,ly,lz):
+def showvec(x, y, z, m,lx,ly,lz,path):
     plotVectors(x, y, z, m,lx,ly,lz).show()
     return
 def savevec(x, y, z, m,lx,ly,lz,path):

@@ -1969,9 +1969,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     from BoreStab import getHoop
     from plotangle import plotfracs,plotfrac
     def drawBHimage(doi):
-        doiactual = find_nearest_depth(tvdm,doi-5)
+        doiactual = find_nearest_depth(tvdm,doi-2)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+5)
+        doiactual2 = find_nearest_depth(tvdm,doi+3)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,360])
         crush = np.zeros([doiF-doiS,360])
@@ -2045,7 +2045,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.plot(d)
-        plt.ylim(j+5, j-5)
+        plt.ylim(j+3, j-2)
+        plt.gca().set_aspect(100)
+        plt.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True, labeltop=False)
+        plt.tick_params(axis='y', which='both', left=True, right=True, labelleft=True, labelright=True)
+        plt.xticks([0,90,180,270,360])
+        #plt.grid()
         plt.title("Synthetic Borehole Image")
         plt.savefig(output_fileBHI,dpi=1200)
         plt.clf()
