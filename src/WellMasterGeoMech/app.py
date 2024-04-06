@@ -1967,7 +1967,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
     #well.to_las('output.las')
     from BoreStab import getHoop
-    from plotangle import plotfracs,plotfrac
+    from plotangle import plotfracsQ,plotfrac
     def drawBHimage(doi):
         doiactual = find_nearest_depth(tvdm,doi-2)
         doiS = doiactual[0]
@@ -2044,7 +2044,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         plotfracs(data)
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
-        plt.plot(d)
+        plt.plot(d, "k-")
+        plt.plot(f, "k-",alpha=0.1)
         plt.ylim(j+3, j-2)
         plt.gca().set_aspect(100)
         plt.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True, labeltop=False)
