@@ -223,9 +223,10 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
     SHMP = ((Sv-Pp)*ufac)+Pp
     #print("Corners: ",ShmP,SHMP)
     
-    if shmin<ShmP or shmin>SHMP:
-        return [np.nan, np.nan, np.nan]
-
+    if shmin<ShmP:
+        shmin=ShmP
+    if shmin>SHMP:
+        shmin=SHMP
     #maxSt = 1.02*SHMP
     #minSt = 0.98*ShmP
     
