@@ -369,18 +369,18 @@ class MyApp(toga.App):
         
         self.page4 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
         self.dbox = toga.Box(style=Pack(direction=ROW, alignment='center',flex=1))
-        self.dbox2 = toga.Box(style=Pack(direction=ROW, alignment='center',flex=1))
-        self.bg5 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
-        self.dbox.add(self.bg5)
+        #self.dbox2 = toga.Box(style=Pack(direction=ROW, alignment='center',flex=1))
+        #self.bg5 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        #self.dbox.add(self.bg5)
 
         self.bg4 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
-        self.dbox.add(self.bg4)
+        self.page4.add(self.bg4)
         
-        self.bg6 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
-        self.dbox2.add(self.bg6)
+        #self.bg6 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        #self.dbox2.add(self.bg6)
 
-        self.bg7 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
-        self.dbox2.add(self.bg7)
+        #self.bg7 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+        #self.dbox2.add(self.bg7)
         
         button_box4 = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
         
@@ -393,8 +393,8 @@ class MyApp(toga.App):
         self.page4_btn3 = toga.Button("Back", on_press=self.show_page3, style=Pack(padding=1))
         button_box4.add(self.page4_btn3)
         
-        self.page4.add(self.dbox)
-        self.page4.add(self.dbox2)
+        #self.page4.add(self.dbox)
+        #self.page4.add(self.dbox2)
         self.page4.add(button_box4)
         
         self.main_window = toga.MainWindow(title=self.formal_name,size=[1240,620])
@@ -888,14 +888,14 @@ class MyApp(toga.App):
         if float(model[13])>0:
         
             self.page3_btn5.enabled = True
-            self.bg4.image = toga.Image(output_fileS)
-            self.bg5.image = toga.Image(output_fileSP)
-            self.bg6.image = toga.Image(output_fileVec)
-            self.bg7.image = toga.Image(output_fileBHI)
+            self.bg4.image = toga.Image(output_fileAll)
+            #self.bg5.image = toga.Image(output_fileSP)
+            #self.bg6.image = toga.Image(output_fileVec)
+            #self.bg7.image = toga.Image(output_fileBHI)
             self.bg4.refresh()
-            self.bg5.refresh()
-            self.bg6.refresh()
-            self.bg7.refresh()
+            #self.bg5.refresh()
+            #self.bg6.refresh()
+            #self.bg7.refresh()
             #self.show_page4(widget)
         else:
             self.page3_btn5.enabled = False
@@ -930,9 +930,9 @@ class MyApp(toga.App):
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
-        self.bg5.image = toga.Image('BG1.png')
-        self.bg6.image = toga.Image('BG1.png')
-        self.bg7.image = toga.Image('BG1.png')
+        #self.bg5.image = toga.Image('BG1.png')
+        #self.bg6.image = toga.Image('BG1.png')
+        #self.bg7.image = toga.Image('BG1.png')
         #self.bg3.refresh()
         #self.bg4.refresh()
         #self.bg5.refresh()
