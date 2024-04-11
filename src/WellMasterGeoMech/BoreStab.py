@@ -504,6 +504,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,pat
     if path is not None:
     #print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
         #plt2.scatter(np.array(range(0,360)),frac)
+        plt2.title("Hoop Stresses and Principal Stress Angles")
         plt2.plot(angle)
         plt2.plot(line)
         plt2.plot(line2)

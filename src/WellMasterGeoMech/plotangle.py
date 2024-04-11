@@ -54,7 +54,7 @@ def plotfracsQ(data):
 #plt.show()
 
 
-def plotfrac(data):
+def plotfrac(data,path):
     tvd,fr,angles,minangle,maxangle = data
     dia = 8.5 #inches, bit
     circumference = np.pi*dia #in inches
@@ -96,8 +96,9 @@ def plotfrac(data):
     plt.plot(yj)
     #Setting axis limits
     plt.xlim(0, 360)
-    #plt.ylim(-180, 180)
-    plt.savefig('frac.png')
+    plt.ylim(-180, 180)
+    plt.title("Fracture Morphology")
+    plt.savefig(path)
     print(yj)
     yj[(maxangle-10)%360:(maxangle+15)%360]=np.nan
     yj[(maxangle+170)%360:(maxangle+195)%360]=np.nan

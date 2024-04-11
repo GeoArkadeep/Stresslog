@@ -25,7 +25,7 @@ from threading import Lock
 model_lock = Lock()
 import time
 
-user_home = os.path.expanduser("~/documents")
+user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "pp_app_plots")
 output_dir1 = os.path.join(user_home, "pp_app_data")
@@ -41,6 +41,8 @@ output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
 output_fileVec = os.path.join(output_dir, "PlotVec.png")
 output_fileBHI = os.path.join(output_dir, "PlotBHI.png")
 output_fileHoop = os.path.join(output_dir, "PlotHoop.png")
+output_fileFrac = os.path.join(output_dir, "PlotFrac.png")
+output_fileAll = os.path.join(output_dir, "PlotAll.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
@@ -1524,6 +1526,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     gradient = lithostatic/(tvdf)*1.48816
     rhoppg[0] = rhoappg
     rhogcc[0] = rhoappg*0.11982642731
+    try:
+        rhogcc = [rhogcc[i] if math.isnan(zden2[i]) else zden2[i] for i in range(len(zden2))]
+    except:
+        pass
     #rhoppg = interpolate_nan(rhoppg)
     
     #rhogcc[0] = 0.01
@@ -1774,6 +1780,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         sgHMpsi[i] = (result[2])*145.038
         sgHMpsiL[i] = (result[0])*145.038
         sgHMpsiU[i] = (result[1])*145.038
+        if psifg[i]<obgpsi[i]:#in normal and strikeslip regimes
+            psifg[i] = np.nanmin([psifg[i],sgHMpsiL[i]])
         #psisfl[i] = 0.5*((3*sgHMpsi[i])-psifg[i])*(1-np.sin(np.radians(phi[i]))) -(horsud[i]*145.038/10*np.cos(np.radians(phi[i])))+ (psipp[i]*np.sin(np.radians(phi[i])))
         i+=1
     sgHMpsi = interpolate_nan(sgHMpsi)
@@ -2040,7 +2048,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         azmdoi = devdoi[1]
         cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
         data2 = j,fr,angles,minazi,maxazi
-        d,f = plotfrac(data2)
+        d,f = plotfrac(data2,output_fileFrac)
         plotfracs(data)
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
@@ -2076,9 +2084,39 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         azmdoi = devdoi[1]
         getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],output_fileHoop)
  
+    def combineHarvest():
+        import matplotlib.pyplot as plt
+        import matplotlib.image as mpimg
+
+        # Load the images
+        image1 = mpimg.imread(output_fileSP)
+        image2 = mpimg.imread(output_fileS)
+        image3 = mpimg.imread(output_fileHoop)
+        image4 = mpimg.imread(output_fileBHI)
+
+        # Create a new figure
+        fig, axs = plt.subplots(2, 2,figsize=(16,12))
+
+        # Plot each image in its respective subplot
+        axs[0, 0].imshow(image1)
+        axs[0, 1].imshow(image2)
+        axs[1, 0].imshow(image3)
+        axs[1, 1].imshow(image4)
+        
+        # Remove axes
+        for ax in axs.flat:
+            ax.axis('off')
+
+        # Adjust layout
+        plt.tight_layout()
+
+        # Save the combined image
+        plt.savefig(output_fileAll)
+        
     if doi>0:
         plotHoop(doi)
         drawBHimage(doi)
+        combineHarvest()
     
     """
     #Preview Plot
@@ -2351,6 +2389,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     # Save the modified plot
     plt.gcf().set_size_inches(15, 10)
     plt.savefig(output_file)#,dpi=600)
+    
     return df3
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
