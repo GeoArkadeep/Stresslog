@@ -38,7 +38,7 @@ requires = [
     "wellpathpy",
     "matplotlib",
     "numpy",
-    "pandas",
+    "pandas==2.1.1",
     "scipy"
 ]
 test_requires = [
@@ -49,7 +49,7 @@ test_requires = [
     "wellpathpy",
     "matplotlib",
     "numpy",
-    "pandas",
+    "pandas==2.1.1",
     "scipy"
     
 ]
