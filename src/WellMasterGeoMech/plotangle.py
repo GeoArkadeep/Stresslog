@@ -117,7 +117,7 @@ def plotfrac(data,path):
             #depths[i] = np.nan
             avdepths[i] = np.nan
         if fr[i]<1:
-            avdepths[i] = np.nan
+            depths[i] = np.nan
         i+=1
     av1 = np.nanmean(np.concatenate([depths[0:(midpoint1-1)],depths[midpoint2:360]]))
     av2 = np.nanmean(depths[midpoint1:(midpoint2-1)])

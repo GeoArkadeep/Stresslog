@@ -292,7 +292,14 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     Stmin = 0.5*(Szz + Stt - (((Szz-Stt)**2)+(4*(Ttz**2)))**0.5)
     #omega = np.degrees(np.arctan2(Szz,(((STMax**2)-(Szz**2))**0.5)))
     tens2d = [[Stt,Ttz],[Ttz,Szz]]
-    omega = np.degrees(np.arctan2(np.linalg.eigh(tens2d)[1][0][0],np.linalg.eigh(tens2d)[1][0][1]))
+    twoomega = np.degrees(np.arctan2(2*Ttz,Szz-Stt))
+    omega2 = twoomega/2
+    if omega2==0:
+        omega2=0.00000000001
+    omega = omega2+90
+    if omega==0:
+        omega=0.00000000001
+    #omega = np.degrees(np.arctan2(np.linalg.eigh(tens2d)[1][0][0],np.linalg.eigh(tens2d)[1][0][1]))
     #if theta>math.radians(180):
         #omega = np.degrees(np.arctan2((((Stt**2)-(Szz**2))**0.5),-Szz))
         #omega = 180-np.degrees(np.arctan2(Stt,Szz))
