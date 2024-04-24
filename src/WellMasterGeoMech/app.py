@@ -81,8 +81,8 @@ depth_track = None
 finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
-modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,tilt,nu_shale,su_sst,nu_lst,dt_lst"
-defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,0,2900,1.025,1.0,0,3500,0,0,0.32,0.27,0.25,65"
+modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,Beta,Gamma,MudTempC,nu_shale,nu_sst,nu_lst,dt_lst"
+defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,0,2900,1.025,1.0,0,3500,0,0,0,60,0.32,0.27,0.25,65"
 print(os.getcwd())
 try:
     data = pd.read_csv(modelpath,index_col=False)
@@ -323,9 +323,13 @@ class MyApp(toga.App):
             {'label': 'PP Gr. L.Limit', 'default_value': str(model[11])},
             {'label': 'TectonicFactor', 'default_value': str(model[12])},
             {'label': 'Analysis TVD', 'default_value': "0"},
-            {'label': 'Fast Shear Azimuth', 'default_value': "0"},
-            {'label': 'Stress Tensor Tilt Beta', 'default_value': "0"},
-            {'label': 'Stress Tensor Tilt Gamma', 'default_value': "0"}
+            {'label': 'Fast Shear Azimuth', 'default_value': str(model[14])},
+            {'label': 'Strike', 'default_value': str(model[15])},
+            {'label': 'Dip', 'default_value': str(model[16])},
+            {'label': 'MudTemp', 'default_value': str(model[17])}
+            #{'label': 'Unloading Exp', 'default_value': str(model[18])},
+            #{'label': 'AP1', 'default_value': str(model[19])},
+            
             
         ]
         
@@ -334,8 +338,8 @@ class MyApp(toga.App):
         # Add 6 numeric entry boxes with their respective labels
         for i in range(2):
             entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-            for j in range(8):
-                entry_info = entries_info[8 * i + j]
+            for j in range(9):
+                entry_info = entries_info[9 * i + j]
                 label = toga.Label(entry_info['label'], style=Pack(alignment='center', width = 100, flex=1,text_direction='rtl'))  # Adjust flex as needed
                 entry = toga.TextInput(style=Pack(width=50, flex=1))  # Adjust flex as needed
                 entry.value = entry_info['default_value']
@@ -397,7 +401,7 @@ class MyApp(toga.App):
         #self.page4.add(self.dbox2)
         self.page4.add(button_box4)
         
-        self.main_window = toga.MainWindow(title=self.formal_name,size=[1240,620])
+        self.main_window = toga.MainWindow(title=self.formal_name,size=[1440,720])
         self.main_window.content = self.page1
         self.main_window.show()
         
@@ -923,7 +927,7 @@ class MyApp(toga.App):
         data_into_list = data.values.tolist()
         print(data_into_list)
         model = data_into_list[0]
-        tail = model[16:20]
+        tail = model[17:21]
         #tail2 = str(model[17])
         #tail3 = str(model[18])
         #tail4 = str(model[19])
@@ -972,7 +976,7 @@ class MyApp(toga.App):
         #executor = concurrent.futures.ProcessPoolExecutor()
         self.loop = asyncio.get_event_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
-            ih = await self.loop.run_in_executor(pool,self.start_plotPPzhang_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
+            ih = await self.loop.run_in_executor(pool,self.start_plotPPzhang_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]),float(model[16]),float(model[17]))
         #self.onplotfinish()
         #self.progress.text = "Status: Done! Program Ready"
         #future.add_done_callback(lambda f: on_plotPPzhang_done(self, f))
@@ -1137,7 +1141,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11] ,b = float(model[12]),doi = 0,offset = float(model[14]), tilt = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11], b = float(model[12]), doi = 0, offset = float(model[14]), strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1149,6 +1153,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     plt.clf()
     #well.location.plot_3d()
     #well.location.plot_plan()
+    
+    from BoreStab import getEuler
+    if strike != 0 or dip !=0:
+        tilt, tiltgamma = getEuler(strike,dip)
+        print("Alpha :",offset,", Beta: ",tilt,", Gamma :",tiltgamma)
+    else:
+        tilt = 0
+        tiltgamma = 0
     
     header = well._get_curve_mnemonics()
     print(header)
@@ -1651,12 +1663,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     print("UCS: ",UCSs)
     print("IMAGE: ",flags)
     
+
     while i<(len(ObgTppg)-1):
         if glwd>=0: #Onshore Cases
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5: #Shale PorePressure
                     gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                 
@@ -1885,7 +1897,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         
         alpha = offset
         beta= tilt
-        gamma=0
+        gamma= tiltgamma
         from BoreStab import getRota
         Rmat = getRota(alpha,beta,gamma)
         #sigmas[2] = sigmaVmpa+(sigmaVmpa - sigmaVmpa*Rmat[2][2])/Rmat[2][2]
@@ -1977,9 +1989,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     from BoreStab import getHoop
     from plotangle import plotfracsQ,plotfrac
     def drawBHimage(doi):
-        doiactual = find_nearest_depth(tvdm,doi-2)
+        doiactual = find_nearest_depth(tvdm,doi-5)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+3)
+        doiactual2 = find_nearest_depth(tvdm,doi+5)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,360])
         crush = np.zeros([doiF-doiS,360])
@@ -2054,9 +2066,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.plot(d, "k-")
         plt.plot(f, "k-",alpha=0.1)
-        plt.ylim(j+3, j-2)
-        plt.gca().set_aspect(100)
-        plt.tick_params(axis='x', which='both', bottom=True, top=False, labelbottom=True, labeltop=False)
+        plt.ylim(j+5, j-5)
+        plt.gca().set_aspect(50)
+        plt.tick_params(axis='x', which='both', bottom=True, top=True, labelbottom=True, labeltop=True)
         plt.tick_params(axis='y', which='both', left=True, right=True, labelleft=True, labelright=True)
         plt.xticks([0,90,180,270,360])
         #plt.grid()
