@@ -892,7 +892,7 @@ class MyApp(toga.App):
             #self.bg5.image = toga.Image(output_fileSP)
             #self.bg6.image = toga.Image(output_fileVec)
             #self.bg7.image = toga.Image(output_fileBHI)
-            self.bg4.refresh()
+            #self.bg4.refresh()
             #self.bg5.refresh()
             #self.bg6.refresh()
             #self.bg7.refresh()
@@ -1543,9 +1543,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
             if(tvdbgl[i]>0):
                 if(tvdmsl[i]>0):
                     #integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
-                    ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[0:i]))*(tvdbglf[i])))/tvdmslf[i])
                     integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
                     integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
+                    ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[i]))*(tvdbglf[i])))/tvdmslf[i])
             else:
                 if(tvdmsl[i]>0):
                     integrho[i] = integrho[i-1]+(water*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
@@ -1555,11 +1555,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
             if (tvdbgl[i]>0):
                 integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
                 integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
-                ObgTppg[i] =((np.mean(rhoppg[0:i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
+                ObgTppg[i] =((np.mean(rhoppg[i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
                 #ObgTppg[i] =rhoppg[i] #Flat Top Obg Gradient
         i+=1
      
-    ObgTppg = integrhopsift*19.25
+    #ObgTppg = integrhopsift*19.25
     ObgTgcc = 0.11982642731*ObgTppg
     ObgTppf = 0.4335275040012*ObgTgcc
     ObgTgcc[0] = 0.01
