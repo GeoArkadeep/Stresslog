@@ -205,7 +205,7 @@ class MyApp(toga.App):
             row_box.add(iv_label)
             row_box.add(iv_entry)
             
-            ppf_label = toga.Label("Casing Weight (ppf)", style=Pack(padding_right=5,text_direction='rtl'))
+            ppf_label = toga.Label("BHT (C)", style=Pack(padding_right=5,text_direction='rtl'))
             ppf_entry = toga.TextInput(style=Pack(padding_left=2, width=100), value="0")
             row_box.add(ppf_label)
             row_box.add(ppf_entry)
@@ -566,7 +566,7 @@ class MyApp(toga.App):
                 print("Invalid input. Skipping this row.")
                 continue
 
-            depth_mw_values.append([mw,depth,bd,od,iv])
+            depth_mw_values.append([mw,depth,bd,od,iv,ppf])
 
         # Sort the depth_mw_values list by depth
         depth_mw_values.sort(key=lambda x: x[1])
@@ -1177,17 +1177,22 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     global fracgradvals
     global flowpsivals
     global fracpsivals
+    global attrib
     
     detail = mwvalues
     print(detail)
     i = 0
     mud_weight = []
+    bht_point = []
     while i<len(detail):
         mud_weight.append([detail[i][0],detail[i][1]])
+        bht_point.append([detail[i][-1],detail[i][1]])
         i+=1    
     print(mud_weight)
     first = [mud_weight[0][0],0]
     last = [mud_weight[-1][0],final_depth]
+    top_bht =[15,0]
+    bottom_bht = [float(attrib[5]),final_depth]
     frac_grad_data = fracgradvals
     flow_grad_data = flowgradvals
     frac_psi_data = fracpsivals
@@ -1195,8 +1200,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     
     mud_weight.insert(0,first)
     mud_weight.append(last)
+    bht_point.insert(0,top_bht)
+    bht_point.append(bottom_bht)
     print("MudWeights: ",mud_weight)
-    
+    print("BHTs: ",bht_point)
+    print(len(bht_point))
     print (alias['sonic'])
     if alias['sonic'][0] == 'none':
         print("Without sonic log, no prediction possible")
@@ -1290,7 +1298,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #ppg at mudline 
     #a = 0.630 #amoco exponent
     #nu = 0.4
-    global attrib
+    
     global lithos
     global UCSs
     global flags
@@ -1305,6 +1313,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     well.location.gl = float(attrib[1])
     well.location.kb = float(attrib[0])
     mudweight = np.zeros(len(tvd))
+    tempC = np.zeros(len(tvd))
+    tempC[:] = np.nan
+    tempG = np.zeros(len(tvd))
     #mudweight[:] = np.nan
     try:
         agf = (float(well.location.kb)-float(well.location.gl))*3.28084
@@ -1333,6 +1344,22 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     ilog = np.zeros(len(tvdbgl))
     formtvd = np.full(len(tvd),np.nan)
     hydrotvd = np.full(len(tvd),np.nan)
+    
+    if float(attrib[5])==0:
+        bht_point[-1][0] = (tvdbgl[-1]/1000)*30
+    i = 0
+    while i<len(bht_point):
+        if bht_point[i][0] == 0:
+            bht_point.pop(i)
+        i+=1
+    tgrads=np.array(bht_point)
+    i = 0
+    while i<len(tgrads):
+        tgrads[i] = [(bht_point[i][0]-15)/(tvdbgl[find_nearest_depth(md,tgrads[i][1])[0]]/1000),tgrads[i][1]]
+        i+=1
+    tgrads[0][0] = tgrads[1][0]
+    print("BHTs: ",bht_point)
+    print("TGs: ",tgrads)
     
     if lithos is not None:
         lithot = lithos.values.tolist()
@@ -1388,6 +1415,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     k=0
     m=0
     n=0
+    o=0
     i=0
     nu3 = [nu] * (len(tvd))
     mu2 = [0.6] * (len(tvd))
@@ -1413,6 +1441,17 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         else:
             mudweight[i] = mud_weight[j][0]
             j+=1
+        if md[i]<tgrads[o][1]:
+            y = [bht_point[o-1][0],bht_point[o][0]]
+            x = [tvdbgl[find_nearest_depth(md,bht_point[o-1][1])[0]],tvdbgl[find_nearest_depth(md,bht_point[o][1])[0]]]
+            tempC[i] = np.interp(tvdbgl[i],x,y)#/1000
+            y2 = [tgrads[o-1][0],tgrads[o][0]]
+            x2 = [tvdbgl[find_nearest_depth(md,tgrads[o-1][1])[0]],tvdbgl[find_nearest_depth(md,tgrads[o][1])[0]]]
+            tempG[i] = np.interp(tvdbgl[i],x2,y2)/1000
+        else:
+            tempG[i] = tgrads[o][0]/1000
+            tempC[i] = bht_point[o][0]
+            o+=1
         if lithos is not None:
             if md[i]<lithot[k][0]:
                 lithotype[i] = int(lithot[k-1][1])
@@ -1460,7 +1499,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
             hydrotvd[i] = np.interp(tvd[i],fttvdlist,htvdlist)
 
         i+=1
-    
+
+    #tempG[:] = tempG[:]*1000
+
     #check plot
     """plt.plot(lithotype,md)
     plt.plot(nu3,md)
