@@ -5,7 +5,7 @@ from toga import Window
 
 import lasio as laua
 import welly
-#from smoothass import readDevFromAsciiHeader, plotPPzhang
+
 import pandas as pd
 import numpy as np
 
@@ -812,6 +812,7 @@ class MyApp(toga.App):
         name = name.translate({ord(i): '_' for i in '/\:*?"<>|'})
         output_filePNG = os.path.join(output_dir,name+"_GMech.png")
         plt.savefig(output_filePNG,dpi=1200)
+        plt.close()
         self.show_page1(widget)
         
         
@@ -1055,6 +1056,7 @@ def getComp(well):
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
+    alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
     
     
     
@@ -1100,7 +1102,8 @@ def read_aliases_from_file(file_path=aliaspath):
             'resdeep': ['none', 'HDRS', 'LLD', 'M2RX', 'MLR4C', 'RD', 'RT90', 'RLA1', 'RDEP', 'RLLD', 'RILD', 'ILD', 'RT_HRLT', 'RACELM'],
             'resshal': ['none', 'LLS', 'HMRS', 'M2R1', 'RS', 'RFOC', 'ILM', 'RSFL', 'RMED', 'RACEHM'],
             'density': ['none', 'ZDEN', 'RHOB', 'RHOZ', 'RHO', 'DEN', 'RHO8', 'BDCFM'],
-            'neutron': ['none', 'CNCF', 'NPHI', 'NEU']
+            'neutron': ['none', 'CNCF', 'NPHI', 'NEU'],
+            'pe': ['none','PE']
         }
         # Convert aliases dictionary to JSON string and write to the file
         with open(file_path, 'w') as file:
@@ -1155,12 +1158,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #well.location.plot_plan()
     
     from BoreStab import getEuler
-    if strike != 0 or dip !=0:
+    '''if strike != 0 or dip !=0:
         tilt, tiltgamma = getEuler(strike,dip)
         print("Alpha :",offset,", Beta: ",tilt,", Gamma :",tiltgamma)
-    else:
-        tilt = 0
-        tiltgamma = 0
+    else:'''
+    tilt = strike
+    tiltgamma = dip
     
     header = well._get_curve_mnemonics()
     print(header)
@@ -1171,6 +1174,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
+    alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
     
     global mwvalues
     global flowgradvals
@@ -1313,6 +1317,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     well.location.gl = float(attrib[1])
     well.location.kb = float(attrib[0])
     mudweight = np.zeros(len(tvd))
+    bt = np.zeros(len(tvd))
+    delTempC = np.zeros(len(tvd))
     tempC = np.zeros(len(tvd))
     tempC[:] = np.nan
     tempG = np.zeros(len(tvd))
@@ -1377,6 +1383,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     
     if forms is not None:
         formlist = forms.values.tolist()
+        print("Formation Data: ", formlist)
         ttvdlist = np.transpose(formlist)[4]
         ftvdlist = np.transpose(formlist)[0]
         ttvdlist = np.append(0,ttvdlist)
@@ -1384,6 +1391,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         difftvd = np.zeros(len(fttvdlist))
         hydrldiff = np.zeros(len(fttvdlist))
         htvdlist = np.zeros(len(fttvdlist))
+        owclist = np.transpose(formlist)[5]
+        owclist = np.append(0,owclist)
+        goclist = np.transpose(formlist)[6]
+        goclist = np.append(0,goclist)
+        btlist = np.transpose(formlist)[7]
+        btlist = np.append(btlist,btlist[-1])
+        ftvdlist = np.append(ftvdlist,tvd[-1])
+        print(ftvdlist,btlist)
         
         i=0
         while i<len(fttvdlist):
@@ -1416,6 +1431,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     m=0
     n=0
     o=0
+    p=0
     i=0
     nu3 = [nu] * (len(tvd))
     mu2 = [0.6] * (len(tvd))
@@ -1448,9 +1464,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
             y2 = [tgrads[o-1][0],tgrads[o][0]]
             x2 = [tvdbgl[find_nearest_depth(md,tgrads[o-1][1])[0]],tvdbgl[find_nearest_depth(md,tgrads[o][1])[0]]]
             tempG[i] = np.interp(tvdbgl[i],x2,y2)/1000
+            delTempC[i] = tempC[i]-mudtemp
         else:
             tempG[i] = tgrads[o][0]/1000
             tempC[i] = bht_point[o][0]
+            delTempC[i] = mudtemp-tempC[i]
             o+=1
         if lithos is not None:
             if md[i]<lithot[k][0]:
@@ -1497,12 +1515,25 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         if forms is not None:
             formtvd[i] = np.interp(tvd[i],fttvdlist,ttvdlist)
             hydrotvd[i] = np.interp(tvd[i],fttvdlist,htvdlist)
+            if tvd[i]<=float(ftvdlist[p]):
+                if np.isfinite(float(btlist[p])):
+                    bt[i] = float(btlist[p])
+                else:
+                    bt[i] = 0
+            else:
+                if np.isfinite(float(btlist[p])):
+                    bt[i] = float(btlist[p])
+                else:
+                    bt[i] = 0
+                p+=1
+                
 
         i+=1
-
+    
     #tempG[:] = tempG[:]*1000
 
     #check plot
+    
     """plt.plot(lithotype,md)
     plt.plot(nu3,md)
     plt.plot(nu2,md)
@@ -1512,8 +1543,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     plt.show()
     plt.clf()"""
     #plt.plot(hydrotvd,tvd)
-    #plt.show()
-    #plt.clf()
+
     
     print("air gap is ",agf,"feet")
     if glwd>=0:
@@ -1687,6 +1717,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     lal = np.zeros(len(tvdf))
     ym = np.zeros(len(tvdf))
     sm = np.zeros(len(tvdf))
+    bm = np.zeros(len(tvdf))
     lal3 = np.zeros(len(tvdf))
     phi = np.zeros(len(tvdf))
     H = np.zeros(len(tvdf))
@@ -1731,8 +1762,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 phi[i] = np.arcsin(1-(2*nu2[i]))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
-                ym[i] = 0.076*(vp[i]**3.73)
-                sm[i] = 0.03*(vp[i]**3.30)
+                ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
+                sm[i] = 0.03*(vp[i]**3.30) #in GPa
                 psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
                 #if psipp[i]<hydropsi[i]:
@@ -1763,8 +1794,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 phi[i] = np.arcsin(1-(2*nu2[i]))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
-                ym[i] = 0.076*(vp[i]**3.73)
-                sm[i] = 0.03*(vp[i]**3.30)
+                ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
+                sm[i] = 0.03*(vp[i]**3.30) #in GPa
                 psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
         i+=1
@@ -1785,6 +1816,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #plt.plot(dalm)
     ###plt.show()
     #plt.clf()
+    """plt.close()
+    plt.plot(ym,tvd)
+    plt.show()
+    plt.clf()
+    plt.close()"""
+    
+    #Drop  Function Here
+    
     
     #Eatons/Daines
     
@@ -1829,7 +1868,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     sgHMpsiU = np.zeros(len(tvd))
     psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        result = getSP(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],phi[i],ilog[i],mu2[i])
+        result = getSP(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],phi[i],ilog[i],mu2[i],nu2[i],bt[i],ym[i],delTempC[i])
         sgHMpsi[i] = (result[2])*145.038
         sgHMpsiL[i] = (result[0])*145.038
         sgHMpsiU[i] = (result[1])*145.038
@@ -1910,7 +1949,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         ilog_flag=ilog[doiX]
         print("nu is ",nu2[doiX])
         print("phi is ",np.degrees(phi[doiX]))
-        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX])
+        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX],nu2[doiX],bt[doiX],ym[doiX],delTempC[doiX])
         sigmaHMaxmpa = sgHMpsi[doiX]/145.038
         print("SigmaHM = ",sigmaHMaxmpa)
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
@@ -1958,7 +1997,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         on,oe,od = np.linalg.eigh(sten)[1]
         savevec(on,oe,od,2,sn,se,sd,output_fileVec)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,0,nu2[doiX],incdoi,azmdoi)
+        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,0,nu2[doiX],incdoi,azmdoi,bt[doiX],ym[doiX],delTempC[doiX])
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
@@ -2030,9 +2069,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     from BoreStab import getHoop
     from plotangle import plotfracsQ,plotfrac
     def drawBHimage(doi):
-        doiactual = find_nearest_depth(tvdm,doi-5)
+        doiactual = find_nearest_depth(tvdm,doi-15)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+5)
+        doiactual2 = find_nearest_depth(tvdm,doi+15)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,360])
         crush = np.zeros([doiF-doiS,360])
@@ -2075,7 +2114,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
             alpha = alpha + offset
             beta= beta+tilt
             """
-            cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
+            cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i])
             crush[j] = cr
             frac[j] = fr
             if np.max(frac[j])>0:
@@ -2099,7 +2138,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         devdoi = well.location.deviation[i]
         incdoi = devdoi[2]
         azmdoi = devdoi[1]
-        cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i])
+        cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i])
+        fr = np.array(fr)
+        angles = np.array(angles)
         data2 = j,fr,angles,minazi,maxazi
         d,f = plotfrac(data2,output_fileFrac)
         plotfracs(data)
@@ -2107,8 +2148,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.plot(d, "k-")
         plt.plot(f, "k-",alpha=0.1)
-        plt.ylim(j+5, j-5)
-        plt.gca().set_aspect(50)
+        plt.ylim(j+2.5, j-2.5)
+        plt.gca().set_aspect(50*6/3)
         plt.tick_params(axis='x', which='both', bottom=True, top=True, labelbottom=True, labeltop=True)
         plt.tick_params(axis='y', which='both', left=True, right=True, labelleft=True, labelright=True)
         plt.xticks([0,90,180,270,360])
@@ -2116,6 +2157,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         plt.title("Synthetic Borehole Image")
         plt.savefig(output_fileBHI,dpi=1200)
         plt.clf()
+        plt.close()
     
     def plotHoop(doi):
         doiactual = find_nearest_depth(tvdm,doi)
@@ -2135,7 +2177,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         devdoi = well.location.deviation[i]
         incdoi = devdoi[2]
         azmdoi = devdoi[1]
-        getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],output_fileHoop)
+        getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
  
     def combineHarvest():
         import matplotlib.pyplot as plt
@@ -2165,7 +2207,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
 
         # Save the combined image
         plt.savefig(output_fileAll)
-        
+        plt.close()
     if doi>0:
         plotHoop(doi)
         drawBHimage(doi)
@@ -2338,7 +2380,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
 
     
     splt[5].set_ylim([tango,zulu])
-    splt[5].plot(slal2,tvd,label='UCS (Lal)')
+    splt[5].plot(slal,tvd,label='UCS (Lal)')
     splt[5].plot(shorsud,tvd,label='UCS (Horsud)')
     splt[5].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
     splt[5].set_xlim([0,100])
@@ -2442,7 +2484,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     # Save the modified plot
     plt.gcf().set_size_inches(15, 10)
     plt.savefig(output_file)#,dpi=600)
-    
+    plt.close()
     return df3
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):

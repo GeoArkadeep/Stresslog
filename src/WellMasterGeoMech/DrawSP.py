@@ -10,7 +10,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
+def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,delT=0):
     
     #mu = (1-(2*nu))/(2*((nu*(1-nu))**0.5))
     
@@ -116,10 +116,14 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
     Shm3 = ShmP
     Shm4 = Y
     
+    sigmaT = (ym*bt*delT)/(1-nu)
+        
     #DITFshmax3 = 3*Shm3 - 2*Pp
     #DITFshmax4 = 3*Shm4 - 2*Pp
-    DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp)
-    DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
+    DITFshmax3 = 3*Shm3-bhp-Pp-sigmaT
+    DITFshmax4 = 3*Shm4-bhp-Pp-sigmaT
+    #DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp) - sigmaT
+    #DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp) - sigmaT
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
     DITF =  Polygon(ditf, color='aqua', label = 'DITF')
     lowerd = [Shm3,DITFshmax3]
@@ -205,9 +209,9 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65):
     plt3.ylabel("SHmax", labelpad=10)  # Increase labelpad as needed
     plt3.savefig(path, dpi=600)
     plt3.clf()
+    plt3.close()
 
-
-def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
+def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT=0):
     
     PhiBr = 15
     biot = 1
@@ -314,10 +318,12 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6):
     Shm3 = ShmP
     Shm4 = Y
     
+    sigmaT = (ym*bt*delT)/(1-nu)
+    
     #DITFshmax3 = 3*Shm3 - 2*Pp
     #DITFshmax4 = 3*Shm4 - 2*Pp
-    DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp)
-    DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp)
+    DITFshmax3 = (ufac*Shm3) - ((ufac-1)*Pp) - (bhp-Pp) - sigmaT
+    DITFshmax4 = (ufac*Shm4) - ((ufac-1)*Pp) - (bhp-Pp) - sigmaT
     ditf = np.array([(Shm3,DITFshmax3),(Shm4,DITFshmax4)])
     DITF =  Polygon(ditf, color='aqua', label = 'DITF')
     lowerd = [Shm3,DITFshmax3]

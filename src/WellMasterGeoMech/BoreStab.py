@@ -73,7 +73,7 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         optimized[sorted_indices[2]] = result.x[1]
         return optimized[0], optimized[1], optimized[2]#, alpha, beta, gamma
     else:
-        return values[0], values[1], values[2], "Optimization failed to converge. Using initial estimates."# Assuming the definition of getVertical is as previously discussed
+        return values[0], values[1], values[2], "Optimization failed to converge. Using initial estimates."
        
 def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     """
@@ -223,7 +223,7 @@ def getOrit(s1,s2,s3,alpha,beta,gamma):
     orit = np.linalg.eigh(Sg)[1]
     return(orit)
 
-def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
+def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,ym=0,delT=0):
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     #print(Ss)
 
@@ -280,9 +280,10 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35):
     Sb[2][2] = Sb[2][2] - Pp
     
     theta = math.radians(theta)
+    sigmaT = (ym*bt*delT)/(1-nu)
 
     Szz = Sb[2][2] - ((2*nu)*(Sb[0][0]-Sb[1][1])*(2*math.cos(2*theta))) - (4*nu*Sb[0][1]*math.sin(2*theta))
-    Stt = Sb[0][0] + Sb[1][1] -(2*(Sb[0][0] - Sb[1][1])*math.cos(2*theta)) - (4*Sb[0][1]*math.sin(2*theta)) - deltaP
+    Stt = Sb[0][0] + Sb[1][1] -(2*(Sb[0][0] - Sb[1][1])*math.cos(2*theta)) - (4*Sb[0][1]*math.sin(2*theta)) - deltaP -sigmaT
     Ttz = 2*((Sb[1][2]*math.cos(theta))-(Sb[0][2]*math.sin(theta)))
     Srr = deltaP
     
@@ -467,7 +468,7 @@ def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
     cb.set_label("Excess Mud Pressure to TensileFrac")
     plt2.show()
 
-def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,path=None):
+def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=0,ym=0,delT=0,path=None):
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
     mui = (1+np.sin(phi))/(1-np.sin(phi))
     fmui = ((((mui**2)+1)**0.5)+mui)**2
@@ -477,6 +478,8 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,pat
     pointer= alpha
     line = np.zeros(360)
     line2 = np.zeros(360)
+    eline = np.zeros(360)
+    eline2 = np.zeros(360)
     line1 = np.zeros(360)
     angle= np.zeros(360)
     width= 0
@@ -485,11 +488,14 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,pat
     widthR = np.zeros(360)
     ts = -ucs/10
     while pointer<360+alpha:
-        STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer, deltaP,Pp,nu)
+        STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer, deltaP,Pp,nu,bt,ym,delT)
         line[round(pointer%360)] = stm
         line2[round(pointer%360)] = STM
+        eline[round(pointer%360)] = STT - Pp
+        eline2[round(pointer%360)] = SZZ - Pp        
         line1[round(pointer%360)] = TTZ
         angle[round(pointer%360)] = omega
+        
         if stm<ts:
             width+=1
             frac[round(pointer%360)] = 1
@@ -513,8 +519,8 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,pat
         #plt2.scatter(np.array(range(0,360)),frac)
         plt2.title("Hoop Stresses and Principal Stress Angles")
         plt2.plot(angle)
-        plt2.plot(line)
-        plt2.plot(line2)
+        plt2.plot(eline)
+        plt2.plot(eline2)
         plt2.plot(line1)
         #plt2.plot(frac)
         #plt2.plot(crush)
@@ -523,7 +529,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,pat
         plt2.savefig(path)
     return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle
 
-def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0):
+def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0):
     #phi = 183-(163*nu) ## wayy too high
     #phi = np.arcsin(1-(nu/(1-nu))) #Still too high
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
@@ -550,7 +556,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
             frac = np.zeros(360)
             widthR = np.zeros(360)
             while pointer<360:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
+                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer,deltaP,Pp,nu,bt,ym,delT)
                 line[pointer] = STT
                 angle[pointer] = omega
                 if stm<TS:
