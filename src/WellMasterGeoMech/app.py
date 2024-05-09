@@ -324,8 +324,8 @@ class MyApp(toga.App):
             {'label': 'TectonicFactor', 'default_value': str(model[12])},
             {'label': 'Analysis TVD', 'default_value': "0"},
             {'label': 'Fast Shear Azimuth', 'default_value': str(model[14])},
-            {'label': 'Strike', 'default_value': str(model[15])},
-            {'label': 'Dip', 'default_value': str(model[16])},
+            {'label': 'Dip Azim.', 'default_value': str(model[15])},
+            {'label': 'Dip Angle', 'default_value': str(model[16])},
             {'label': 'MudTemp', 'default_value': str(model[17])}
             #{'label': 'Unloading Exp', 'default_value': str(model[18])},
             #{'label': 'AP1', 'default_value': str(model[19])},
@@ -1158,12 +1158,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #well.location.plot_plan()
     
     from BoreStab import getEuler
-    '''if strike != 0 or dip !=0:
-        tilt, tiltgamma = getEuler(strike,dip)
+    
+    if strike != 0 or dip != 0:
+        tilt, tiltgamma = getEuler(offset,strike,dip)
         print("Alpha :",offset,", Beta: ",tilt,", Gamma :",tiltgamma)
-    else:'''
-    tilt = strike
-    tiltgamma = dip
+    else:
+    
+        tilt = 0
+        tiltgamma = 0
     
     header = well._get_curve_mnemonics()
     print(header)

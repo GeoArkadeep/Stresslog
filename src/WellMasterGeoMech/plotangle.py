@@ -53,6 +53,8 @@ def plotfracsQ(data):
     return plt
 #plt.show()
 
+def cot(x):
+    return np.cos(x)/np.sin(x)
 
 def plotfrac(data,path):
     tvd,fr,angles,minangle,maxangle = data
@@ -78,8 +80,8 @@ def plotfrac(data,path):
                 d[i] = i-(360+minangle)
         if abs(d[i])==270:
             d[i]=90*(abs(d[i])/d[i])
-        yj[i] = (np.tan(np.radians(angles[i]))*d[i]) #FlipVertN if abs
-        sign[i] = (np.tan(np.radians(angles[i]))*d[i])/abs(np.tan(np.radians(angles[i]))*d[i])
+        yj[i] = (np.tan(np.radians((90-angles[i])%360))*d[i]) #FlipVertN if abs
+        sign[i] = yj[i]/abs(yj[i])
         depths[i] = (((yj[i]-180)/180)*(cm/2))
         if d[i-1]==0:
             yj[i-1] = (yj[i-2]+yj[i])/2

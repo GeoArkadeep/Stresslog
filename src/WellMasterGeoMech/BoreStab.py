@@ -184,8 +184,8 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
     print("Calculated Min Horizontal Component is:", min(Sg[1][1],Sg[0][0]))    
     return Sg[0],Sg[1],Sg[2]
 
-def getStrikeDip(beta,gamma):
-    alpha = 0#np.radians(alpha)
+def getStrikeDip(alpha,beta,gamma):
+    alpha = np.radians(alpha)
     beta = np.radians(beta)
     gamma = np.radians(gamma)
     Rs = np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
@@ -193,18 +193,19 @@ def getStrikeDip(beta,gamma):
                    [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
     dip_direction = np.degrees(np.arctan2(Rs[2][1], Rs[2][0]))
     dip_angle = np.degrees(np.arccos(Rs[2][2]))
-    strike_direction = (dip_direction+90)%360
+    strike_direction = (dip_direction+180)%360
     return strike_direction,dip_angle,dip_direction
 
-def getEuler(strike, dip):
+def getEuler(alpha,strike, dip):
     def objective_function(x, strike, dip):
         beta, gamma = x
-        estimated_strike, estimated_dip, _ = getStrikeDip(beta, gamma)
+        estimated_strike, estimated_dip, _ = getStrikeDip(alpha,beta, gamma)
         return (estimated_strike - strike)**2 + (estimated_dip - dip)**2
-    initial_guess = [0, 0]  # Initial guess for beta and gamma
+    bounds = [(0, None), (0, None)]
+    initial_guess = [360, 360]  # Initial guess for beta and gamma
     result = minimize(objective_function, initial_guess, args=(strike, dip), method='Nelder-Mead')
     beta_opt, gamma_opt = result.x
-    return beta_opt, gamma_opt
+    return beta_opt%360, gamma_opt%360
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
@@ -297,7 +298,7 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,y
     omega2 = twoomega/2
     if omega2==0:
         omega2=0.00000000001
-    omega = omega2+90
+    omega = omega2
     if omega==0:
         omega=0.00000000001
     #omega = np.degrees(np.arctan2(np.linalg.eigh(tens2d)[1][0][0],np.linalg.eigh(tens2d)[1][0][1]))
