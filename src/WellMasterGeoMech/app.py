@@ -1730,7 +1730,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #ObgTppg[0] = np.nan
     print("ObgTppg:",ObgTppg)
     print("Reject Subhydrostatic below ",underbalancereject)
-
+    
     if UCSs is not None:
         ucss = UCSs.to_numpy()
     print("Lithos: ",lithos)
@@ -1909,6 +1909,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     slal3 = sm
     spsifp = psifg
     ssgHMpsi = sgHMpsi
+    ssgHMpsiL = sgHMpsiL
+    ssgHMpsiU = sgHMpsiU
     while i<len(fgcc):
         sum1 = np.sum(gccZhang[(i-window):i+(window)])
         spp[i] = sum1/(2*window)
@@ -1930,6 +1932,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         sfg[i] = sum9/(2*window)
         sum10 = np.sum(sgHMpsi[(i-window):i+(window)])
         ssgHMpsi[i] = sum10/(2*window)
+        sum11 = np.sum(sgHMpsiL[(i-window):i+(window)])
+        ssgHMpsiL[i] = sum11/(2*window)
+        sum12 = np.sum(sgHMpsiU[(i-window):i+(window)])
+        ssgHMpsiU[i] = sum12/(2*window)
         i+=1
     finaldepth = find_nearest_depth(tvdm,finaldepth)[1]
     doi = min(doi,finaldepth-1)
@@ -2071,9 +2077,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     from BoreStab import getHoop
     from plotangle import plotfracsQ,plotfrac
     def drawBHimage(doi):
-        doiactual = find_nearest_depth(tvdm,doi-15)
+        hfl = 2.5
+        doiactual = find_nearest_depth(tvdm,doi-hfl)
         doiS = doiactual[0]
-        doiactual2 = find_nearest_depth(tvdm,doi+15)
+        doiactual2 = find_nearest_depth(tvdm,doi+hfl)
         doiF = doiactual2[0]
         frac = np.zeros([doiF-doiS,360])
         crush = np.zeros([doiF-doiS,360])
@@ -2150,8 +2157,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.plot(d, "k-")
         plt.plot(f, "k-",alpha=0.1)
-        plt.ylim(j+2.5, j-2.5)
-        plt.gca().set_aspect(50*6/3)
+        plt.ylim(j+hfl, j-hfl)
+        plt.gca().set_aspect(360/((6.67*hfl*2)*(0.1)))
         plt.tick_params(axis='x', which='both', bottom=True, top=True, labelbottom=True, labeltop=True)
         plt.tick_params(axis='y', which='both', left=True, right=True, labelleft=True, labelright=True)
         plt.xticks([0,90,180,270,360])
@@ -2455,7 +2462,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     x_values4, y_values4 = zip(*flow_psi_data)
     if UCSs is not None:
         y_values5, x_values5 = zip(*ucss)
-        y_values5 = tvdm[find_nearest_depth(md,y_values5)[0]]
+        y_values6 = [find_nearest_depth(md, y)[0] for y in y_values5]
+        y_values5 = tvdm[y_values6]
+        
     
     #convert y values to tvd
     y_values = tvdm[find_nearest_depth(md,y_values)[0]]
