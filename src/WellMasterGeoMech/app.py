@@ -879,6 +879,7 @@ class MyApp(toga.App):
         except Exception as e:
             print(f"Error in thread: {e}")
         self.loop.call_soon_threadsafe(self.onplotfinish)
+        
         print("Thread despawn")
         return
     
@@ -975,9 +976,10 @@ class MyApp(toga.App):
         
         self.progress.start()
         #executor = concurrent.futures.ProcessPoolExecutor()
-        self.loop = asyncio.get_event_loop()
+        #self.loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
-            ih = await self.loop.run_in_executor(pool,self.start_plotPPzhang_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]),float(model[16]),float(model[17]))
+            ih = await loop.run_in_executor(pool,self.start_plotPPzhang_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]),float(model[16]),float(model[17]))
         #self.onplotfinish()
         #self.progress.text = "Status: Done! Program Ready"
         #future.add_done_callback(lambda f: on_plotPPzhang_done(self, f))
