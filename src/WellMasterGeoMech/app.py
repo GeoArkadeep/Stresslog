@@ -872,89 +872,59 @@ class MyApp(toga.App):
         print(wella.location.egl)
         #wella.unify_basis(keys=None, alias=None, basis=md)
     
-    def plotppwrapper(self,*args, **kwargs):
+    def plotppwrapper(self, loop, *args, **kwargs):
         print("thread spawn")
         try:
             result = plotPPzhang(*args, **kwargs)
         except Exception as e:
             print(f"Error in thread: {e}")
-        self.loop.call_soon_threadsafe(self.onplotfinish)
-        
+        asyncio.run_coroutine_threadsafe(self.onplotfinish(), loop)
         print("Thread despawn")
         return
     
-    def onplotfinish(self):
+    def start_plotPPzhang_thread(self, loop, *args, **kwargs):
+        thread = threading.Thread(target=self.plotppwrapper, args=(loop, *args), kwargs=kwargs)
+        thread.start()
+        return
+    
+    async def onplotfinish(self):
         self.bg3.image = toga.Image(output_file)
-        self.bg3.refresh()
+        #self.bg3.refresh()
         self.page3_btn1.enabled = True
         self.page3_btn2.enabled = True
         self.page3_btn3.enabled = True
         self.page3_btn4.enabled = True
         self.progress.stop()
-        if float(model[13])>0:
-        
+        if float(model[13]) > 0:
             self.page3_btn5.enabled = True
             self.bg4.image = toga.Image(output_fileAll)
-            #self.bg5.image = toga.Image(output_fileSP)
-            #self.bg6.image = toga.Image(output_fileVec)
-            #self.bg7.image = toga.Image(output_fileBHI)
-            #self.bg4.refresh()
-            #self.bg5.refresh()
-            #self.bg6.refresh()
-            #self.bg7.refresh()
-            #self.show_page4(widget)
         else:
             self.page3_btn5.enabled = False
-        #self.progress.text = "Status: Done! Program Ready"
         print("Wrapper done")
         return
     
-    def start_plotPPzhang_thread(self,*args, **kwargs):
-    # Create a Thread to run plotPPzhang in the background
-        #self.loop = asyncio.get_event_loop()
-        thread = threading.Thread(target=self.plotppwrapper, args=args, kwargs=kwargs)#, on_close=self.onplotfinish)
-        thread.start()
-        #time.sleep(1)
-        return
-    
-    async def get_textbox_values(self,widget):
+    async def get_textbox_values(self, widget):
         global wella
         global attrib
         global model
         
         self.progress.text = "Status: Calculating, Standby"
-        #yield 0.1
         self.getwelldev()
-        data = pd.read_csv(modelpath,index_col=False)
+        data = pd.read_csv(modelpath, index_col=False)
         data_into_list = data.values.tolist()
         print(data_into_list)
         model = data_into_list[0]
         tail = model[17:21]
-        #tail2 = str(model[17])
-        #tail3 = str(model[18])
-        #tail4 = str(model[19])
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
-        #self.bg5.image = toga.Image('BG1.png')
-        #self.bg6.image = toga.Image('BG1.png')
-        #self.bg7.image = toga.Image('BG1.png')
-        #self.bg3.refresh()
-        #self.bg4.refresh()
-        #self.bg5.refresh()
-        model = tv
-        model = model + tail
+        model = tv + tail
         print(model)
-        #model.append(tail2)
-        #model.append(tail3)
-        #model.append(tail4)
-        file = open(modelpath,'w')
-        file.write(modelheader+'\n')
-        for item in model:
-            file.write(str(item)+",")
-        file.close()
+        with open(modelpath, 'w') as file:
+            file.write(modelheader + '\n')
+            for item in model:
+                file.write(str(item) + ",")
         print("Great Success!! :D")
-        image_path = 'PlotFigure.png'
         
         self.page3_btn1.enabled = False
         self.page3_btn2.enabled = False
@@ -975,18 +945,33 @@ class MyApp(toga.App):
         flowpsivals = self.get_flow_grad_data_values()[1]
         
         self.progress.start()
-        #executor = concurrent.futures.ProcessPoolExecutor()
-        #self.loop = asyncio.get_event_loop()
+
         loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
-            ih = await loop.run_in_executor(pool,self.start_plotPPzhang_thread,wella, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]),float(model[16]),float(model[17]))
-        #self.onplotfinish()
-        #self.progress.text = "Status: Done! Program Ready"
-        #future.add_done_callback(lambda f: on_plotPPzhang_done(self, f))
-        #ih = plotPPzhang(wella,self, float(model[0]), float(model[2]), float(model[1]), float(model[5]), float(model[6]), int(float(model[7])), float(model[8]), float(model[9]), float(model[3]), float(model[4]),float(model[10]),float(model[11]),float(model[12]),float(model[13]),float(model[14]),float(model[15]))
-                
-        
-        
+            await loop.run_in_executor(
+                pool, 
+                self.start_plotPPzhang_thread, 
+                loop, wella, 
+                float(model[0]), 
+                float(model[2]), 
+                float(model[1]), 
+                float(model[5]), 
+                float(model[6]), 
+                int(float(model[7])), 
+                float(model[8]), 
+                float(model[9]), 
+                float(model[3]), 
+                float(model[4]), 
+                float(model[10]), 
+                float(model[11]), 
+                float(model[12]), 
+                float(model[13]), 
+                float(model[14]), 
+                float(model[15]), 
+                float(model[16]), 
+                float(model[17])
+            )
+        print("Calculation complete")        
     
     
     def wellisvertical(self,widget):
@@ -1058,7 +1043,7 @@ def getComp(well):
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
-    alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
+    #alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
     
     
     
