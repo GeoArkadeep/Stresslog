@@ -58,7 +58,7 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     )
     
     # Bounds for s2 and s1, ensuring they do not exceed practical limits
-    bounds = [(s3+0.1, 3*s3), (s3+0.1, 3*s3)]
+    bounds = [(s3+0.1, 3.1*s3), (s3+0.1, 3.1*s3)]
     
     # Initial guess for the optimization
     initial_guess = [initial_s2, initial_s1]
@@ -96,6 +96,7 @@ def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         {'type': 'ineq', 'fun': constraint_osx_osy},
         {'type': 'ineq', 'fun': constraint_osy_osz},
     )
+
     # Objective function for reverse faulting with all variables flexible
     def objective_reverse_faulting(vars):
         sx, sy, sz = vars  # Now optimizing sx, sy, sz directly
@@ -130,19 +131,12 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     #s3 = s3 + (s3 - s3*Rs[2][2])/Rs[2][2]
     Ss = np.array([[sx,0,0],[0,sy,0],[0,0,sz]])
     Sg = RsT@Ss@Rs
-    #print(Sg)
-    b,a = np.linalg.eigh(Sg)
-    [uvx,uvy,uvz] = a
-    [sGx,sGy,sGz] = b
-    uvzT = np.transpose(uvz)
-    sigmaV = uvzT@Sg@uvz
-    #sigmaH = np.max([Sg[0][0],Sg[1][1]])
-    #showvec(uvx,uvy,uvz,2,sGx,sGy,sGz)
-    if sorted_values[0]==sz:#normal slip
+
+    if sorted_values[2]==sz:#normal slip
         return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     if sorted_values[1]==sz:#strike slip
         return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
-    if sorted_values[2]==sz:#reverse slip
+    if sorted_values[0]==sz:#reverse slip
         return complex(Sg[2][2],0)
     #return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     
@@ -205,7 +199,13 @@ def getEuler(alpha,strike, dip):
     initial_guess = [360, 360]  # Initial guess for beta and gamma
     result = minimize(objective_function, initial_guess, args=(strike, dip), method='Nelder-Mead')
     beta_opt, gamma_opt = result.x
-    return beta_opt%360, gamma_opt%360
+    beta_opt=beta_opt%360
+    gamma_opt=gamma_opt%360
+    if beta_opt>180:
+        beta_opt=beta_opt-360
+    if gamma_opt>180:
+        gamma_opt=gamma_opt-360
+    return beta_opt, gamma_opt
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
@@ -544,7 +544,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     azimuth = np.zeros((10,37))
     inc = 0
     TS = -UCS/10
-    TS = 0
+    #TS = 0
     while inc<10:
         azim = 0
         while azim<37:
@@ -659,7 +659,7 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     cb2 = fig.colorbar(cax2, ticks=[0,20,40,60,80,100,120], orientation = 'horizontal')
     cb2.set_label("Breakout Widths in Degrees")
     fig.suptitle("Stability Plot at "+str(round(tvd,2))+"m TVD")
-    fig.text(0.5, 0.87, "UCS = " + str(round(UCS)) + ", DeltaP = " + str(round(deltaP)) + ", Nu = " + str(round(nu,2)), 
+    fig.text(0.5, 0.87, "UCS = " + str(round(UCS)) + ", DeltaP = " + str(round(deltaP)) + ", DeltaT = " + str(round(delT,2)) + ", Nu = " + str(round(nu,2)), 
          ha='center', fontsize=10)
     
     plt2.savefig(path,dpi=600)
