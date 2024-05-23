@@ -17,7 +17,6 @@ matplotlib.use("svg")
 
 from matplotlib import pyplot as plt    
 import math
-
 import threading
 import asyncio
 import concurrent.futures
@@ -1753,6 +1752,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
                 sm[i] = 0.03*(vp[i]**3.30) #in GPa
+                bm[i] = ym[i]/(3*(1-(2*nu2[i]))) #same units as ym
                 psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
                 #if psipp[i]<hydropsi[i]:
@@ -1785,6 +1785,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
                 sm[i] = 0.03*(vp[i]**3.30) #in GPa
+                bm[i] = ym[i]/(3*(1-(2*nu2[i]))) #same units as ym
                 psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
         i+=1
