@@ -1162,7 +1162,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
-    alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
+    #alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
     
     global mwvalues
     global flowgradvals
