@@ -80,8 +80,8 @@ depth_track = None
 finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
-modelheader = "RhoA,AMC_exp,NCT_exp,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,Beta,Gamma,MudTempC,nu_shale,nu_sst,nu_lst,dt_lst"
-defaultmodel = "17,0.8,0.0008,250,60,0.35,0.35,21,0,2900,1.025,1.0,0,3500,0,0,0,60,0.32,0.27,0.25,65"
+modelheader = "RhoA,AMC_exp,NCT_exp,UL_exp,UL_depth,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,Beta,Gamma,MudTempC,nu_shale,nu_sst,nu_lst,dt_lst"
+defaultmodel = "17,0.8,0.0008,0.0008,0,250,60,0.35,0.35,21,0,2900,1.025,1.0,0,3500,0,0,0,60,0.32,0.27,0.25,65"
 print(os.getcwd())
 try:
     data = pd.read_csv(modelpath,index_col=False)
@@ -311,23 +311,23 @@ class MyApp(toga.App):
             {'label': 'RHOA (ppg)', 'default_value': str(model[0])},
             {'label': 'OBG Exp', 'default_value': str(model[1])},
             {'label': 'NCT Exp', 'default_value': str(model[2])},
-            {'label': 'DTml (us/ft)', 'default_value': str(model[3])},
-            {'label': 'DTmat (us/ft)', 'default_value': str(model[4])},
-            {'label': "Eaton's Nu", 'default_value': str(model[5])},
-            {'label': 'ShaleFlag Cutoff', 'default_value': str(model[6])},
-            {'label': 'Window', 'default_value': str(model[7])},
-            {'label': 'Start', 'default_value': str(model[8])},
-            {'label': 'Stop', 'default_value': str(model[9])},
-            {'label': 'WaterDensity', 'default_value': str(model[10])},
-            {'label': 'PP Gr. L.Limit', 'default_value': str(model[11])},
-            {'label': 'TectonicFactor', 'default_value': str(model[12])},
+            {'label': 'Unloading Exp', 'default_value': str(model[3])},
+            {'label': 'Unloading Depth', 'default_value': "0"},
+            {'label': 'DTml (us/ft)', 'default_value': str(model[5])},
+            {'label': 'DTmat (us/ft)', 'default_value': str(model[6])},
+            {'label': "Eaton's Nu", 'default_value': str(model[7])},
+            {'label': 'ShaleFlag Cutoff', 'default_value': str(model[8])},
+            {'label': 'Window', 'default_value': str(model[9])},
+            {'label': 'Start', 'default_value': str(model[10])},
+            {'label': 'Stop', 'default_value': str(model[11])},
+            {'label': 'WaterDensity', 'default_value': str(model[12])},
+            {'label': 'PP Gr. L.Limit', 'default_value': str(model[13])},
+            {'label': 'TectonicFactor', 'default_value': str(model[14])},
             {'label': 'Analysis TVD', 'default_value': "0"},
-            {'label': 'Fast Shear Azimuth', 'default_value': str(model[14])},
-            {'label': 'Dip Azim.', 'default_value': str(model[15])},
-            {'label': 'Dip Angle', 'default_value': str(model[16])},
-            {'label': 'MudTemp', 'default_value': str(model[17])}
-            #{'label': 'Unloading Exp', 'default_value': str(model[18])},
-            #{'label': 'AP1', 'default_value': str(model[19])},
+            {'label': 'Fast Shear Azimuth', 'default_value': str(model[16])},
+            {'label': 'Dip Azim.', 'default_value': str(model[17])},
+            {'label': 'Dip Angle', 'default_value': str(model[18])},
+            {'label': 'MudTemp', 'default_value': str(model[19])}
             
             
         ]
@@ -337,8 +337,8 @@ class MyApp(toga.App):
         # Add 6 numeric entry boxes with their respective labels
         for i in range(2):
             entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-            for j in range(9):
-                entry_info = entries_info[9 * i + j]
+            for j in range(10):
+                entry_info = entries_info[10 * i + j]
                 label = toga.Label(entry_info['label'], style=Pack(alignment='center', width = 100, flex=1,text_direction='rtl'))  # Adjust flex as needed
                 entry = toga.TextInput(style=Pack(width=50, flex=1))  # Adjust flex as needed
                 entry.value = entry_info['default_value']
@@ -695,8 +695,7 @@ class MyApp(toga.App):
             self.dropdown2.enabled = True
             self.dropdown3.enabled = True
             self.page1_btn4.enabled = True
-            
-            
+            self.page1_btn3.enabled = False            
         else:
             print(wella)
 
@@ -870,11 +869,36 @@ class MyApp(toga.App):
         print(attrib)
         print(wella.location.egl)
         #wella.unify_basis(keys=None, alias=None, basis=md)
+        
+    def plotPPzhang_wrapper(self,well, kwargs):
+        plotPPzhang(
+            well,
+            kwargs['rhoappg'],
+            kwargs['lamb'],
+            kwargs['ul_exp'],
+            kwargs['ul_depth'],
+            kwargs['a'],
+            kwargs['nu'],
+            kwargs['sfs'],
+            kwargs['window'],
+            kwargs['zulu'],
+            kwargs['tango'],
+            kwargs['dtml'],
+            kwargs['dtmt'],
+            kwargs['water'],
+            kwargs['underbalancereject'],
+            kwargs['b'],
+            kwargs['doi'],
+            kwargs['offset'],
+            kwargs['strike'],
+            kwargs['dip'],
+            kwargs['mudtemp']
+        )
     
     def plotppwrapper(self, loop, *args, **kwargs):
         print("thread spawn")
         try:
-            result = plotPPzhang(*args, **kwargs)
+            result = self.plotPPzhang_wrapper(*args, **kwargs)
         except Exception as e:
             print(f"Error in thread: {e}")
         asyncio.run_coroutine_threadsafe(self.onplotfinish(), loop)
@@ -913,7 +937,7 @@ class MyApp(toga.App):
         data_into_list = data.values.tolist()
         print(data_into_list)
         model = data_into_list[0]
-        tail = model[17:21]
+        tail = model[20:23]
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
@@ -950,25 +974,28 @@ class MyApp(toga.App):
             await loop.run_in_executor(
                 pool, 
                 self.start_plotPPzhang_thread, 
-                loop, wella, 
-                float(model[0]), 
-                float(model[2]), 
-                float(model[1]), 
-                float(model[5]), 
-                float(model[6]), 
-                int(float(model[7])), 
-                float(model[8]), 
-                float(model[9]), 
-                float(model[3]), 
-                float(model[4]), 
-                float(model[10]), 
-                float(model[11]), 
-                float(model[12]), 
-                float(model[13]), 
-                float(model[14]), 
-                float(model[15]), 
-                float(model[16]), 
-                float(model[17])
+                loop, wella,{
+                    'rhoappg': float(model[0]), 
+                    'lamb': float(model[2]), 
+                    'ul_exp': float(model[3]),
+                    'ul_depth': float(model[4]),
+                    'a': float(model[1]), 
+                    'dtml': float(model[5]), 
+                    'dtmt': float(model[6]), 
+                    'window': int(float(model[9])), 
+                    'nu': float(model[7]), 
+                    'sfs': float(model[8]), 
+                    'zulu': float(model[10]), 
+                    'tango': float(model[11]), 
+                    'water': float(model[12]), 
+                    'underbalancereject': float(model[13]), 
+                    'b': float(model[14]), 
+                    'doi': float(model[15]), 
+                    'offset': float(model[16]), 
+                    'strike': float(model[17]), 
+                    'dip': float(model[18]), 
+                    'mudtemp': float(model[19])
+                }          
             )
         print("Calculation complete")        
     
@@ -1130,7 +1157,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11], b = float(model[12]), doi = 0, offset = float(model[14]), strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[11], b = float(model[12]), doi = 0, offset = float(model[14]), strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
@@ -1176,9 +1203,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     i = 0
     mud_weight = []
     bht_point = []
+    casing_dia = []
     while i<len(detail):
         mud_weight.append([detail[i][0],detail[i][1]])
         bht_point.append([detail[i][-1],detail[i][1]])
+        casing_dia.append([detail[i][3],detail[i][1]])
         i+=1    
     print(mud_weight)
     first = [mud_weight[0][0],0]
@@ -1338,6 +1367,17 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     ilog = np.zeros(len(tvdbgl))
     formtvd = np.full(len(tvd),np.nan)
     hydrotvd = np.full(len(tvd),np.nan)
+    hydroheight = np.full(len(tvd),np.nan)
+    structop= np.full(len(tvd),np.nan)
+    strucbot= np.full(len(tvd),np.nan)
+    Owc= np.full(len(tvd),np.nan)
+    Goc= np.full(len(tvd),np.nan)
+    ttvd = np.full(len(tvd),np.nan)
+    btvd = np.full(len(tvd),np.nan)
+    btvd2 = np.full(len(tvd),np.nan)
+    grcut = np.full(len(tvd),np.nan)
+    #cdtvd1 = np.full(len(tvd),np.nan)
+    #cdtvd2 = np.full(len(tvd),np.nan)
     
     if float(attrib[5])==0:
         bht_point[-1][0] = (tvdbgl[-1]/1000)*30
@@ -1374,19 +1414,30 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         print("Formation Data: ", formlist)
         ttvdlist = np.transpose(formlist)[4]
         ftvdlist = np.transpose(formlist)[0]
+        logbotlist = ftvdlist
         ttvdlist = np.append(0,ttvdlist)
+        logbotlist = np.append(logbotlist,tvd[-1])
         fttvdlist = np.append(0,ftvdlist)
         difftvd = np.zeros(len(fttvdlist))
         hydrldiff = np.zeros(len(fttvdlist))
         htvdlist = np.zeros(len(fttvdlist))
-        owclist = np.transpose(formlist)[5]
+        owclist = np.transpose(formlist)[7]
         owclist = np.append(0,owclist)
-        goclist = np.transpose(formlist)[6]
+        goclist = np.transpose(formlist)[8]
         goclist = np.append(0,goclist)
-        btlist = np.transpose(formlist)[7]
+        btlist = np.transpose(formlist)[9]
         btlist = np.append(btlist,btlist[-1])
+        strucbotlist = np.transpose(formlist)[5]
+        strucbotlist = np.append(ttvdlist[1],strucbotlist)
+        logtoplist = np.append(0,ftvdlist)#,tvd[-1])
         ftvdlist = np.append(ftvdlist,tvd[-1])
+        centroid_ratio_list = np.transpose(formlist)[6]
+        centroid_ratio_list = np.append([0.5],centroid_ratio_list)
+        grlist = np.transpose(formlist)[3]
+        grlist = np.append(grlist[0],grlist)
         print(ftvdlist,btlist)
+        centroid_ratio_list = centroid_ratio_list.astype(float)
+        grlist = grlist.astype(float)
         
         i=0
         while i<len(fttvdlist):
@@ -1407,12 +1458,27 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
         htvdlist = np.append(htvdlist,htvdl)
         
         fttvdlist=fttvdlist.astype(float)
+        logtoplist=logtoplist.astype(float)
+        strucbotlist=strucbotlist.astype(float)
         ttvdlist=ttvdlist.astype(float)
+        logbotlist=logbotlist.astype(float)
         htvdlist=htvdlist.astype(float)
         print("Differential TVD list:")
-        print([difftvd,fttvdlist,ttvdlist])
-    
-
+        print([difftvd,hydrldiff,fttvdlist,ttvdlist])
+        structoplist = np.delete(ttvdlist,-1)
+        #htvdlist is what you want, after interpolating it for every sample
+        goclist = np.where(goclist.astype(float) == 0, np.nan, goclist.astype(float))
+        owclist = np.where(owclist.astype(float) == 0, np.nan, owclist.astype(float))
+        cdtvdlist = structoplist+((strucbotlist-structoplist)*centroid_ratio_list)
+        print("Structural tops list",structoplist)
+        print("Structural bottoms list",strucbotlist)
+        print("Structural centroids ratios",centroid_ratio_list)
+        print("Structural centroids list",cdtvdlist)
+        print("tops list",logtoplist)
+        print("bottoms list",logbotlist)
+        print("OWCs",owclist)
+        print("GOCs",goclist)
+        print("GR Cutoffs",grlist)
     
     j=0
     k=0
@@ -1502,22 +1568,42 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 m+=1
         if forms is not None:
             formtvd[i] = np.interp(tvd[i],fttvdlist,ttvdlist)
+            btvd2[i] = np.interp(tvd[i],logtoplist,logbotlist)
             hydrotvd[i] = np.interp(tvd[i],fttvdlist,htvdlist)
+            #cdtvd1[i] = np.interp(tvd[i],logtoplist,cdtvdlist)
             if tvd[i]<=float(ftvdlist[p]):
+                #cdtvd2[i] = cdtvdlist[p]
+                grcut[i] = grlist[p]
+                ttvd[i] = logtoplist[p]
+                btvd[i] = logbotlist[p]
+                Owc[i]=owclist[p]
+                Goc[i]=goclist[p]
+                structop[i] =ttvdlist[p]
+                strucbot[i] =strucbotlist[p]
+                hydroheight[i] = tvd[i]+hydrldiff[p]
                 if np.isfinite(float(btlist[p])):
                     bt[i] = float(btlist[p])
                 else:
                     bt[i] = 0
             else:
+                #cdtvd2[i] = cdtvdlist[p]
+                grcut[i] = grlist[p]
+                ttvd[i] = logtoplist[p]
+                btvd[i] = logbotlist[p]
+                Owc[i]=np.nan
+                Goc[i]=np.nan
+                structop[i] =structoplist[p]
+                strucbot[i] =strucbotlist[p]
+                hydroheight[i] = tvd[i]+hydrldiff[p]
                 if np.isfinite(float(btlist[p])):
                     bt[i] = float(btlist[p])
                 else:
                     bt[i] = 0
                 p+=1
-                
-
+        else:
+            grcut[i] = np.nanmean(gr)
         i+=1
-    
+    #cdtvd = (structop+strucbot)/2
     #tempG[:] = tempG[:]*1000
 
     #check plot
@@ -1530,8 +1616,66 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     plt.plot(ilog,md)
     plt.show()
     plt.clf()"""
-    #plt.plot(hydrotvd,tvd)
-
+    #plt.plot(formtvd,tvd)
+    if forms is not None:
+        plt.plot(structop, tvd, label="Structural Tops", linestyle=':')
+        plt.plot(strucbot, tvd, label="Structural Bottoms", linestyle=':')
+        plt.plot(Owc, tvd, label="OWC", linestyle='-')
+        plt.plot(Goc, tvd, label="GOC", linestyle='-')
+        plt.plot(btvd, tvd, label="Log Bottom", linestyle='-')
+        plt.plot(ttvd, tvd, label="Log Top", linestyle='-')
+        
+        plt.gca().invert_yaxis()
+        plt.title(well.name + well.uwi + " Structure Diagram ")
+        plt.legend(loc='upper right')
+        #plt.show()
+        plt.savefig(os.path.join(output_dir, "Structure.png"))
+        plt.close()
+    
+    lradiff = np.full(len(md),np.nan)
+    
+    if alias['resshal'] != [] and alias['resdeep'] != []:
+        rS = well.data[alias['resshal'][0]].values
+        rD = well.data[alias['resdeep'][0]].values
+        print(rD)
+        #sd = gr.plot_2d(cmap='viridis_r', curve=True, lw=0.3, edgecolor='k')
+        #sd2 = kth.plot_2d(cmap='viridis_r', curve=True, lw=0.3, edgecolor='k')
+        #plt.xlim(0,150)
+        rdiff = rD[:]-rS[:]
+        rdiff[np.isnan(rdiff)] = 0
+        #rdiff = interpolate_nan(rdiff,0)
+        radiff = (rdiff[:]*rdiff[:])**0.5
+        #plt.plot(radiff)
+        #plt.yscale('log')
+        #i = 0
+        lradiff = radiff
+        #while i<len(radiff):
+        #    lradiff[i] = radiff[i]
+        #    i+=1
+        #print("Rdiff :",lradiff)
+    
+        rediff = Curve(lradiff, mnemonic='ResD',units='ohm/m', index=md, null=0)
+        well.data['ResDif'] =  rediff
+        print("sfs = :",sfs)
+        if forms is not None:
+            shaleflag = np.where(gr < grcut, 1, 0)
+            zoneflag = np.where(gr < grcut, 0, 1)
+        else:
+            shaleflag = rediff.block(cutoffs=sfs,values=(0,1)).values
+            zoneflag = rediff.block(cutoffs=sfs,values=(1,0)).values
+        print(shaleflag)
+        #plt.plot(shaleflag,tvd)        
+        #plt.show()
+        #plt.close()
+    else:
+        shaleflag = np.zeros(len(md))
+        zoneflag = np.zeros(len(md))
+    shaleflagN = (np.max(shaleflag)-shaleflag[:])/np.max(shaleflag)
+    flag = Curve(shaleflag, mnemonic='ShaleFlag',units='ohm/m', index=md, null=0)
+    zone = Curve(zoneflag, mnemonic='ShaleFlag',units='ohm/m', index=md, null=0)
+    well.data['Flag'] =  flag
+    
+    #print(shaleflag)
     
     print("air gap is ",agf,"feet")
     if glwd>=0:
@@ -1688,17 +1832,23 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     print(vp)
     
     if glwd<0:
-        hydropsi = hydroppf[:]*tvdmslf[:]
+        hydropsi = hydroppf[:]*(tvd[:]*3.28084)#tvdmslf[:]
         obgpsi= integrho*0.000145038
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdmslf[i-1] for i in range(1, len(ObgTppf) + 1)])
     else:
-        hydropsi = hydroppf[:]*tvdbglf[:]
+        hydropsi = hydroppf[:]*(tvd[:]*3.28084)#tvdbglf[:]
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdbglf[i-1] for i in range(1, len(ObgTppf) + 1)])
         obgpsi= integrho*0.000145038
     mudpsi = mudppf[:]*tvdf[:]
     i = 0
     ppgZhang = np.zeros(len(tvdf))
     gccZhang = np.zeros(len(tvdf))
+    psiZhang = np.zeros(len(tvdf))
+    psiZhang2 = np.zeros(len(tvdf))
+    psiftZhang = np.zeros(len(tvdf))
+    psiftZhang2 = np.zeros(len(tvdf))
+    gccZhang2 = np.zeros(len(tvdf))
+    pnpsi = np.zeros(len(tvdf))
     psipp = np.zeros(len(tvdf))
     psiftpp = np.zeros(len(tvdf))
     horsud = np.zeros(len(tvdf))
@@ -1706,6 +1856,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     ym = np.zeros(len(tvdf))
     sm = np.zeros(len(tvdf))
     bm = np.zeros(len(tvdf))
+    cm_sip = np.zeros(len(tvdf))
     lal3 = np.zeros(len(tvdf))
     phi = np.zeros(len(tvdf))
     H = np.zeros(len(tvdf))
@@ -1716,30 +1867,42 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     #ObgTppg[0] = np.nan
     print("ObgTppg:",ObgTppg)
     print("Reject Subhydrostatic below ",underbalancereject)
-    
+
     if UCSs is not None:
         ucss = UCSs.to_numpy()
     print("Lithos: ",lithos)
     print("UCS: ",UCSs)
     print("IMAGE: ",flags)
     
-
+    #b=3.001 #b>c
+    #c=3 #b is the compaction constant of the unloading case and c is the compaction constant of the loading case
+    #c = ct/tvdbgl[i] or c = ct/tvdbglf[i]
+    #deltmu0 = 70
+    maxveldepth = ul_depth
+    if ul_depth == 0:
+        mvindex = np.nan
+    else:
+        mvindex = find_nearest_depth(tvd,maxveldepth)[0]
+    deltmu0 = np.nanmean(dalm[(find_nearest_depth(tvd,maxveldepth)[0]-5):(find_nearest_depth(tvd,maxveldepth)[0]+5)])
+    c=ct
+    b=ct
+    print("Max velocity is ",deltmu0,"uspf")
     while i<(len(ObgTppg)-1):
         if glwd>=0: #Onshore Cases
+            if tvd[i]>ul_depth:
+                b = ul_exp
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5: #Shale PorePressure
-                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
-                
-                if lithotype[i]>1.5: #Carbonate PorePressure
-                    dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
-                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
-                
+                    gccZhang2[i] = np.nan
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
+                    gccZhang2[i]=underbalancereject
                 
+                gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
                 ppgZhang[i] = gccZhang[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
@@ -1758,21 +1921,21 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 #if psipp[i]<hydropsi[i]:
                 #   psipp[i] = hydropsi[i]
         else: #Offshore Cases
+            if tvd[i]>ul_depth:
+                b = ul_exp
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:#Shale Pore Pressure
-                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
-                
-                if lithotype[i]>1.5: #Carbonate PorePressure
-                    dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
-                    gccZhang[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
-                
+                    gccZhang2[i] = np.nan
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
+                    gccZhang2[i]=underbalancereject
                 
+                gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
                 ppgZhang[i] = gccZhang[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
@@ -1789,18 +1952,33 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
                 psiftpp[i] = 0.4335275040012*gccZhang[i]
                 psipp[i] = psiftpp[i]*tvdf[i]
         i+=1
+    
     #gccZhang[0] = np.nan
     gccZhang[-1] = hydrostatic[-1]
+    gccZhang[0] = hydrostatic[0]
     gccZhang[np.isnan(gccZhang)] = water
+    #gccZhang2[-1] = hydrostatic[-1]
+    #gccZhang2[0] = hydrostatic[0]
+    #gccZhang2[np.isnan(gccZhang2)] = water
     ppgZhang[np.isnan(ppgZhang)] = water*8.33
     psiftpp = interpolate_nan(psiftpp)
     psipp = interpolate_nan(psipp)
     print("GCCZhang: ",gccZhang)
     psiftpp = 0.4335275040012*gccZhang
+    """
+    #Check Plot
+    plt.plot(gccZhang,tvd, label='Unloading')
+    plt.plot(gccZhang2,tvd, label='Loading',alpha=0.5, linestyle='-')
+    plt.legend(loc="upper left")
+    plt.gca().invert_yaxis()
+    plt.show()
+    plt.close()
+    """
     #psipp = psiftpp[:]*tvdf[:]
     #ObgTgcc = np.array(ObgTgcc)
     #obgpsift = 0.4335275040012*ObgTgcc
-    
+    #plt.plot(cm_sip,md, alpha=0.5)
+    #plt.show()
     #plt.plot(ucs2,md)
     #plt.plot(dtNormal)
     #plt.plot(dalm)
@@ -1812,16 +1990,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     plt.clf()
     plt.close()"""
     
-    #Drop  Function Here
-    
     
     #Eatons/Daines
-    
     i = 0
     mu = 0.65
     if b > 10.0:
         b=0
-  
     fgppg = np.zeros(len(ppgZhang))
     fgcc = np.zeros(len(ppgZhang))
     mufgppg = np.zeros(len(ppgZhang))
@@ -1843,9 +2017,103 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, a = 0.630, nu = 0.4, sfs = 1.
     fgcc = interpolate_nan(fgcc)
     #fgppg = (nu/(1-nu))(ObgTppg-ppgZhang)+ppgZhang
     psiftfg = 0.4335275040012*fgcc
-    
     psifg = psiftfg*tvdf
     psimes = ((psifg+obgpsi)/2)+psipp
+    shsvratio = psifg/obgpsi
+    
+    
+    if forms is not None:
+        psippsand = np.zeros(len(md))
+        from hydraulics import getPPfromTopRecursive
+        from hydraulics import compute_optimal_gradient
+        from hydraulics import getHydrostaticPsi
+        gradients = np.zeros(len(md))
+        gradlist = np.zeros(len(cdtvdlist))
+        eqlithostat = np.zeros(len(md))
+        eqlithostat2 = np.zeros(len(md))
+        #for j in range(len(strucbotlist)):
+        j=0
+        #offsets[j] = compute_optimal_offset(tvd[find_nearest_depth(tvd,structop[j])[0]:find_nearest_depth(tvd,strucbot[j])[0]], psipp[find_nearest_depth(tvd,structop[j])[0]:find_nearest_depth(tvd,strucbot[j])[0]], np.nanmean(ObgTgcc[find_nearest_depth(tvd,structop[j])[0]:find_nearest_depth(tvd,strucbot[j])[0]]))
+        for i in range(len(md)):
+            if structop[i]!=structop[i-1]:
+                gradients[i] = compute_optimal_gradient(tvd[find_nearest_depth(tvd,ttvd[i])[0]:find_nearest_depth(tvd,btvd[i])[0]], psipp[find_nearest_depth(tvd,ttvd[i])[0]:find_nearest_depth(tvd,btvd[i])[0]])
+                gradlist[j] = gradients[i]
+                j+=1
+            else:
+                gradients[i] = gradients[i-1]
+            eqlithostat[i] = getHydrostaticPsi(tvd[i],gradients[i])
+            eqlithostat2[i] = getHydrostaticPsi(tvd[i],gradients[i])
+            psippsand[i] = getPPfromTopRecursive(0 , shsvratio[find_nearest_depth(tvd,structop[i])[0]], obgpsi[find_nearest_depth(tvd,structop[i])[0]],0.85, water, structop[i], Goc[i], Owc[i], tvd[i])
+            #shift[i] = eqlithostat[find_nearest_depth(tvd,cdtvd[i])[0]]-psippsand[find_nearest_depth(tvd,cdtvd[i])[0]]
+            #print(shift)
+            #psippsand[i]=getPPfromTopRecursive(1000-shift[i], shsvratio[find_nearest_depth(tvd,structop[i])[0]], obgpsi[find_nearest_depth(tvd,structop[i])[0]],0.85, water, structop[i], Goc[i], Owc[i], tvd[i])
+            #print(i)
+        
+        shalepressures = np.zeros((len(cdtvdlist),len(md)))
+        shifts = np.zeros((len(cdtvdlist),len(md)))
+        for i, depth in enumerate(cdtvdlist):
+            shalepressures[i] = getHydrostaticPsi(tvd,gradlist[i])
+            
+        centroid_pressures_sand = np.zeros(len(cdtvdlist))
+        # Find the nearest pressure for each depth in cdtvdlist
+        for i, depth in enumerate(cdtvdlist):
+            nearest_idx = find_nearest_depth(tvd, depth)[0]
+            centroid_pressures_sand[i] = psippsand[nearest_idx]
+        
+        centroid_pressures_shale = np.zeros(len(cdtvdlist))
+        # Find the nearest pressure for each depth in cdtvdlist
+        for i, depth in enumerate(cdtvdlist):
+            nearest_idx = find_nearest_depth(tvd, depth)[0]
+            centroid_pressures_shale[i] = shalepressures[i][nearest_idx]
+            #if tvd[i]<logbotlist[j]:
+                #j+=1
+        
+        shifts = centroid_pressures_sand - centroid_pressures_shale
+        print("centroid pressure hydrostatic: ",centroid_pressures_sand)
+        print("centroid pressure in shale: ",centroid_pressures_shale)
+        print("Max seal integrity pressure: ",shifts)
+        
+        j = 0
+        for i in range(len(md)):
+            try:
+                if tvd[i]<logbotlist[j]:
+                    psippsand[i] = psippsand[i]-shifts[j]
+                else:
+                    j+=1
+                    psippsand[i] = np.nan#psippsand[i]-shifts[j-1]
+            except:
+                pass
+    
+        for i in range(len(md)):
+            if shaleflag[i]>0.5:
+                psipp[i] = psippsand[i]
+        psipp = interpolate_nan(psipp)
+        #psippsand = interpolate_nan(psippsand)
+        #from DrawSP import getSHMax_optimized
+        
+            #psisfl = (psimes[:]*H[:])+K[:]
+        shsvratio2 = psifg/obgpsi
+        
+        """
+        plt.plot(psipp,tvd)
+        plt.plot(eqlithostat,tvd)
+        plt.plot(psippsand,tvd)
+        plt.plot(obgpsi,tvd)
+        plt.plot(psifg,tvd)
+        plt.gca().invert_yaxis()
+        plt.show()
+        plt.close()
+        
+        plt.plot(psipp/tvdf,tvd)
+        plt.plot(psippsand/tvdf,tvd)
+        plt.plot(obgpsi/tvdf,tvd)
+        plt.plot(psifg/tvdf,tvd)
+        #plt.plot(gradients,tvd)
+        plt.gca().invert_yaxis()
+        plt.xlim(0.4,1)
+        plt.show()
+        plt.close()
+        """
     
     
     #from DrawSP import getSHMax_optimized

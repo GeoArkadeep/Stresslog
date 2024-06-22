@@ -123,6 +123,7 @@ def plotfrac(data,path):
         i+=1
     av1 = np.nanmean(np.concatenate([depths[0:(midpoint1-1)],depths[midpoint2:360]]))
     av2 = np.nanmean(depths[midpoint1:(midpoint2-1)])
+    
     i=0
     while i<360: #ShiftVert2
         if i<midpoint1 or i>midpoint2-1:
@@ -145,6 +146,17 @@ def plotfrac(data,path):
             cdepths[i] = np.nan
         i+=1
     fdepths = fdepths+tvd
+    m1 = np.nanmax(np.concatenate([fdepths[0:(midpoint1-1)],fdepths[midpoint2:360]]))
+    m2 = np.nanmax(fdepths[midpoint1:(midpoint2-1)])
+    diff = m2-m1
+    print(diff)
+    fdepths[0:(midpoint1-1)] = fdepths[0:(midpoint1-1)] + diff/2
+    fdepths[midpoint2:360] = fdepths[midpoint2:360] + diff/2
+    fdepths[midpoint1:(midpoint2-1)]=fdepths[midpoint1:(midpoint2-1)] - diff/2
+    
+    cdepths[0:(midpoint1-1)] = cdepths[0:(midpoint1-1)] + diff/2
+    cdepths[midpoint2:360] = cdepths[midpoint2:360] + diff/2
+    cdepths[midpoint1:(midpoint2-1)]=cdepths[midpoint1:(midpoint2-1)] - diff/2
     #cdepths[midpoint1:midpoint2] = cdepths[midpoint1:midpoint2][::-1]# FlipHorzR
     #fdepths[midpoint1:midpoint2] = fdepths[midpoint1:midpoint2][::-1]# FlipHorzR
     print(fdepths)
