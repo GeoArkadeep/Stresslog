@@ -2715,8 +2715,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     cutify(output_file,'TopLabel.png',output_file,119*6,109*6,0,0)
     #chopify(output_file,119*6,109*6,120*6,120*6)
     plt.close()
-    stoptime4 = time.perf_counter()
-    print(starttime-stoptime4)
     return df3
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
