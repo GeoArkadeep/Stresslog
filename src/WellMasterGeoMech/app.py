@@ -1250,10 +1250,17 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     try:
         zden2 = well.data[alias['density'][0]].values
-        gr = well.data[alias['gr'][0]].values
     except:
         zden2 = np.full(len(md),np.nan)
+    try:
+        gr = well.data[alias['gr'][0]].values
+    except:
         gr = np.full(len(md),np.nan)
+    try:
+        cald = well.data[alias['cald'][0]].values
+    except:
+        cald = np.full(len(md),np.nan)
+
     
     lradiff = np.full(len(md),np.nan)
     
@@ -2558,200 +2565,158 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt1.legend()
     plt1.set_xlim([0,150])"""
     
-    from matplotlib import ticker
-    from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
-    
-    tango = min(tango,finaldepth)
-    if zulu>finaldepth or zulu>tango:
-        zulu=0
-    mogu1 = np.nanmax(sgHMpsiU[:find_nearest_depth(tvd,tango)[0]])
-    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd,tango)[0]])
-    
-    maxchartpressure = max(mogu1,mogu2)
-    #minindex = find_nearest_depth(tvdm,zulu)[0]
-    #maxindex = find_nearest_depth(tvdm,tango)[0]
-    #Presentation Plot
-    plt.rcParams['xtick.labeltop'] = True
-    plt.rcParams['xtick.top'] = True
-    plt.rcParams['xtick.labelbottom'] = False
-    
-    graph, splt = plt.subplots(1, 6,sharey=True)
-    graph.suptitle(well.name,fontsize=18)
-    #splt[0].invert_yaxis()
-    splt[2].set_ylim([tango,zulu])
-    splt[2].plot(dalm,tvd,label='DT')
-    splt[2].plot(dtNormal,tvd,label='Normal DT (Zhang)')
-    splt[2].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[2].set_xlim([300,50])
-    splt[2].yaxis.set_major_locator(MultipleLocator(100))
-    splt[2].yaxis.set_minor_locator(MultipleLocator(10))
-    #splt[0].tick_params(axis='both', which='minor', length = 0)
-    #splt[0].set_yticks([zulu,tango,10])
-    #splt[0].set_yticks([zulu,tango,1],minor=True)
-    splt[2].grid(which='both')
-    splt[2].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[2].grid(which='major', color = 'teal', alpha = 0.05)
-    #N = 11
-    #ymin, ymax = splt[0].get_ylim()
-    #splt[0].set_yticks(np.round(np.linspace(ymin, ymax, N)))
-    
-    #N1 = 6
-    splt[2].xaxis.set_major_locator(MultipleLocator(100))
-    splt[2].xaxis.set_minor_locator(MultipleLocator(10))
-    #xmin, xmax = splt[0].get_xlim()
-    #splt[0].set_xticks(np.round(np.linspace(xmin, xmax, N1)))
-    splt[2].title.set_text("Sonic (us/ft)")
+    from matplotlib.ticker import MultipleLocator
+    from Plotter3 import plot_logs, cutify, cutify2, chopify  # Assuming plot_logs is in the same directory or properly installed
 
-    
-    splt[3].plot(mudweight,tvd,color='brown',label='Mud Gradient')
-    splt[3].plot(fg,tvd,color='blue',label='Shmin Gradient (Daines)')
-    #splt[1].plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
-    splt[3].plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
-    splt[3].plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
-    splt[3].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[3].set_xlim([0,3])
-    splt[3].grid(which='both')
-    splt[3].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[3].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[3].xaxis.set_major_locator(MultipleLocator(1))
-    splt[3].xaxis.set_minor_locator(MultipleLocator(0.1))
-    N2 = 4
-    xmin, xmax = splt[3].get_xlim()
-    splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N2),1))
-    splt[3].title.set_text("Gradients (g/cc)")
-    
-    splt[4].set_xlim([0,maxchartpressure])
-    splt[4].plot(fgpsi,tvd,color='blue',label='Sh min')
-    splt[4].plot(ssgHMpsi,tvd,color='pink',label='SH MAX ML')
-    splt[4].plot(obgpsi,tvd,color='green',label='Sigma V')
-    splt[4].plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
-    splt[4].plot(pppsi,tvd,color='red',label='Pore Pressure')
-    splt[4].plot(mudpsi,tvd,color='brown',label='BHP')
-    splt[4].plot(sgHMpsiL,tvd,color='lime',lw=0.25,label='SH MAX L')
-    splt[4].plot(sgHMpsiU,tvd,color='orange',lw=0.25,label='SH MAX U')
-    splt[4].grid(which='both')
-    splt[4].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[4].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[4].set_xlim(left=0)
-    splt[4].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[4].xaxis.set_major_locator(MultipleLocator(5000))
-    splt[4].xaxis.set_minor_locator(MultipleLocator(500))
-    xlabels = ['{:,.0f}'.format(x) + 'K' for x in splt[4].get_xticks()/1000]
-    splt[4].set_xticklabels(xlabels)
-    #N3 = 4
-    xmin, xmax = splt[4].get_xlim()
-    #splt[2].set_xticks(np.round(np.linspace(xmin, xmax, N3)))
-    splt[4].title.set_text("Pressures (psi)")
+    # Initialize parameters
+    tango = min(tango, finaldepth)
+    if zulu > finaldepth or zulu > tango:
+        zulu = 0
 
+    mogu1 = np.nanmax(ssgHMpsi[:find_nearest_depth(tvd, tango)[0]])
+    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd, tango)[0]])
+    mogu3 = np.nanmin(hydropsi[find_nearest_depth(tvd, zulu)[0]:find_nearest_depth(tvd, tango)[0]])
+    maxchartpressure = 1000*math.ceil(max(mogu1, mogu2)/1000)
     
-    splt[5].set_ylim([tango,zulu])
-    splt[5].plot(slal,tvd,label='UCS (Lal)')
-    splt[5].plot(shorsud,tvd,label='UCS (Horsud)')
-    splt[5].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[5].set_xlim([0,100])
-    splt[5].grid(which='both')
-    splt[5].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[5].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[5].xaxis.set_major_locator(MultipleLocator(20))
-    splt[5].xaxis.set_minor_locator(MultipleLocator(2))
-    #N4 = 6
-    #xmin, xmax = splt[3].get_xlim()
-    #splt[3].set_xticks(np.round(np.linspace(xmin, xmax, N4)))
-    splt[5].title.set_text("Strengths (MPa)")
-    
-    from CasingPlotter import plotCasing
-    shoes = np.transpose(mud_weight)[1]
-    tvdshoes = [tvd[find_nearest_depth(md,shoe)[0]] for shoe in shoes]
-    plotCasing(tvdshoes,splt[0],(tango-zulu)/80)
-    splt[0].set_ylim([tango,zulu])
-    #splt[0].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    # Remove x-ticks and spines
-    splt[0].tick_params(axis='x',          # Changes apply to the x-axis
-                        which='both',      # Both major and minor ticks are affected
-                        bottom=False,      # Ticks along the bottom edge are off
-                        top=False,
-                        labeltop=False, # Ticks along the top edge are off
-                        labelbottom=False) # Labels along the bottom edge are off
+    minpressure = round(mogu3)
 
-    #splt[0].spines['top'].set_visible(False)    # Top spine is invisible
-    #splt[0].spines['bottom'].set_visible(False) # Bottom spine is invisible
+    """print(gr)
+    print(dalm)
+    print(dtNormal)
+    print(mudweight)
+    print(fg.as_numpy())
+    print(pp.as_numpy())
+    print(obgcc.as_numpy())
+    print(fgpsi.as_numpy())
+    print(ssgHMpsi)
+    print(obgpsi)
+    print(hydropsi)
+    print(pppsi.as_numpy())
+    print(mudpsi)
+    print(sgHMpsiL)
+    print(sgHMpsiU)
+    print(slal)
+    print(shorsud)"""
+    
+    # Data preparation for plot_logs
+    data = pd.DataFrame({
+        'dalm': dalm,
+        'dtNormal': dtNormal,
+        'mudweight': mudweight,
+        'fg': fg.as_numpy(),
+        'pp': pp.as_numpy(),
+        'obgcc': obgcc.as_numpy(),
+        'fgpsi': fgpsi.as_numpy(),
+        'ssgHMpsi': ssgHMpsi,
+        'obgpsi': obgpsi,
+        'hydropsi': hydropsi,
+        'pppsi': pppsi.as_numpy(),
+        'mudpsi': mudpsi,
+        'sgHMpsiL': sgHMpsiL,
+        'sgHMpsiU': sgHMpsiU,
+        'slal': slal,
+        'shorsud': shorsud,
+        'GR': gr,
+        'GR_CUTOFF': grcut,
+        'CALIPER1':cald/2,
+        'CALIPER2':cald/(-2)
+    }, index=tvdm)
+    #print(data)
+    # Define styles for the new plotter function
+    styles = {
+        'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+        'dtNormal': {"color": "blue", "linewidth": 1.5, "style": ':', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+        'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
+        'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
+        'pp': {"color": "red", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
+        'obgcc': {"color": "lime", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
+        'fgpsi': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'ssgHMpsi': {"color": "pink", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'obgpsi': {"color": "green", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'hydropsi': {"color": "aqua", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'pppsi': {"color": "red", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'mudpsi': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": ':', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": ':', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+        'slal': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
+        'shorsud': {"color": "red", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
+        'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},
+        'GR_CUTOFF': {"color": "black", "linewidth": 0, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI"},
+        'CALIPER1': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"},
+        'CALIPER2': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"}
+    }
 
-    splt[0].title.set_text("Casings")
-    
-    splt[1].title.set_text("Lithology")
-    splt[1].set_ylim([tango,zulu])
-    cmap1 = plt.get_cmap('cool')  # Example colormap
-    cindex1 = [0,sfs,1,2]
-    for item in sorted(cindex1):
-        colorvalue1 = (item-0)/4
-        splt[1].fill_betweenx(tvd,gr,200,where=lradiff>=item, facecolor=cmap1(colorvalue1))
-    if lithos is not None:
-        cmap2 = plt.get_cmap('plasma_r')  # Example colormap
-        cindex2 = [-0.10,1,2,3]
-        for item in sorted(cindex2):
-            colorvalue2 = (item-0)/4
-            splt[1].fill_betweenx(tvd,-10,gr,where=lithotype>=item, facecolor=cmap2(colorvalue2))
-    
-    splt[1].plot(gr,tvd,label='GR',color='green',lw=0.25)
-    
-    
-    splt[1].legend(bbox_to_anchor=(0.5, 0),fontsize = "6",loc='upper center')
-    splt[1].set_xlim([0,150])
-    splt[1].grid(which='both')
-    splt[1].grid(which='minor', color = 'teal', alpha = 0.025)
-    splt[1].grid(which='major', color = 'teal', alpha = 0.05)
-    splt[1].xaxis.set_major_locator(MultipleLocator(50))
-    splt[1].xaxis.set_minor_locator(MultipleLocator(10))
-    
-    #graph.tight_layout()
-
-    # Add your custom plot
-    print(mud_weight)
-    print(frac_grad_data)
-    print(flow_grad_data)
-    print(frac_psi_data)
-    print(flow_psi_data)
-    
-    x_values, y_values = zip(*frac_grad_data)
-    x_values2, y_values2 = zip(*flow_grad_data)
-    x_values3, y_values3 = zip(*frac_psi_data)
-    x_values4, y_values4 = zip(*flow_psi_data)
-    if UCSs is not None:
-        y_values5, x_values5 = zip(*ucss)
-        y_values6 = [find_nearest_depth(md, y)[0] for y in y_values5]
-        y_values5 = tvdm[y_values6]
+    print("max pressure is ",maxchartpressure)
         
-    
-    #convert y values to tvd
-    y_values = tvdm[find_nearest_depth(md,y_values)[0]]
-    y_values2 = tvdm[find_nearest_depth(md,y_values2)[0]]
-    y_values3 = tvdm[find_nearest_depth(md,y_values3)[0]]
-    y_values4 = tvdm[find_nearest_depth(md,y_values4)[0]]
-    
-    
-    #Plot Image
+    # Convert y values to tvd
+    def convert_to_tvd(y_values):
+        return [tvdm[find_nearest_depth(md, y)[0]] for y in y_values]
+
+    # Convert data points to DataFrame
+    def create_points_dataframe(points_data):
+        points_df = {}
+        for key, (x_vals, y_vals) in points_data.items():
+            y_vals_tvd = convert_to_tvd(y_vals)
+            points_df[key] = pd.Series(data=x_vals, index=y_vals_tvd)
+        points_df = pd.DataFrame(points_df)
         
-    if frac_grad_data != [[0,0]]:
-        splt[3].scatter(x_values, y_values, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
-    if flow_grad_data != [[0,0]]:
-        splt[3].scatter(x_values2, y_values2, color='orange', marker='x', s=500)  # Add the custom plot to the second track
-    if frac_psi_data != [[0,0]]:
-        splt[4].scatter(x_values3, y_values3, color='dodgerblue', marker='x', s=500)  # Add the custom plot to the second track
-    if flow_psi_data != [[0,0]]:
-        splt[4].scatter(x_values4, y_values4, color='orange', marker='x', s=500)  # Add the custom plot to the second track
+        # Handle duplicate indices
+        points_df = points_df.groupby(points_df.index).first()
+        
+        # Drop the first row
+        #points_df = points_df.iloc[1:]
+        
+        # Replace zero values with NaN
+        points_df = points_df.replace(0, np.nan)
+        
+        # Ensure UCS column is present
+        if 'ucs' not in points_df.columns:
+            points_df['ucs'] = np.nan
+        
+        return points_df
+    
+    casing_dia2 = [[-x, y] for x, y in casing_dia]
+    #casing_dia = casing_dia + [[-x, y] for x, y in casing_dia]
+    # Gather points data
+    points_data = {
+        'frac_grad': zip(*frac_grad_data),
+        'flow_grad': zip(*flow_grad_data),
+        'frac_psi': zip(*frac_psi_data),
+        'flow_psi': zip(*flow_psi_data),
+        'casingshoe': zip(*casing_dia),
+        'casingshoe2': zip(*casing_dia2)
+    }
+    print("casing points",casing_dia)
+    print("Points:",flow_grad_data)
     if UCSs is not None:
-        splt[5].scatter(x_values5, y_values5, color='lime', marker='x', s=10)  # Add the custom plot to the second track
+        # Swap the columns in the ucss array
+        ucss = np.array([[depth, ucs] for ucs, depth in ucss])
+        points_data['ucs'] = zip(*ucss)
+        
+    points_df = create_points_dataframe(points_data)
+    # Ensure the points DataFrame handles missing data gracefully
+    points_df = points_df.apply(lambda col: col.dropna())
+    print(points_df)
     
-    #mud_weight_x, mud_weight_y = zip(*mud_weight)
-    #splt[1].plot(mud_weight_x, mud_weight_y, color='black', linewidth=2, linestyle='-', drawstyle='steps-post')  # Add the stepped mud_weight line to the second track
+    pointstyles = {
+    'frac_grad': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'g/cc'},
+    'flow_grad': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'g/cc'},
+    'frac_psi': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
+    'flow_psi': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
+    'ucs': {'color': 'lime', 'pointsize': 30, 'symbol': 'o', 'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'},
+    'casingshoe': {'color': 'black', 'pointsize': 30, 'symbol': 1, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True},
+    'casingshoe2': {'color': 'black', 'pointsize': 30, 'symbol': 0, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True}
+    }
     
-    #ax2 = splt[2].twinx()
-    #ax2.set_ylabel('MD')
-    #secax = splt[2].secondary_yaxis('right')
-    # Save the modified plot
-    plt.gcf().set_size_inches(15, 10)
-    plt.savefig(output_file)#,dpi=600)
+    # Plot using plot_logs
+    fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=600)
+    
+    plt.savefig(output_file,dpi=600)
+    cutify(output_file,'TopLabel.png',output_file,119*6,109*6,0,0)
+    #chopify(output_file,119*6,109*6,120*6,120*6)
     plt.close()
+    stoptime4 = time.perf_counter()
+    print(starttime-stoptime4)
     return df3
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
