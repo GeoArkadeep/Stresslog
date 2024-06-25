@@ -252,13 +252,13 @@ class MyApp(toga.App):
                
         
         #Page 3
-        self.page3 = toga.Box(style=Pack(direction=COLUMN, alignment='center'))
-        
+        self.page3 = toga.Box(style=Pack(direction=ROW, alignment='center'))
+
         # Create a container with ROW direction for plot and frac_grad_data
         plot_and_data_box = toga.Box(style=Pack(direction=ROW, flex=1))
-        
-        # Create a container for flow_grad_data rows
-        self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
+
+        # Initialize the flow_grad_data_box
+        self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN, width=200))
         plot_and_data_box.add(self.flow_grad_data_box)
 
         # Add the buttons for Add row and Remove row
@@ -273,17 +273,14 @@ class MyApp(toga.App):
         self.flow_grad_data_rows = []
         self.add_flow_grad_data_row(None, row_type='flow_grad')
         self.add_flow_grad_data_row(None, row_type='flow_psi')
-        
-        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex = 1))
+
+        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex=1))
         plot_and_data_box.add(self.bg3)
-        #spacer_box = toga.Box(style=Pack(flex=0.01))  # Add this spacer box
-        #plot_and_data_box.add(spacer_box)
-        
-        # Move the frac_grad_data related components inside the plot_and_data_box
-        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN,width=200))
+
+        # Initialize the frac_grad_data_box
+        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN, width=200))
         plot_and_data_box.add(self.frac_grad_data_box)
-        
-        
+
         # Add the buttons for Add row and Remove row
         row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
         self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(width=100))
@@ -297,13 +294,21 @@ class MyApp(toga.App):
         self.add_frac_grad_data_row(None, row_type='frac_grad')
         self.add_frac_grad_data_row(None, row_type='frac_psi')
 
-        self.page3.add(plot_and_data_box)
+        # Create a scrollable container for the left pane
+        left_pane_container = toga.ScrollContainer(style=Pack(width=300, padding=5))
+
+        # Create the left pane box to hold all the elements in a vertical order
+        left_pane_box = toga.Box(style=Pack(direction=COLUMN, alignment='center', flex=1))
         
-        progressbox = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.progress = toga.ProgressBar(max=None,style=Pack(alignment='center', width = 512, height=5, flex=1))
-        progressbox.add(self.progress)
+        # Add the progress bar to the right pane box
+        self.progress = toga.ProgressBar(max=None, style=Pack(alignment='center', height=5, flex=1))
+        left_pane_box.add(self.progress)
         self.progress.stop()
-        self.page3.add(self.progress)
+
+        # Add the Recalculate button
+        self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=5, width=200))
+        left_pane_box.add(self.page3_btn1)
+
         
         # Define the labels and default values
         global model
@@ -334,38 +339,59 @@ class MyApp(toga.App):
         
         # Create a list to store the textboxes
         self.textboxes = []
-        # Add 6 numeric entry boxes with their respective labels
-        for i in range(2):
-            entry_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-            for j in range(10):
-                entry_info = entries_info[10 * i + j]
-                label = toga.Label(entry_info['label'], style=Pack(alignment='center', width = 100, flex=1,text_direction='rtl'))  # Adjust flex as needed
-                entry = toga.TextInput(style=Pack(width=50, flex=1))  # Adjust flex as needed
-                entry.value = entry_info['default_value']
-                entry_box.add(label)
-                entry_box.add(entry)
-                self.textboxes.append(entry)
-            self.page3.add(entry_box)
+        # Add numeric entry boxes with their respective labels
+        for i in range(20):
+            entry_info = entries_info[i]
+            row_box = toga.Box(style=Pack(direction=ROW, alignment='left', padding=5))
+            label = toga.Label(entry_info['label'], style=Pack(width=100, padding=(5, 0)))
+            entry = toga.TextInput(style=Pack(flex=1, padding=(.5, 0)))
+            entry.value = entry_info['default_value']
+            row_box.add(label)
+            row_box.add(entry)
+            left_pane_box.add(row_box)
+            self.textboxes.append(entry)
         
-        button_box = toga.Box(style=Pack(direction=ROW, alignment='center', flex=0))
-        self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=1,width = 100))
-        button_box.add(self.page3_btn1)
+        # Add the rest of the buttons from the bottom of the layout
+        self.page3_btn2 = toga.Button("Export Plot", on_press=self.save_plot, style=Pack(padding=5, width=200))
+        left_pane_box.add(self.page3_btn2)
+        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=5, width=200))
+        left_pane_box.add(self.page3_btn3)
+        self.page3_btn5 = toga.Button("Stability Plot", on_press=self.show_page4, style=Pack(padding=5, width=200), enabled=False)
+        left_pane_box.add(self.page3_btn5)
+        self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=5, width=200))
+        left_pane_box.add(self.page3_btn4)
+
+
+
+        # Add the containers for added rows to the left pane box
+        left_pane_box.add(self.flow_grad_data_box)
+        left_pane_box.add(self.frac_grad_data_box)
+
+       
+
+        # Add the left pane box to the scrollable container
+        left_pane_container.content = left_pane_box
         
-        self.page3_btn2 = toga.Button("Export Plot", on_press=self.save_plot, style=Pack(padding=1,width = 100))
-        button_box.add(self.page3_btn2)
+        # Create a scrollable container for the right pane
+        right_pane_container = toga.ScrollContainer(style=Pack(direction='row',flex=1))
+
+        # Create a box for the progress bar and image
+        #right_pane_box = toga.Box(style=Pack(direction=ROW, flex=1))
         
-        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=1,width = 100))
-        button_box.add(self.page3_btn3)
-        
-        self.page3_btn5 = toga.Button("Stability Plot", on_press=self.show_page4, style=Pack(padding=1,width = 100),enabled=False)
-        button_box.add(self.page3_btn5)
-        
-        self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=1,width = 100))
-        button_box.add(self.page3_btn4)
-        
-        
-        
-        self.page3.add(button_box)
+        # Adjust the ScrollContainer to handle overflow properly
+        #right_pane_container.content = right_pane_box
+        right_pane_container.horizontal = False
+        girth = 1000
+
+        # Add the image display to the right pane box
+        my_image = toga.Image("BG2.png")
+        self.bg3 = toga.ImageView(my_image, style=Pack(direction='row',flex=1))
+        #right_pane_container.add(self.bg3)
+        right_pane_container.content = self.bg3
+
+        # Add the containers to the main page3 box
+        self.page3.add(left_pane_container)
+        self.page3.add(right_pane_container)        
         
         
         #Page4
@@ -2714,7 +2740,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=600)
     
     plt.savefig(output_file,dpi=600)
-    cutify(output_file,'TopLabel.png',output_file,119*6,109*6,0,0)
+    cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,119*6,109*6,0,0)
     #chopify(output_file,119*6,109*6,120*6,120*6)
     plt.close()
     return df3

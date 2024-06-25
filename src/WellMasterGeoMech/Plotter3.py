@@ -3,8 +3,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.colors as mcolors
 from PIL import Image
+import os
 
-def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, figsize=(15, 10), label_height=20, dpi=100):
+user_home = os.path.expanduser("~/Documents")
+
+def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, figsize=(15, 10), label_height=20, dpi=100, output_dir = os.path.join(user_home, "pp_app_plots")):
     """
     Plots well log data in tracks and sparse data points.
 
@@ -218,10 +221,10 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
     if plot_labels:
         if pltsign > 0:
             #plt.tight_layout()
-            plt.savefig('BottomLabel.png', dpi=dpi)
+            plt.savefig(os.path.join(output_dir,"BottomLabel.png"), dpi=dpi)
         else:
             #plt.tight_layout()
-            plt.savefig('TopLabel.png', dpi=dpi)
+            plt.savefig(os.path.join(output_dir,"TopLabel.png"), dpi=dpi)
     else:
         simulated_depth = np.array([2600])
         simulated_data = pd.DataFrame({key: np.random.rand(len(data.columns)) for key in data.columns})
