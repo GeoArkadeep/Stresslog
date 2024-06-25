@@ -57,7 +57,7 @@ Jon Jincai Zhang, for his awesome work on pore pressure prediction, and geomecha
 In more detail:
 The Stability Analysis Plots are after [Peska and Zoback, 1995](https://doi.org/10.1029/95JB00319). The Stress Polygon Technique for constraining SHMax is after [Zoback et al., 2003](https://doi.org/10.1029/95JB00319) The Pore Pressure equation is from [Zhang, 2011](https://doi.org/10.1016/j.earscirev.2011.06.001) The shmin is calculated in accordance with [Dianes, 1982](https://doi.org/10.2118/9254-PA), as well as [Zoback and Healy,1992](https://doi.org/10.1029/91JB02175)
 
-This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. The GUI is written using Toga, and built using Briefcase, which are both components of the BeeWare Project. Other libraries used include Pandas, Numpy and Matplotlib.
+This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. The GUI is written using Toga, and built using Briefcase, which are both components of the BeeWare Project. Other libraries used include Pandas, Numpy, Matplotlib and PIL.
 
 ## Disclaimer
 
@@ -67,4 +67,4 @@ THERE IS NO WARRANTY FOR THE PROGRAM. THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
 
 IN NO EVENT WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS THE PROGRAM AS PERMITTED, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
-THE STATEMENTS ABOVE IS IN ADDITION TO THE CONCERNED SECTIONS OF THE AGPL3.0 LICENSE GOVERNING THE PROGRAM.
+THE STATEMENTS ABOVE ARE IN ADDITION TO THE CONCERNED SECTIONS OF THE AGPL3.0 LICENSE GOVERNING THE PROGRAM.

@@ -2594,7 +2594,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt1.set_xlim([0,150])"""
     
     from matplotlib.ticker import MultipleLocator
-    from Plotter3 import plot_logs, cutify, cutify2, chopify  # Assuming plot_logs is in the same directory or properly installed
+    from Plotter import plot_logs, cutify, cutify2, chopify, choptop  # Assuming plot_logs is in the same directory or properly installed
 
     # Initialize parameters
     tango = min(tango, finaldepth)
@@ -2740,7 +2740,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=600)
     
     plt.savefig(output_file,dpi=600)
-    cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,119*6,109*6,0,0)
+    choptop(20*6, 0, os.path.join(output_dir,"BottomLabel.png"))
+    cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,109*6,99*6,0,0)
     #chopify(output_file,119*6,109*6,120*6,120*6)
     plt.close()
     return df3

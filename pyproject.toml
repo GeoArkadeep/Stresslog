@@ -2,7 +2,7 @@
 [tool.briefcase]
 project_name = "LasApps"
 bundle = "in.rocklab"
-version = "1.0.4"
+version = "1.1.0"
 url = "https://rocklab.in/WellMasterGeoMech"
 license = "AGPL-3.0"
 author = "Arkadeep Ghosh"
@@ -21,7 +21,7 @@ sources = [
     "src/WellMasterGeoMech/BoreStab.py",
     "src/WellMasterGeoMech/plotangle.py",
     "src/WellMasterGeoMech/PlotVec.py",
-    "src/WellMasterGeoMech/CasingPlotter.py"
+    "src/WellMasterGeoMech/Plotter.py"
 ]
 installer_icon = "src/WellMasterGeoMech/resources/WellMasterGeoMech"
 installer_background = "src/WellMasterGeoMech/resources/ibg"
@@ -39,7 +39,8 @@ requires = [
     "matplotlib",
     "numpy",
     "pandas==2.1.1",
-    "scipy"
+    "scipy",
+    "PIL"
 ]
 test_requires = [
     "pytest",

@@ -228,8 +228,8 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
     else:
         simulated_depth = np.array([2600])
         simulated_data = pd.DataFrame({key: np.random.rand(len(data.columns)) for key in data.columns})
-        plot_logs(simulated_data, styles, None, None, 2601, 2602, plot_labels=True, figsize=(15, 3), label_height=100, dpi=dpi)
-        plot_logs(simulated_data, styles, None, None, 2601, 2600, plot_labels=True, figsize=(15, 3), label_height=100, dpi=dpi)
+        plot_logs(simulated_data, styles, None, None, 2601, 2602, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi)
+        plot_logs(simulated_data, styles, None, None, 2601, 2600, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi)
         return fig, axes
     
     plt.close()
@@ -363,7 +363,7 @@ def chopify(n1,x1,x2,x3,x4):
     #img1.show()
 
 #cutify2('plot.png','BottomLabel.png','combined.png',119,109,120,120)
-
+"""
 # Example usage of the modified function
 data = pd.DataFrame({
     'log1': np.random.random(100) * 150,
@@ -386,3 +386,4 @@ pointstyles = {
 }
 
 x = plot_logs(data, styles, points, pointstyles, y_min=0, y_max=1000)
+"""
