@@ -7,7 +7,7 @@ import os
 
 user_home = os.path.expanduser("~/Documents")
 
-def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, figsize=(15, 10), label_height=20, dpi=100, output_dir = os.path.join(user_home, "pp_app_plots")):
+def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, figsize=(15, 10), label_height=20, dpi=100, output_dir = os.path.join(user_home, "ppp_app_plots")):
     """
     Plots well log data in tracks and sparse data points.
 
@@ -228,8 +228,8 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
     else:
         simulated_depth = np.array([2600])
         simulated_data = pd.DataFrame({key: np.random.rand(len(data.columns)) for key in data.columns})
-        plot_logs(simulated_data, styles, None, None, 2601, 2602, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi)
-        plot_logs(simulated_data, styles, None, None, 2601, 2600, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi)
+        plot_logs(simulated_data, styles, None, None, 2601, 2602, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi, output_dir=output_dir)
+        plot_logs(simulated_data, styles, None, None, 2601, 2600, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi, output_dir=output_dir)
         return fig, axes
     
     plt.close()

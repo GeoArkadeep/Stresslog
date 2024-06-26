@@ -26,9 +26,9 @@ import time
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
-output_dir = os.path.join(user_home, "pp_app_plots")
-output_dir1 = os.path.join(user_home, "pp_app_data")
-input_dir = os.path.join(user_home, "pp_app_models")
+output_dir = os.path.join(user_home, "ppp_app_plots")
+output_dir1 = os.path.join(user_home, "ppp_app_data")
+input_dir = os.path.join(user_home, "ppp_app_models")
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(output_dir1, exist_ok=True)
@@ -80,8 +80,9 @@ depth_track = None
 finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
-modelheader = "RhoA,AMC_exp,NCT_exp,UL_exp,UL_depth,dtML,dtMAT,EATON_fac,perm_cutoff,window,start,stop,w_den,re_sub,tec_fac,A_dep,SHM_azi,Beta,Gamma,MudTempC,nu_shale,nu_sst,nu_lst,dt_lst"
-defaultmodel = "17,0.8,0.0008,0.0008,0,250,60,0.35,0.35,21,0,2900,1.025,1.0,0,3500,0,0,0,60,0.32,0.27,0.25,65"
+modelheader = "RhoA,AMC_exp,EATON_fac,tec_fac,NCT_exp,dtML,dtMAT,UL_exp,UL_depth,re_sub,A_dep,SHM_azi,Beta,Gamma,perm_cutoff,w_den,MudTempC,window,start,stop,nu_shale,nu_sst,nu_lst,dt_lst"
+defaultmodel = "17,0.8,0.35,0,0.0008,250,60,0.0008,0,1,3500,0,0,0,0.35,1.025,60,21,0,2900,0.32,0.27,0.25,65"
+
 print(os.getcwd())
 try:
     data = pd.read_csv(modelpath,index_col=False)
@@ -161,7 +162,7 @@ class MyApp(toga.App):
             for j in range(4):
                 entry_info2 = entries_info2[4*i+j]
                 label = toga.Label(entry_info2['label'], style=Pack(padding_right=5, width=50, flex=1, text_direction='rtl'))
-                entry2 = toga.TextInput(style=Pack(padding_left=2, width=100))
+                entry2 = toga.TextInput(style=Pack(padding_left=2, flex=1))
                 entry2.value = entry_info2['default_value']
                 entry_box2.add(label)
                 entry_box2.add(entry2)
@@ -180,32 +181,32 @@ class MyApp(toga.App):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
             
             depth_label = toga.Label("Casing Shoe Depth (m)", style=Pack(padding_right=2,text_direction='rtl'))
-            depth_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
+            depth_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="0")
             row_box.add(depth_label)
             row_box.add(depth_entry)
 
             mud_weight_label = toga.Label("Max. Mud Weight", style=Pack(padding_right=2,text_direction='rtl'))
-            mud_weight_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="1")
+            mud_weight_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="1")
             row_box.add(mud_weight_label)
             row_box.add(mud_weight_entry)
             
             od_label = toga.Label("Casing OD (inches)", style=Pack(padding_right=2,text_direction='rtl'))
-            od_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
+            od_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="0")
             row_box.add(od_label)
             row_box.add(od_entry)
             
             bitdia_label = toga.Label("Bit Dia (inches)", style=Pack(padding_right=2,text_direction='rtl'))
-            bitdia_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
+            bitdia_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="0")
             row_box.add(bitdia_label)
             row_box.add(bitdia_entry)
             
             iv_label = toga.Label("Casing volume (bbl/100ft)", style=Pack(padding_right=2,text_direction='rtl'))
-            iv_entry = toga.TextInput(style=Pack(padding_left=5, width=100), value="0")
+            iv_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="0")
             row_box.add(iv_label)
             row_box.add(iv_entry)
             
             ppf_label = toga.Label("BHT (C)", style=Pack(padding_right=5,text_direction='rtl'))
-            ppf_entry = toga.TextInput(style=Pack(padding_left=2, width=100), value="0")
+            ppf_entry = toga.TextInput(style=Pack(padding_left=2, flex=1), value="0")
             row_box.add(ppf_label)
             row_box.add(ppf_entry)
 
@@ -258,13 +259,13 @@ class MyApp(toga.App):
         plot_and_data_box = toga.Box(style=Pack(direction=ROW, flex=1))
 
         # Initialize the flow_grad_data_box
-        self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN, width=200))
+        self.flow_grad_data_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
         plot_and_data_box.add(self.flow_grad_data_box)
 
         # Add the buttons for Add row and Remove row
         flow_row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.add_flow_grad_button = toga.Button("Add PP Grad", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_grad'), style=Pack(width=100))
-        self.add_flow_psi_button = toga.Button("Add PP BHP", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_psi'), style=Pack(width=100))
+        self.add_flow_grad_button = toga.Button("Add PP Grad", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_grad'), style=Pack(flex=1))
+        self.add_flow_psi_button = toga.Button("Add PP BHP", on_press=lambda x: self.add_flow_grad_data_row(x, row_type='flow_psi'), style=Pack(flex=1))
         flow_row_button_box.add(self.add_flow_grad_button)
         flow_row_button_box.add(self.add_flow_psi_button)
         self.flow_grad_data_box.add(flow_row_button_box)
@@ -278,13 +279,13 @@ class MyApp(toga.App):
         plot_and_data_box.add(self.bg3)
 
         # Initialize the frac_grad_data_box
-        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN, width=200))
+        self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
         plot_and_data_box.add(self.frac_grad_data_box)
 
         # Add the buttons for Add row and Remove row
         row_button_box = toga.Box(style=Pack(direction=ROW, alignment='center'))
-        self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(width=100))
-        self.add_frac_psi_button = toga.Button("Add Frac BHP", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_psi'), style=Pack(width=100))
+        self.add_frac_grad_button = toga.Button("Add Frac Grad", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_grad'), style=Pack(flex=1))
+        self.add_frac_psi_button = toga.Button("Add Frac BHP", on_press=lambda x: self.add_frac_grad_data_row(x, row_type='frac_psi'), style=Pack(flex=1))
         row_button_box.add(self.add_frac_grad_button)
         row_button_box.add(self.add_frac_psi_button)
         self.frac_grad_data_box.add(row_button_box)
@@ -306,68 +307,118 @@ class MyApp(toga.App):
         self.progress.stop()
 
         # Add the Recalculate button
-        self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=5, width=200))
+        self.page3_btn1 = toga.Button("Recalculate", on_press=self.get_textbox_values, style=Pack(padding=5, flex=1))
         left_pane_box.add(self.page3_btn1)
-
+        self.page3_btn5 = toga.Button("Stability Plot", on_press=self.show_page4, style=Pack(padding=5, flex=1), enabled=False)
+        left_pane_box.add(self.page3_btn5)
+        self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=5, flex=1))
+        left_pane_box.add(self.page3_btn4)
         
         # Define the labels and default values
         global model
         entries_info = [
             {'label': 'RHOA (ppg)', 'default_value': str(model[0])},
             {'label': 'OBG Exp', 'default_value': str(model[1])},
-            {'label': 'NCT Exp', 'default_value': str(model[2])},
-            {'label': 'Unloading Exp', 'default_value': str(model[3])},
-            {'label': 'Unloading Depth', 'default_value': "0"},
+            {'label': "Eaton's Nu", 'default_value': str(model[2])},
+            {'label': 'TectonicFactor', 'default_value': str(model[3])},
+            
+            {'label': 'NCT Exp', 'default_value': str(model[4])},
             {'label': 'DTml (us/ft)', 'default_value': str(model[5])},
             {'label': 'DTmat (us/ft)', 'default_value': str(model[6])},
-            {'label': "Eaton's Nu", 'default_value': str(model[7])},
-            {'label': 'ShaleFlag Cutoff', 'default_value': str(model[8])},
-            {'label': 'Window', 'default_value': str(model[9])},
-            {'label': 'Start', 'default_value': str(model[10])},
-            {'label': 'Stop', 'default_value': str(model[11])},
-            {'label': 'WaterDensity', 'default_value': str(model[12])},
-            {'label': 'PP Gr. L.Limit', 'default_value': str(model[13])},
-            {'label': 'TectonicFactor', 'default_value': str(model[14])},
+            {'label': 'Unloading Exp', 'default_value': str(model[7])},
+            {'label': 'Unloading Depth', 'default_value': "0"},
+            {'label': 'PP Gr. L.Limit', 'default_value': str(model[9])},
+
             {'label': 'Analysis TVD', 'default_value': "0"},
-            {'label': 'Fast Shear Azimuth', 'default_value': str(model[16])},
-            {'label': 'Dip Azim.', 'default_value': str(model[17])},
-            {'label': 'Dip Angle', 'default_value': str(model[18])},
-            {'label': 'MudTemp', 'default_value': str(model[19])}
+            {'label': 'Fast Shear Azimuth', 'default_value': str(model[11])},
+            {'label': 'Dip Azim.', 'default_value': str(model[12])},
+            {'label': 'Dip Angle', 'default_value': str(model[13])},
+            
+            {'label': 'ShaleFlag Cutoff', 'default_value': str(model[14])},
+            {'label': 'WaterDensity', 'default_value': str(model[15])},
+            {'label': 'MudTemp', 'default_value': str(model[16])},
+            
+            {'label': 'Window', 'default_value': str(model[17])},
+            {'label': 'Start', 'default_value': str(model[18])},
+            {'label': 'Stop', 'default_value': str(model[19])}
+            
             
             
         ]
         
         # Create a list to store the textboxes
         self.textboxes = []
-        # Add numeric entry boxes with their respective labels
-        for i in range(20):
-            entry_info = entries_info[i]
+
+        # Function to create a divider
+        def create_divider(text):
+            divider_box = toga.Box(style=Pack(direction=ROW, padding=(10, 5)))
+            divider_label = toga.Label(text, style=Pack(flex=1, font_weight='bold'))
+            divider_box.add(divider_label)
+            return divider_box
+
+        # Function to create a parameter row
+        def create_parameter_row(entry_info):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='left', padding=5))
-            label = toga.Label(entry_info['label'], style=Pack(width=100, padding=(5, 0)))
+            label = toga.Label(entry_info['label'], style=Pack(flex=1, padding=(5, 0)))
             entry = toga.TextInput(style=Pack(flex=1, padding=(.5, 0)))
             entry.value = entry_info['default_value']
             row_box.add(label)
             row_box.add(entry)
+            return row_box, entry
+
+        # Replace the existing loop with this code
+        current_index = 0
+
+        # Frac Grad Properties
+        left_pane_box.add(create_divider("Frac Grad Parameters"))
+        for i in range(4):
+            row_box, entry = create_parameter_row(entries_info[current_index])
             left_pane_box.add(row_box)
             self.textboxes.append(entry)
+            current_index += 1
+
+        # Pore Pressure Properties
+        left_pane_box.add(create_divider("Pore Pressure Parameters"))
+        for i in range(6):
+            row_box, entry = create_parameter_row(entries_info[current_index])
+            left_pane_box.add(row_box)
+            self.textboxes.append(entry)
+            current_index += 1
+
+        # Misc. Properties
+        left_pane_box.add(create_divider("Stress Tensor Parameters"))
+        for i in range(4):
+            row_box, entry = create_parameter_row(entries_info[current_index])
+            left_pane_box.add(row_box)
+            self.textboxes.append(entry)
+            current_index += 1
+
+        # Display Properties
+        left_pane_box.add(create_divider("Misc. Properties"))
+        for i in range(3):
+            row_box, entry = create_parameter_row(entries_info[current_index])
+            left_pane_box.add(row_box)
+            self.textboxes.append(entry)
+            current_index += 1
+
+        # Stress Tensor Properties
+        left_pane_box.add(create_divider("Display Properties"))
+        for i in range(3):
+            row_box, entry = create_parameter_row(entries_info[current_index])
+            left_pane_box.add(row_box)
+            self.textboxes.append(entry)
+            current_index += 1
         
-        # Add the rest of the buttons from the bottom of the layout
-        self.page3_btn2 = toga.Button("Export Plot", on_press=self.save_plot, style=Pack(padding=5, width=200))
-        left_pane_box.add(self.page3_btn2)
-        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=5, width=200))
-        left_pane_box.add(self.page3_btn3)
-        self.page3_btn5 = toga.Button("Stability Plot", on_press=self.show_page4, style=Pack(padding=5, width=200), enabled=False)
-        left_pane_box.add(self.page3_btn5)
-        self.page3_btn4 = toga.Button("Back", on_press=self.show_page2, style=Pack(padding=5, width=200))
-        left_pane_box.add(self.page3_btn4)
-
-
+        left_pane_box.add(create_divider("Constraints"))
 
         # Add the containers for added rows to the left pane box
         left_pane_box.add(self.flow_grad_data_box)
         left_pane_box.add(self.frac_grad_data_box)
 
-       
+        self.page3_btn2 = toga.Button("Export Plot", on_press=self.save_plot, style=Pack(padding=5, flex=1))
+        left_pane_box.add(self.page3_btn2)
+        self.page3_btn3 = toga.Button("Export Las", on_press=self.save_las, style=Pack(padding=5, flex=1))
+        left_pane_box.add(self.page3_btn3)       
 
         # Add the left pane box to the scrollable container
         left_pane_container.content = left_pane_box
@@ -432,17 +483,17 @@ class MyApp(toga.App):
         
     
     def add_frac_grad_data_row(self, widget, row_type='frac_grad'):
-        depth_label = toga.Label("MD", style=Pack(text_align="center", width=100, padding_top=5))
+        depth_label = toga.Label("MD", style=Pack(text_align="center", flex=1, padding_top=5))
         
         if row_type == 'frac_grad':
-            second_label = toga.Label("Frac Grad gcc", style=Pack(text_align="center", width=100, padding_top=5))
+            second_label = toga.Label("Frac Grad gcc", style=Pack(text_align="center", flex=1, padding_top=5))
         elif row_type == 'frac_psi':
-            second_label = toga.Label("Frac BHP psi", style=Pack(text_align="center", width=100, padding_top=5))
+            second_label = toga.Label("Frac BHP psi", style=Pack(text_align="center", flex=1, padding_top=5))
         else:
             raise ValueError("Invalid row type")
 
-        depth_input = toga.TextInput(style=Pack(width=100), value="0")
-        second_input = toga.TextInput(style=Pack(width=100), value="0")
+        depth_input = toga.TextInput(style=Pack(flex=1), value="0")
+        second_input = toga.TextInput(style=Pack(flex=1), value="0")
 
         row_labels = toga.Box(style=Pack(direction=ROW, padding_top=5))
         row_labels.add(depth_label)
@@ -463,17 +514,17 @@ class MyApp(toga.App):
             self.frac_grad_data_box.remove(row[2])
             
     def add_flow_grad_data_row(self, widget, row_type='flow_grad'):
-        depth_label = toga.Label("MD", style=Pack(text_align="center", width=100, padding_top=5))
+        depth_label = toga.Label("MD", style=Pack(text_align="center", flex=1, padding_top=5))
         
         if row_type == 'flow_grad':
-            second_label = toga.Label("PP Grad gcc", style=Pack(text_align="center", width=100, padding_top=5))
+            second_label = toga.Label("PP Grad gcc", style=Pack(text_align="center", flex=1, padding_top=5))
         elif row_type == 'flow_psi':
-            second_label = toga.Label("PP BHP psi", style=Pack(text_align="center", width=100, padding_top=5))
+            second_label = toga.Label("PP BHP psi", style=Pack(text_align="center", flex=1, padding_top=5))
         else:
             raise ValueError("Invalid row type")
 
-        depth_input = toga.TextInput(style=Pack(width=100), value="0")
-        second_input = toga.TextInput(style=Pack(width=100), value="0")
+        depth_input = toga.TextInput(style=Pack(flex=1), value="0")
+        second_input = toga.TextInput(style=Pack(flex=1), value="0")
 
         row_labels = toga.Box(style=Pack(direction=ROW, padding_top=5))
         row_labels.add(depth_label)
@@ -703,7 +754,7 @@ class MyApp(toga.App):
         try:
             laspath_dialog = await self.main_window.open_file_dialog(title="Select a las file", multiselect=False)
             if laspath_dialog:  # Check if the user selected a file and didn't cancel the dialog
-                laspath = laspath_dialog  # This is where you access the selected path
+                laspath = laspath_dialog
                 self.on_result0(widget)
             else:
                 print("File selection was canceled.")
@@ -1001,26 +1052,26 @@ class MyApp(toga.App):
                 pool, 
                 self.start_plotPPzhang_thread, 
                 loop, wella,{
-                    'rhoappg': float(model[0]), 
-                    'lamb': float(model[2]), 
-                    'ul_exp': float(model[3]),
-                    'ul_depth': float(model[4]),
-                    'a': float(model[1]), 
+                    'rhoappg': float(model[0]),
+                    'a': float(model[1]),
+                    'nu': float(model[2]),
+                    'b': float(model[3]),
+                    'lamb': float(model[4]),
                     'dtml': float(model[5]), 
-                    'dtmt': float(model[6]), 
-                    'window': int(float(model[9])), 
-                    'nu': float(model[7]), 
-                    'sfs': float(model[8]), 
-                    'zulu': float(model[10]), 
-                    'tango': float(model[11]), 
-                    'water': float(model[12]), 
-                    'underbalancereject': float(model[13]), 
-                    'b': float(model[14]), 
-                    'doi': float(model[15]), 
-                    'offset': float(model[16]), 
-                    'strike': float(model[17]), 
-                    'dip': float(model[18]), 
-                    'mudtemp': float(model[19])
+                    'dtmt': float(model[6]),
+                    'ul_exp': float(model[7]),
+                    'ul_depth': float(model[8]),
+                    'underbalancereject': float(model[9]),
+                    'doi': float(model[10]), 
+                    'offset': float(model[11]), 
+                    'strike': float(model[12]), 
+                    'dip': float(model[13]),
+                    'sfs': float(model[14]),
+                    'water': float(model[15]),
+                    'mudtemp': float(model[16]),
+                    'window': int(float(model[17])),
+                    'zulu': float(model[18]), 
+                    'tango': float(model[19])
                 }          
             )
         print("Calculation complete")        
@@ -1499,7 +1550,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print("Differential TVD list:")
         print([difftvd,hydrldiff,fttvdlist,ttvdlist])
         structoplist = np.delete(ttvdlist,-1)
-        #htvdlist is what you want, after interpolating it for every sample
         goclist = np.where(goclist.astype(float) == 0, np.nan, goclist.astype(float))
         owclist = np.where(owclist.astype(float) == 0, np.nan, owclist.astype(float))
         cdtvdlist = structoplist+((strucbotlist-structoplist)*centroid_ratio_list)
@@ -1651,19 +1701,22 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt.clf()"""
     #plt.plot(formtvd,tvd)
     if forms is not None:
-        plt.plot(structop, tvd, label="Structural Tops", linestyle=':')
-        plt.plot(strucbot, tvd, label="Structural Bottoms", linestyle=':')
-        plt.plot(Owc, tvd, label="OWC", linestyle='-')
-        plt.plot(Goc, tvd, label="GOC", linestyle='-')
-        plt.plot(btvd, tvd, label="Log Bottom", linestyle='-')
-        plt.plot(ttvd, tvd, label="Log Top", linestyle='-')
-        
-        plt.gca().invert_yaxis()
-        plt.title(well.name + well.uwi + " Structure Diagram ")
-        plt.legend(loc='upper right')
-        #plt.show()
-        plt.savefig(os.path.join(output_dir, "Structure.png"))
-        plt.close()
+        try:
+            plt.plot(structop, tvd, label="Structural Tops", linestyle=':')
+            plt.plot(strucbot, tvd, label="Structural Bottoms", linestyle=':')
+            plt.plot(Owc, tvd, label="OWC", linestyle='-')
+            plt.plot(Goc, tvd, label="GOC", linestyle='-')
+            plt.plot(btvd, tvd, label="Log Bottom", linestyle='-')
+            plt.plot(ttvd, tvd, label="Log Top", linestyle='-')
+            
+            plt.gca().invert_yaxis()
+            plt.title(well.name + well.uwi + " Structure Diagram ")
+            plt.legend(loc='upper right')
+            #plt.show()
+            plt.savefig(os.path.join(output_dir, "Structure.png"))
+            plt.close()
+        except:
+            pass
     
     lradiff = np.full(len(md),np.nan)
     
@@ -2513,86 +2566,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         drawBHimage(doi)
         combineHarvest()
     
-    """
-    #Preview Plot
-    graph, (plt1, plt2,plt3,plt4,plt5,plt6,plt7) = plt.subplots(1, 7,sharey=True)
-    plt5.plot(slal,tvd,label='lal-direct-c0')
-    plt5.plot(slal2,tvd,label='horsud E')
-    plt5.plot(slal3,tvd,label='horsud G')
-    plt5.plot(shorsud,tvd, label='horsud UCS')
-    plt5.invert_yaxis()
-    plt5.legend()
-    #plt5.set_xlim([0,20])
-    
-    plt1.plot(gr,tvd,color='green',label='GR')
-    plt1.legend()
-    plt1.set_xlim([0,150])
-    
-    plt2.plot(dalm,tvd,label='DT')
-    plt2.plot(dtNormal,tvd,label='Normal DT (Zhang)')
-    plt2.legend()
-    plt2.set_xlim([300,50])
-
-    plt3.plot(mudweight,tvd,color='brown',label='Mud Gradient')
-    plt3.plot(fg,tvd,color='blue',label='Fracture Gradient (Daines)')
-    #plt3.plot(fg2,tvd,color='aqua',label='Fracture Gradient (Zoback)')
-    plt3.plot(pp,tvd,color='red',label='Pore Pressure Gradient (Zhang)')
-    plt3.plot(obgcc,tvd,color='lime',label='Overburden (Amoco)')
-    plt3.legend()
-    plt3.set_xlim([0,3])
-
-    plt4.plot(fgpsi,tvd,color='blue',label='Sh min')
-    plt4.plot(ssgHMpsi,tvd,color='pink',label='SH Max')
-    plt4.plot(obgpsi,tvd,color='green',label='Sigma V')
-    plt4.plot(hydropsi,tvd,color='aqua',label='Hydrostatic')
-    plt4.plot(pppsi,tvd,color='red',label='Pore Pressure')
-    plt4.plot(mudpsi,tvd,color='red',label='Bottom Hole Pressure')
-    plt4.legend()
-    #plt4.set_xlim([0,5000])
-    
-    litho.plot_2d(plt6,cmap='seismic')
-    coal.plot_2d(plt7,cmap='binary')
-    #plt6.plot(fgpsi,tvd,color='blue',label='Sh min')
-    #plt6.plot(obgpsi,tvd,color='green',label='Sigma V')
-    #plt2.plot(dalm,tvd,label='DT')
-    #plt2.legend()
-    #plt2.set_xlim([0,150])
-    
-    plt.show()
-    plt.clf()
-    
-    
-    
-    
-    
-    #well.data['Gcal'] =  gcal
-    #well.data['Pcal'] =  pcal
-
-    #well.data['DESPGR'] = gr.despike(z=1)
-    #well.data['DIFFGR'] = gr - well.data['DESPGR']
-    well.data['TVDM'] =  TVDM
-    well.data['TVDBGL'] =  TVDBGL
-    well.data['TVDF'] =  TVDF
-    well.data['TVDMSL'] =  TVDMSL
-    
-    #plt = well.plot(tracks=['GR', 'DESPGR', 'DIFFGR'])
-    ###plt.show()
-    plt.clf()
-    """
-    
-    """plt5.plot(slal,tvd,label='lal-direct-c0')
-    plt5.plot(slal2,tvd,label='horsud E')
-    plt5.plot(slal3,tvd,label='horsud G')
-    plt5.plot(shorsud,tvd, label='horsud UCS')
-    
-    plt5.legend()
-    plt5.set_xlim([0,20])
-    
-    
-    plt1.plot(gr,tvd,color='green',label='GR')
-    plt1.legend()
-    plt1.set_xlim([0,150])"""
-    
     from matplotlib.ticker import MultipleLocator
     from Plotter import plot_logs, cutify, cutify2, chopify, choptop  # Assuming plot_logs is in the same directory or properly installed
 
@@ -2645,9 +2618,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         'slal': slal,
         'shorsud': shorsud,
         'GR': gr,
-        'GR_CUTOFF': grcut,
-        'CALIPER1':cald/2,
-        'CALIPER2':cald/(-2)
+        'GR_CUTOFF': grcut
     }, index=tvdm)
     #print(data)
     # Define styles for the new plotter function
@@ -2669,11 +2640,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         'slal': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
         'shorsud': {"color": "red", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
         'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},
-        'GR_CUTOFF': {"color": "black", "linewidth": 0, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI"},
-        'CALIPER1': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"},
-        'CALIPER2': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"}
+        'GR_CUTOFF': {"color": "black", "linewidth": 0, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI"}
     }
-
+    
+    
+    
     print("max pressure is ",maxchartpressure)
         
     # Convert y values to tvd
@@ -2703,16 +2674,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         
         return points_df
     
-    casing_dia2 = [[-x, y] for x, y in casing_dia]
+    #casing_dia2 = [[-x, y] for x, y in casing_dia]
     #casing_dia = casing_dia + [[-x, y] for x, y in casing_dia]
     # Gather points data
     points_data = {
         'frac_grad': zip(*frac_grad_data),
         'flow_grad': zip(*flow_grad_data),
         'frac_psi': zip(*frac_psi_data),
-        'flow_psi': zip(*flow_psi_data),
-        'casingshoe': zip(*casing_dia),
-        'casingshoe2': zip(*casing_dia2)
+        'flow_psi': zip(*flow_psi_data)
     }
     print("casing points",casing_dia)
     print("Points:",flow_grad_data)
@@ -2720,28 +2689,49 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         # Swap the columns in the ucss array
         ucss = np.array([[depth, ucs] for ucs, depth in ucss])
         points_data['ucs'] = zip(*ucss)
-        
-    points_df = create_points_dataframe(points_data)
-    # Ensure the points DataFrame handles missing data gracefully
-    points_df = points_df.apply(lambda col: col.dropna())
-    print(points_df)
     
     pointstyles = {
     'frac_grad': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'g/cc'},
     'flow_grad': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'g/cc'},
     'frac_psi': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
     'flow_psi': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
-    'ucs': {'color': 'lime', 'pointsize': 30, 'symbol': 'o', 'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'},
-    'casingshoe': {'color': 'black', 'pointsize': 30, 'symbol': 1, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True},
-    'casingshoe2': {'color': 'black', 'pointsize': 30, 'symbol': 0, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True}
+    'ucs': {'color': 'lime', 'pointsize': 30, 'symbol': 'o', 'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'}
     }
     
-    # Plot using plot_logs
-    fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=600)
+    # Add CALIPER styles only if cald is not empty
+    if np.any(~np.isnan(cald)) > 0 or len(casing_dia)>1:
+        print("Track 5 added")
+        styles.update({
+            'CALIPER1': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"},
+            'CALIPER2': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"}
+        })
+        data['CALIPER1'] = cald / 2
+        data['CALIPER2'] = cald / (-2)
+        pointstyles.update({
+        'casingshoe': {'color': 'black', 'pointsize': 30, 'symbol': 1, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True},
+        'casingshoe2': {'color': 'black', 'pointsize': 30, 'symbol': 0, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True}
+        })
+        casing_dia2 = [[-x, y] for x, y in casing_dia]
+        points_data['casingshoe'] = zip(*casing_dia)
+        points_data['casingshoe2'] = zip(*casing_dia2)
     
-    plt.savefig(output_file,dpi=600)
-    choptop(20*6, 0, os.path.join(output_dir,"BottomLabel.png"))
-    cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,109*6,99*6,0,0)
+    points_df = create_points_dataframe(points_data)
+    # Ensure the points DataFrame handles missing data gracefully
+    points_df = points_df.apply(lambda col: col.dropna())
+    print(points_df)
+    
+    # Plot using plot_logs
+    dpif=300
+    if dpif<100:
+        dpif=100
+    if dpif>900:
+        dpif=900
+    figname = wella.uwi if wella.uwi != "" else wella.name
+    fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=dpif,output_dir = output_dir)
+    fig.suptitle("Wellbore : "+figname,y=0.9)
+    plt.savefig(output_file,dpi=dpif)
+    choptop(20*(dpif/100), 0, os.path.join(output_dir,"BottomLabel.png"))
+    cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,89*(dpif/100),99*(dpif/100),0,0)
     #chopify(output_file,119*6,109*6,120*6,120*6)
     plt.close()
     return df3
@@ -2882,8 +2872,6 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
                 curve_data = df[column_name]
                 curve_unit = all_units.get(column_name, '')  # Use combined units
                 # Assuming header information for each curve is not available
-                # You might need to customize this part based on your requirements
-                # You can set default values for unit, description, and value or extract from the header if available.
                 las.append_curve(mnemonic=column_name,
                                  data=curve_data,
                                  unit=curve_unit,
