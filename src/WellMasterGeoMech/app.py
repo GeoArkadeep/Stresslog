@@ -2684,6 +2684,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             hoopmin[i] = np.nan
             lademax[i] = np.nan
             lademin[i] = np.nan
+    Sby = interpolate_nan(SbFF[:,1,1])
+    Sbx = interpolate_nan(SbFF[:,0,0])
+    Sbminmpa = np.minimum(Sby,Sbx)
+    Sbmaxmpa = np.maximum(Sby,Sbx)
+    Sbmingcc = ((Sbminmpa*145.038)/tvdf)/0.4335275040012
+    Sbmaxgcc = ((Sbmaxmpa*145.038)/tvdf)/0.4335275040012
     """plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
     plt.plot(interpolate_nan(SbFF[:,1,1]),tvd, label='aligned sy')
     plt.plot(interpolate_nan(SbFF[:,2,2]),tvd, label='aligned sz')
