@@ -22,7 +22,7 @@ import asyncio
 import concurrent.futures
 from threading import Lock
 model_lock = Lock()
-import time
+import traceback
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
@@ -977,6 +977,8 @@ class MyApp(toga.App):
         try:
             result = self.plotPPzhang_wrapper(*args, **kwargs)
         except Exception as e:
+            self.main_window.error_dialog('Error:', str(e))
+            er = traceback.format_exc
             print(f"Error in thread: {e}")
         asyncio.run_coroutine_threadsafe(self.onplotfinish(), loop)
         print("Thread despawn")
@@ -995,7 +997,7 @@ class MyApp(toga.App):
         self.page3_btn3.enabled = True
         self.page3_btn4.enabled = True
         self.progress.stop()
-        if float(model[13]) > 0:
+        if float(model[10]) > 0:
             self.page3_btn5.enabled = True
             self.bg4.image = toga.Image(output_fileAll)
         else:
@@ -1134,7 +1136,7 @@ class MyApp(toga.App):
         self.main_window.content = self.page2
         #self.bg3.refresh()
 
-
+"""
 def getComp(well):
     alias = read_aliases_from_file()
     header = well._get_curve_mnemonics()
@@ -1147,7 +1149,7 @@ def getComp(well):
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
     #alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
-    
+"""    
     
     
 
@@ -1337,6 +1339,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         cald = well.data[alias['cald'][0]].values
     except:
         cald = np.full(len(md),np.nan)
+    try:
+        cal2 = well.data[alias['cal2'][0]].values
+    except:
+        cal2 = np.full(len(md),np.nan)
 
     
     lradiff = np.full(len(md),np.nan)
@@ -1945,6 +1951,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     cm_sip = np.zeros(len(tvdf))
     lal3 = np.zeros(len(tvdf))
     phi = np.zeros(len(tvdf))
+    philang = np.zeros(len(tvdf))
     H = np.zeros(len(tvdf))
     K = np.zeros(len(tvdf))
     dtNormal = np.zeros(len(tvdf))
@@ -1993,11 +2000,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 ppgZhang[i] = gccZhang[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
-                lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
+                lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale) #S0, cohesive strength, in MPa, for all rocks, for gassy rocks apply gassman correction
                 horsud[i] = horsuda*(vp[i]**horsude)
                 if np.isnan(ucs2[i]) or ucs2[i]==0:
                     ucs2[i] = horsud[i]
                 phi[i] = np.arcsin(1-(2*nu2[i]))
+                philang[i] = np.arcsin((vp[i]-1.5)/(vp[i]+1.5))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
@@ -2032,6 +2040,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 if np.isnan(ucs2[i]) or ucs2[i]==0:
                     ucs2[i] = horsud[i]
                 phi[i] = np.arcsin(1-(2*nu2[i]))
+                philang[i] = np.arcsin((vp[i]-1)/(vp[i]+1))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
                 ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
@@ -2041,7 +2050,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 psipp[i] = psiftpp[i]*tvdf[i]
         i+=1
     
+    """plt.plot(phi,tvd, label='nu')
+    plt.plot(philang,tvd, label='lang')
+    plt.plot(philang-phi,tvd, label='delta')
+    plt.legend()
+    plt.show()
+    plt.close()"""
     #gccZhang[0] = np.nan
+    dphi = np.degrees(phi[:])
     gccZhang[-1] = hydrostatic[-1]
     gccZhang[0] = hydrostatic[0]
     gccZhang[np.isnan(gccZhang)] = water
@@ -2053,6 +2069,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     psipp = interpolate_nan(psipp)
     print("GCCZhang: ",gccZhang)
     psiftpp = 0.4335275040012*gccZhang
+    
     """
     #Check Plot
     plt.plot(gccZhang,tvd, label='Unloading')
@@ -2224,7 +2241,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         i+=1
     sgHMpsi = interpolate_nan(sgHMpsi)
     #psisfl = (psimes[:]*H[:])+K[:]
-
+    
     from BoreStab import get_optimal
     from BoreStab import draw
     
@@ -2418,8 +2435,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_DT_Zhang":"G/C3","FG_DAINES":"G/C3","GEOPRESSURE":"PSI","FRACTURE_PRESSURE":"PSI", "SHMAX_PRESSURE":"PSI", "shmin_PRESSURE":"PSI","MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
     datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
     #well.to_las('output.las')
-    from BoreStab import getHoop
+    from BoreStab import getHoop, getAlignedStress
     from plotangle import plotfracsQ,plotfrac
+    from failure_criteria import plot_sanding
     def drawBHimage(doi):
         hfl = 2.5
         doiactual = find_nearest_depth(tvdm,doi-hfl)
@@ -2531,7 +2549,33 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         incdoi = devdoi[2]
         azmdoi = devdoi[1]
         getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
- 
+        
+    def drawSand(doi):
+        doiactual = find_nearest_depth(tvdm,doi)
+        doiS = doiactual[0]
+        i=doiS
+        j=0
+        sigmaVmpa = obgpsi[i]/145.038
+        sigmahminmpa = psifg[i]/145.038
+        sigmaHMaxmpa = sgHMpsi[i]/145.038
+        ppmpa = psipp[i]/145.038
+        bhpmpa = mudpsi[i]/145.038
+        ucsmpa = horsud[i]
+        deltaP = bhpmpa-ppmpa
+        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        #sigmas = [osx,osy,osz]
+        devdoi = well.location.deviation[i]
+        incdoi = devdoi[2]
+        azmdoi = devdoi[1]
+        Sl = getAlignedStress(osx,osy,osz,alpha,beta,gamma,azmdoi,incdoi)
+        sigmamax = max(Sl[0][0],Sl[1][1])
+        sigmamin = min(Sl[0][0],Sl[1][1])
+        sigma_axial = Sl[2][2]
+        k0 = 1
+        plot_sanding(os.path.join(output_dir, "Sanding.png"),sigmamax, sigmamin,sigma_axial, ppmpa, ucsmpa, k0, nu2[i])
+        #getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
+        
     def combineHarvest():
         import matplotlib.pyplot as plt
         import matplotlib.image as mpimg
@@ -2539,7 +2583,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         # Load the images
         image1 = mpimg.imread(output_fileSP)
         image2 = mpimg.imread(output_fileS)
-        image3 = mpimg.imread(output_fileHoop)
+        image3 = mpimg.imread(os.path.join(output_dir, "Sanding.png"))
         image4 = mpimg.imread(output_fileBHI)
 
         # Create a new figure
@@ -2564,6 +2608,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     if doi>0:
         plotHoop(doi)
         drawBHimage(doi)
+        drawSand(doi)
         combineHarvest()
     
     from matplotlib.ticker import MultipleLocator
@@ -2580,7 +2625,90 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     maxchartpressure = 1000*math.ceil(max(mogu1, mogu2)/1000)
     
     minpressure = round(mogu3)
-
+    Sb = np.full((len(tvd),3,3), np.nan)
+    SbFF = np.full((len(tvd),3,3), np.nan)
+    hoopmax = np.full(len(tvd),np.nan)
+    hoopmin = np.full(len(tvd),np.nan)
+    lademax = np.full(len(tvd),np.nan)
+    lademin = np.full(len(tvd),np.nan)
+    from failure_criteria import mod_lad_cmw, mogi
+    print("calculating aligned far field stresses")
+    for i in range(0,len(tvd),window):
+        #print(i)
+        sigmaVmpa = np.nanmean(obgpsi[i-int(window/2):i+int(window/2)])/145.038
+        sigmahminmpa = np.nanmean(psifg[i-int(window/2):i+int(window/2)])/145.038
+        sigmaHMaxmpa = np.nanmean(sgHMpsi[i-int(window/2):i+int(window/2)])/145.038
+        ppmpa = np.nanmean(psipp[i-int(window/2):i+int(window/2)])/145.038
+        bhpmpa = np.nanmean(mudpsi[i-int(window/2):i+int(window/2)])/145.038
+        ucsmpa = np.nanmean(horsud[i-int(window/2):i+int(window/2)])
+        deltaP = bhpmpa-ppmpa
+        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+        devdoi = well.location.deviation[i]
+        incdoi = devdoi[2]
+        azmdoi = devdoi[1]
+        try:
+            osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],offset,tilt,tiltgamma)
+            Sb[i] = getAlignedStress(osx,osy,osz,offset,tilt,tiltgamma,azmdoi,incdoi)
+            SbFF[i] = Sb[i]
+            Sb[i][0][0] = Sb[i][0][0] - ppmpa
+            Sb[i][1][1] = Sb[i][1][1] - ppmpa
+            Sb[i][2][2] = Sb[i][2][2] - ppmpa
+            sigmaT = (ym[i]*bt[i]*delTempC[i])/(1-nu2[i])
+            Szz = np.full(360, np.nan)
+            Stt = np.full(360, np.nan)
+            Ttz = np.full(360, np.nan)
+            Srr = np.full(360, np.nan)
+            STMax = np.full(360, np.nan)
+            Stmin = np.full(360, np.nan)
+            ladempa = np.full(360, np.nan)
+            for j in range(0,360,10):
+                theta = np.radians(j)
+                Szz[j] = Sb[i][2][2] - ((2*nu2[i])*(Sb[i][0][0]-Sb[i][1][1])*(2*math.cos(2*theta))) - (4*nu2[i]*Sb[i][0][1]*math.sin(2*theta)) #Sigma Axial
+                Stt[j] = Sb[i][0][0] + Sb[i][1][1] -(2*(Sb[i][0][0] - Sb[i][1][1])*math.cos(2*theta)) - (4*Sb[i][0][1]*math.sin(2*theta)) - deltaP -sigmaT #Sigma Hoop
+                Ttz[j] = 2*((Sb[i][1][2]*math.cos(theta))-(Sb[i][0][2]*math.sin(theta)))#Tao Hoop
+                Srr[j] = deltaP #Sigma Radial
+                STMax[j] = 0.5*(Szz[j] + Stt[j] + (((Szz[j]-Stt[j])**2)+(4*(Ttz[j]**2)))**0.5)
+                Stmin[j] = 0.5*(Szz[j] + Stt[j] - (((Szz[j]-Stt[j])**2)+(4*(Ttz[j]**2)))**0.5)
+                ladempa[j] = mod_lad_cmw(SbFF[i][0][0],SbFF[i][1][1],SbFF[i][2][2],SbFF[i][0][1],SbFF[i][0][2],SbFF[i][1][2],j,phi[i],lal[i],psipp[i]/145.038)
+                #print(ladempa[j])
+            hoopmax[i] = np.nanmax(STMax)
+            hoopmin[i] = np.nanmin(Stmin)
+            lademax[i] = np.nanmax(ladempa)
+            #print(lademax[i])
+            lademin[i] = np.nanmin(ladempa)
+            #ladempa = mod_lad_cmw(SbFF[i][0][0],SbFF[i][1][1],SbFF[i][2][2],SbFF[i][0][1],SbFF[i][0][2],SbFF[i][1][2],j,phi[i],lal[i],psipp[i]/145.038)
+        except:
+            Sb[i] = np.full((3,3),np.nan)
+            SbFF[i] = np.full((3,3),np.nan)
+            hoopmax[i] = np.nan
+            hoopmin[i] = np.nan
+            lademax[i] = np.nan
+            lademin[i] = np.nan
+    """plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
+    plt.plot(interpolate_nan(SbFF[:,1,1]),tvd, label='aligned sy')
+    plt.plot(interpolate_nan(SbFF[:,2,2]),tvd, label='aligned sz')
+    plt.plot(psifg/145.038,tvd, alpha=0.5, label='initial shm')
+    plt.plot(sgHMpsi/145.038,tvd, alpha=0.5, label='initial sHM')
+    plt.plot(obgpsi/145.038,tvd, alpha=0.5, label='initial sV')
+    plt.legend()
+    plt.show()
+    plt.close()"""
+    print("calculation complete")
+    
+    #ladempa = mod_lad_cmw(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038,np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
+    #ladempa = mod_lad_cmw(hoopmin,hoopmax,Sb[:,2,2],np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
+    mogimpa = mogi(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038)
+    
+    ladegcc = ((lademax*145.038)/tvdf)/0.4335275040012
+    mogigcc = ((mogimpa*145.038)/tvdf)/0.4335275040012
+    ladegcc = interpolate_nan(ladegcc)
+    
+    """plt.plot(psifg/145.038)
+    plt.plot(ladempa)
+    plt.plot(mogimpa)
+    plt.show()
+    plt.close()"""
+    
     """print(gr)
     print(dalm)
     print(dtNormal)
@@ -2606,6 +2734,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         'mudweight': mudweight,
         'fg': fg.as_numpy(),
         'pp': pp.as_numpy(),
+        'sfg':ladegcc,
         'obgcc': obgcc.as_numpy(),
         'fgpsi': fgpsi.as_numpy(),
         'ssgHMpsi': ssgHMpsi,
@@ -2628,6 +2757,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
         'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
         'pp': {"color": "red", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
+        'sfg': {"color": "olive", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
         'obgcc': {"color": "lime", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
         'fgpsi': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
         'ssgHMpsi': {"color": "pink", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
@@ -2728,7 +2858,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         dpif=900
     figname = wella.uwi if wella.uwi != "" else wella.name
     fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=dpif,output_dir = output_dir)
-    fig.suptitle("Wellbore : "+figname,y=0.9)
+    fig.suptitle("Wellbore : "+figname,fontsize=14,y=0.9)
     plt.savefig(output_file,dpi=dpif)
     choptop(20*(dpif/100), 0, os.path.join(output_dir,"BottomLabel.png"))
     cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,89*(dpif/100),99*(dpif/100),0,0)

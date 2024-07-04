@@ -140,6 +140,60 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
         return complex(Sg[2][2],0)
     #return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     
+def getAlignedStress(sx,sy,sz,alpha,beta,gamma,azim,inc):
+    Ss = np.array([[sx,0,0],[0,sy,0],[0,0,sz]])
+    #print(Ss)
+
+    alpha = np.radians(alpha)
+    beta = np.radians(beta)
+    gamma = np.radians(gamma)
+
+    Rs = np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
+                   [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
+                   [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
+    #print(Rs)
+    sVo = np.array([[0.0],[0.0],[1.0]])
+    sNo = np.array([[1.0],[0.0],[0.0]])
+    sEo = np.array([[0.0],[1.0],[0.0]])
+    
+    uvec = getOrit(sx,sy,sz,alpha,beta,gamma)
+    sVr = uvec[0]#Rs@sVo
+    sNr = uvec[1]#Rs@sNo
+    sEr = uvec[2]#Rs@sEo
+
+    sNt1 = np.degrees(np.arctan2(sNr[1],sNr[0]))
+    sNt2 =np.degrees(np.arctan2((np.hypot(sNr[0],sNr[1])),sNr[2]))
+    sEt1 =np.degrees(np.arctan2(sEr[1],sEr[0]))
+    sEt2 =np.degrees(np.arctan2(((np.hypot(sEr[0],sEr[1]))),sEr[2]))
+    sVt2 =np.degrees(np.arctan2(((np.hypot(sVr[0],sVr[1]))),sVr[2]))
+    sVt1 =np.degrees(np.arctan2(sVr[1],sVr[0]))
+    if sVt1>90:
+        #print("Hey",sVt2)
+        sVt1=180-sVt1
+        
+    if sNt1>90:
+        sNt1=180-sNt1
+    if sEt1>90:
+        sEt1=180-sEt1
+    
+    orit = [sNt1,sNt2,sEt1,sEt2,sVt2,sVt1]
+    
+    delta = math.radians(azim)
+    phi   = math.radians(inc)
+ 
+    Rb = np.array([[(-1)*math.cos(delta)*math.cos(phi), (-1)*math.sin(delta)*math.cos(phi), math.sin(phi)],
+                   [math.sin(delta), (-1)*math.cos(delta), 0],
+                   [math.cos(delta)*math.sin(phi), math.sin(delta)*math.sin(phi), math.cos(phi)]])
+    #print(Rb)
+    RsT = np.transpose(Rs)
+    RbT = np.transpose(Rb)
+
+    Sg = RsT@Ss@Rs
+    #print(Sg)
+    Sb = Rb@RsT@Ss@Rs@RbT
+    return Sb
+
+    
 
 def getRota(alpha,beta,gamma):
     
