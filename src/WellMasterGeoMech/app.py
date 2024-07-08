@@ -23,6 +23,11 @@ import concurrent.futures
 from threading import Lock
 model_lock = Lock()
 import traceback
+import pint
+import json
+import csv
+    
+from manage_preferences import show_preferences_window
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
@@ -46,6 +51,9 @@ output_file2 = os.path.join(output_dir1, "output.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
 aliaspath = os.path.join(input_dir, "alias.txt")
+unitpath = os.path.join(input_dir, "units.txt")
+stylespath = os.path.join(input_dir, "styles.txt")
+pstylespath = os.path.join(input_dir, "pstyles.txt")
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
         super().__init__(image=toga.Image(image_path), *args, **kwargs)
@@ -80,6 +88,30 @@ depth_track = None
 finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
+ureg = pint.UnitRegistry()
+ureg.define('ppg = 0.051948 psi/foot')
+ureg.define('sg = 0.4335 psi/foot = gcc')
+ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
+
+try:
+    with open(unitpath, 'r') as f:
+        reader = csv.reader(f)
+        unitchoice = next(reader)
+        unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
+except:
+    unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
+
+up = ['psi','ksc','bar','atm','MPa']
+us = ['MPa','psi','ksc','bar','atm']
+ug = ['gcc','sg','ppg','psi/foot']
+ul = ['m','f']
+ut = ['degC','degF','degR','degK']
+unitdict = {"Depth": ["Metres", "Feet"],
+            "Pressure": ['psi','KSC','Bar','Atm','MPa'],
+            "Gradient": ['G/CC','SG','PPG','psi/foot'],
+            "Strength": ["MPa", "psi", "Ksc","bar"],
+            "Temperature": ["Centigrade", "Farenheit", "Rankine","Kelvin"]}
+
 modelheader = "RhoA,AMC_exp,EATON_fac,tec_fac,NCT_exp,dtML,dtMAT,UL_exp,UL_depth,re_sub,A_dep,SHM_azi,Beta,Gamma,perm_cutoff,w_den,MudTempC,window,start,stop,nu_shale,nu_sst,nu_lst,dt_lst"
 defaultmodel = "17,0.8,0.35,0,0.0008,250,60,0.0008,0,1,3500,0,0,0,0.35,1.025,60,21,0,2900,0.32,0.27,0.25,65"
 
@@ -103,7 +135,26 @@ print(data_into_list)
 model = data_into_list[0]
 print(model)
 class MyApp(toga.App):
+    def set_preferences(self, command):
+        # This method is needed to set the preferences command
+        self._preferences = command
+    def preferences(self, widget):
+        # This method will be called when the preferences command is activated
+        show_preferences_window(aliaspath, stylespath, pstylespath,unitdict,unitpath)
     def startup(self):
+        PREFERENCES = toga.Command(
+            self.preferences,
+            text='Preferences',
+            shortcut=toga.Key.MOD_1 + 'p',
+            tooltip = "Edit aliases, units and plot styles",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        # Add the command to the app commands
+        self.commands.add(PREFERENCES)
+
+        # Explicitly set it as the preferences command
+        #self.set_preferences(PREFERENCES)
         
         self.page1 = toga.Box(style=Pack(direction=COLUMN, flex=1))
         self.bg1 = BackgroundImageView("BG1.png", style=Pack(flex = 5))
@@ -481,7 +532,8 @@ class MyApp(toga.App):
         self.main_window.content = self.page1
         self.main_window.show()
         
-    
+
+        
     def add_frac_grad_data_row(self, widget, row_type='frac_grad'):
         depth_label = toga.Label("MD", style=Pack(text_align="center", flex=1, padding_top=5))
         
@@ -752,7 +804,7 @@ class MyApp(toga.App):
     async def open_las0(self, widget):
         global laspath
         try:
-            laspath_dialog = await self.main_window.open_file_dialog(title="Select a las file", multiselect=False)
+            laspath_dialog = await self.main_window.open_file_dialog(title="Select a las file",file_types=['las'], multiselect=False)
             if laspath_dialog:  # Check if the user selected a file and didn't cancel the dialog
                 laspath = laspath_dialog
                 self.on_result0(widget)
@@ -1203,6 +1255,103 @@ def read_aliases_from_file(file_path=aliaspath):
         return aliases
 
 
+def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, file_path=stylespath):
+    
+    def convert_value(value, from_unit, to_unit):
+        return (value * ureg(from_unit)).to(to_unit).magnitude
+
+    try:
+        with open(file_path, 'r') as file:
+            styles = json.load(file)
+    except:
+        styles = {
+            'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+            'dtNormal': {"color": "blue", "linewidth": 1.5, "style": ':', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+            'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
+            'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
+            'pp': {"color": "red", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
+            'sfg': {"color": "olive", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
+            'obgcc': {"color": "lime", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
+            'fgpsi': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'ssgHMpsi': {"color": "pink", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'obgpsi': {"color": "green", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'hydropsi': {"color": "aqua", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'pppsi': {"color": "red", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'mudpsi': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": ':', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": ':', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'slal': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
+            'shorsud': {"color": "red", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
+            'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},
+            'GR_CUTOFF': {"color": "black", "linewidth": 0, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI"}
+        }
+
+    # Update tracks based on input units
+    for key, value in styles.items():
+        if value['track'] == 2:  # Gradient track
+            if value['unit'] != gradient_units:
+                value['left'] = round(convert_value(value['left'], value['unit'], gradient_units),1)
+                value['right'] = round(convert_value(value['right'], value['unit'], gradient_units),1)
+                value['unit'] = gradient_units
+        elif value['track'] == 3:  # Pressure track
+            if value['unit'] != pressure_units:
+                value['unit'] = pressure_units
+            value['left'] = round(convert_value(minpressure, 'psi', pressure_units))
+            value['right'] = round(convert_value(maxchartpressure, 'psi', pressure_units))
+        elif value['track'] == 4:  # Strength track
+            if value['unit'] != strength_units:
+                value['left'] = round(convert_value(value['left'], value['unit'], strength_units))
+                value['right'] = round(convert_value(value['right'], value['unit'], strength_units))
+                value['unit'] = strength_units
+
+    # Write updated styles back to file
+    with open(file_path, 'w') as file:
+        json.dump(styles, file, indent=4)
+
+    return styles
+
+def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, file_path=pstylespath):
+    
+    def convert_value(value, from_unit, to_unit):
+        return (value * ureg(from_unit)).to(to_unit).magnitude
+
+    try:
+        with open(file_path, 'r') as file:
+            pstyles = json.load(file)
+    except:
+        pstyles = {
+                    'frac_grad': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'gcc'},
+                    'flow_grad': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'gcc'},
+                    'frac_psi': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
+                    'flow_psi': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
+                    'ucs': {'color': 'lime', 'pointsize': 30, 'symbol': 'o', 'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'}
+        }
+
+    # Update tracks based on input units
+    for key, value in pstyles.items():
+        if value['track'] == 2:  # Gradient track
+            if value['unit'] != gradient_units:
+                value['left'] = round(convert_value(value['left'], value['unit'], gradient_units),1)
+                value['right'] = round(convert_value(value['right'], value['unit'], gradient_units),1)
+                value['unit'] = gradient_units
+        elif value['track'] == 3:  # Pressure track
+            if value['unit'] != pressure_units:
+                value['unit'] = pressure_units
+            value['left'] = round(convert_value(minpressure, 'psi', pressure_units))
+            value['right'] = round(convert_value(maxchartpressure, 'psi', pressure_units))
+        elif value['track'] == 4:  # Strength track
+            if value['unit'] != strength_units:
+                value['left'] = round(convert_value(value['left'], value['unit'], strength_units))
+                value['right'] = round(convert_value(value['right'], value['unit'], strength_units))
+                value['unit'] = strength_units
+
+    # Write updated styles back to file
+    with open(file_path, 'w') as file:
+        json.dump(pstyles, file, indent=4)
+
+    return pstyles
+
+
 def pad_val(array_like,value):
     array = array_like.copy()
 
@@ -1466,6 +1615,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     btvd = np.full(len(tvd),np.nan)
     btvd2 = np.full(len(tvd),np.nan)
     grcut = np.full(len(tvd),np.nan)
+    alphas = np.full(len(tvd),np.nan)
+    betas = np.full(len(tvd),np.nan)
+    gammas = np.full(len(tvd),np.nan)
     #cdtvd1 = np.full(len(tvd),np.nan)
     #cdtvd2 = np.full(len(tvd),np.nan)
     
@@ -1528,9 +1680,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print(ftvdlist,btlist)
         centroid_ratio_list = centroid_ratio_list.astype(float)
         grlist = grlist.astype(float)
-        
+        alphalist = np.transpose(formlist)[10]
+        betalist = np.transpose(formlist)[11]
+        gammalist = np.transpose(formlist)[12]
+        print(alphalist,ftvdlist)
         i=0
         while i<len(fttvdlist):
+            betalist[i],gammalist[i] = getEuler(float(alphalist[i]),float(betalist[i]),float(gammalist[i]))
             difftvd[i] = float(fttvdlist[i])-float(ttvdlist[i])
             fttvdlist[i] = float(fttvdlist[i])
             ttvdlist[i] = float(ttvdlist[i])
@@ -1662,6 +1818,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             #cdtvd1[i] = np.interp(tvd[i],logtoplist,cdtvdlist)
             if tvd[i]<=float(ftvdlist[p]):
                 #cdtvd2[i] = cdtvdlist[p]
+                alphas[i] = alphalist[p]
+                betas[i] = betalist[p]
+                gammas[i] = gammalist[p]
                 grcut[i] = grlist[p]
                 ttvd[i] = logtoplist[p]
                 btvd[i] = logbotlist[p]
@@ -2612,19 +2771,19 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         combineHarvest()
     
     from matplotlib.ticker import MultipleLocator
-    from Plotter import plot_logs, cutify, cutify2, chopify, choptop  # Assuming plot_logs is in the same directory or properly installed
+    from Plotter import plot_logs, cutify, cutify2, chopify, choptop
 
     # Initialize parameters
     tango = min(tango, finaldepth)
     if zulu > finaldepth or zulu > tango:
         zulu = 0
 
-    mogu1 = np.nanmax(ssgHMpsi[:find_nearest_depth(tvd, tango)[0]])
-    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd, tango)[0]])
-    mogu3 = np.nanmin(hydropsi[find_nearest_depth(tvd, zulu)[0]:find_nearest_depth(tvd, tango)[0]])
-    maxchartpressure = 1000*math.ceil(max(mogu1, mogu2)/1000)
+    mogu1 = np.nanmax(ssgHMpsi[:find_nearest_depth(tvd, tango)[0]])#*ureg.psi
+    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd, tango)[0]])#*ureg.psi
+    mogu3 = np.nanmin(hydropsi[find_nearest_depth(tvd, zulu)[0]:find_nearest_depth(tvd, tango)[0]])#*ureg.psi
+    maxchartpressure = 1000*math.ceil(max(mogu1, mogu2)/1000)#*ureg.psi
+    minpressure = round(mogu3)#*ureg.psi
     
-    minpressure = round(mogu3)
     Sb = np.full((len(tvd),3,3), np.nan)
     SbFF = np.full((len(tvd),3,3), np.nan)
     hoopmax = np.full(len(tvd),np.nan)
@@ -2733,8 +2892,83 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print(slal)
     print(shorsud)"""
     
+    results = pd.DataFrame({
+        'dalm': dalm,
+        'dtNormal': dtNormal,
+        'mudweight': mudweight*ureg.gcc,
+        'fg': fg.as_numpy()*ureg.gcc,
+        'pp': pp.as_numpy()*ureg.gcc,
+        'sfg':ladegcc*ureg.gcc,
+        'obgcc': obgcc.as_numpy()*ureg.gcc,
+        'fgpsi': fgpsi.as_numpy()*ureg.psi,
+        'ssgHMpsi': ssgHMpsi*ureg.psi,
+        'obgpsi': obgpsi*ureg.psi,
+        'hydropsi': hydropsi*ureg.psi,
+        'pppsi': pppsi.as_numpy()*ureg.psi,
+        'mudpsi': mudpsi*ureg.psi,
+        'sgHMpsiL': sgHMpsiL*ureg.psi,
+        'sgHMpsiU': sgHMpsiU*ureg.psi,
+        'slal': slal*ureg.MPa,
+        'shorsud': shorsud*ureg.MPa,
+        'GR': gr,
+        'GR_CUTOFF': grcut
+    }, index=tvdm*ureg.m)
+    
+    def convert_units(data, pressure_unit, gradient_unit, strength_unit):
+        converted_data = data.copy()
+        
+        # Define unit mappings
+        unit_mappings = {
+            'pressure': {'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm, 'MPa': ureg.MPa},
+            'gradient': {'gcc': ureg.gcc, 'sg': ureg.sg, 'ppg': ureg.ppg, 'psi/foot': ureg.psi/ureg.foot, 'ksc/m': ureg.ksc/ureg.m},
+            'strength': {'MPa': ureg.MPa, 'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm},
+            'depth': {'m': ureg.m, 'f': ureg.foot, 'km': ureg.km, 'mile': ureg.mile, 'nm': ureg.nautical_mile, 'in': ureg.inch, 'cm': ureg.cm, 'fathom': ureg.fathom}
+        }
+        
+        # Convert pressure columns
+        pressure_columns = ['fgpsi', 'ssgHMpsi', 'obgpsi', 'hydropsi', 'pppsi', 'mudpsi', 'sgHMpsiL', 'sgHMpsiU']
+        for col in pressure_columns:
+            if col in converted_data.columns:
+                converted_data[col] = (converted_data[col].values * ureg.psi).to(unit_mappings['pressure'][pressure_unit])
+        
+        # Convert gradient columns
+        gradient_columns = ['mudweight', 'fg', 'pp', 'sfg', 'obgcc']
+        for col in gradient_columns:
+            if col in converted_data.columns:
+                converted_data[col] = (converted_data[col].values * ureg.gcc).to(unit_mappings['gradient'][gradient_unit])
+        
+        # Convert strength columns
+        strength_columns = ['slal', 'shorsud']
+        for col in strength_columns:
+            if col in converted_data.columns:
+                converted_data[col] = (converted_data[col].values * ureg.MPa).to(unit_mappings['strength'][strength_unit])
+        
+        # Convert depth index
+        #converted_data.index = (converted_data.index.values * ureg.m).to(unit_mappings['depth'][depth_unit]).magnitude
+        
+        return converted_data
+
+    
+    #unitchoice = [1,0,2,0,0] #pressure, strength, gradient, length, temperature
+    try:
+        with open(unitpath, 'r') as f:
+            reader = csv.reader(f)
+            unitchoice = next(reader)
+            unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
+    except:
+        unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
     # Data preparation for plot_logs
-    data = pd.DataFrame({
+    pressure_unit = up[unitchoice[1]]  # Get the selected pressure unit
+    gradient_unit = ug[unitchoice[2]]  # Get the selected gradient unit
+    print(gradient_unit)
+    strength_unit = us[unitchoice[3]]  # Get the selected strength unit (using the same as pressure)
+    depth_unit = ul[unitchoice[0]]  # Get the selected depth unit
+    
+    #maxchartpressure = round(maxchartpressure.to(pressure_unit).magnitude)
+    #minpressure = round(minpressure.to(pressure_unit).magnitude)
+    
+    data = convert_units(results, pressure_unit, gradient_unit, strength_unit)
+    """pd.DataFrame({
         'dalm': dalm,
         'dtNormal': dtNormal,
         'mudweight': mudweight,
@@ -2754,32 +2988,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         'shorsud': shorsud,
         'GR': gr,
         'GR_CUTOFF': grcut
-    }, index=tvdm)
+    }, index=tvdm)"""
     #print(data)
     # Define styles for the new plotter function
-    styles = {
-        'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
-        'dtNormal': {"color": "blue", "linewidth": 1.5, "style": ':', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
-        'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
-        'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
-        'pp': {"color": "red", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
-        'sfg': {"color": "olive", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
-        'obgcc': {"color": "lime", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "g/cc"},
-        'fgpsi': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'ssgHMpsi': {"color": "pink", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'obgpsi': {"color": "green", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'hydropsi': {"color": "aqua", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'pppsi': {"color": "red", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'mudpsi': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": ':', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": ':', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-        'slal': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
-        'shorsud': {"color": "red", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
-        'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},
-        'GR_CUTOFF': {"color": "black", "linewidth": 0, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI"}
-    }
-    
-    
+    styles = read_styles_from_file(minpressure,maxchartpressure,pressure_unit,strength_unit,gradient_unit)
     
     print("max pressure is ",maxchartpressure)
         
@@ -2826,13 +3038,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         ucss = np.array([[depth, ucs] for ucs, depth in ucss])
         points_data['ucs'] = zip(*ucss)
     
-    pointstyles = {
-    'frac_grad': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'g/cc'},
-    'flow_grad': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 2, 'left': 0, 'right': 3, 'type': 'linear', 'unit': 'g/cc'},
-    'frac_psi': {'color': 'dodgerblue', 'pointsize': 100, 'symbol': 4, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
-    'flow_psi': {'color': 'orange', 'pointsize': 100, 'symbol': 5, 'track': 3, 'left': minpressure, 'right': maxchartpressure, 'type': 'linear', 'unit': 'psi'},
-    'ucs': {'color': 'lime', 'pointsize': 30, 'symbol': 'o', 'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'}
-    }
+    pointstyles = read_pstyles_from_file(minpressure, maxchartpressure, pressure_unit, strength_unit, gradient_unit)
     
     # Add CALIPER styles only if cald is not empty
     if np.any(~np.isnan(cald)) > 0 or len(casing_dia)>1:
