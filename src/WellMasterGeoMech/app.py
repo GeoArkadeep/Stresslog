@@ -88,7 +88,7 @@ depth_track = None
 finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
-ureg = pint.UnitRegistry()
+ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit = True)
 ureg.define('ppg = 0.051948 psi/foot')
 ureg.define('sg = 0.4335 psi/foot = gcc')
 ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
@@ -104,7 +104,7 @@ except:
 up = ['psi','ksc','bar','atm','MPa']
 us = ['MPa','psi','ksc','bar','atm']
 ug = ['gcc','sg','ppg','psi/foot']
-ul = ['m','f']
+ul = ['metre','foot']
 ut = ['degC','degF','degR','degK']
 unitdict = {"Depth": ["Metres", "Feet"],
             "Pressure": ['psi','KSC','Bar','Atm','MPa'],
@@ -641,9 +641,9 @@ class MyApp(toga.App):
                 continue
 
             if row_type == 'frac_grad':
-                frac_grad_values.append([second_value,depth])
+                frac_grad_values.append([(float(second_value)*ureg(ug[unitchoice[2]])).to('gcc').magnitude,(float(depth)*ureg(ul[unitchoice[0]])).to('metre').magnitude])
             elif row_type == 'frac_psi':
-                frac_psi_values.append([second_value,depth])
+                frac_psi_values.append([(float(second_value)*ureg(up[unitchoice[1]])).to('psi').magnitude,(float(depth)*ureg(ul[unitchoice[0]])).to('metre').magnitude])
 
         frac_grad_values.sort(key=lambda x: x[0])
         frac_psi_values.sort(key=lambda x: x[0])
@@ -663,9 +663,9 @@ class MyApp(toga.App):
                 continue
 
             if row_type == 'flow_grad':
-                flow_grad_values.append([second_value, depth])
+                flow_grad_values.append([(float(second_value)*ureg(ug[unitchoice[2]])).to('gcc').magnitude, (float(depth)*ureg(ul[unitchoice[0]])).to('metre').magnitude])
             elif row_type == 'flow_psi':
-                flow_psi_values.append([second_value, depth])
+                flow_psi_values.append([(float(second_value)*ureg(up[unitchoice[1]])).to('psi').magnitude, (float(depth)*ureg(ul[unitchoice[0]])).to('metre').magnitude])
 
         flow_grad_values.sort(key=lambda x: x[0])
         flow_psi_values.sort(key=lambda x: x[0])
@@ -681,20 +681,20 @@ class MyApp(toga.App):
             od_entry = row_box.children[5] # Access the mud weight TextInput widget
             bd_entry = row_box.children[7] # Access the mud weight TextInput widget
             iv_entry = row_box.children[9] # Access the mud weight TextInput widget
-            ppf_entry = row_box.children[11] #access the casing volume TextInput Widget
+            bht_entry = row_box.children[11] #access the casing volume TextInput Widget
 
             try:
-                depth = float(depth_entry.value)
-                mw = float(mw_entry.value)
+                depth = (float(depth_entry.value)*ureg(ul[unitchoice[0]])).to('metre').magnitude
+                mw = (float(mw_entry.value)*ureg(ug[unitchoice[2]])).to('gcc').magnitude
                 od = float(od_entry.value)
                 bd = float(bd_entry.value)
                 iv = float(iv_entry.value)
-                ppf = float(ppf_entry.value)
+                sec_bht = (float(bht_entry.value)*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(bht_entry.value) !=0 else 0
             except ValueError:
                 print("Invalid input. Skipping this row.")
                 continue
 
-            depth_mw_values.append([mw,depth,bd,od,iv,ppf])
+            depth_mw_values.append([mw,depth,bd,od,iv,sec_bht])
 
         # Sort the depth_mw_values list by depth
         depth_mw_values.sort(key=lambda x: x[1])
@@ -982,6 +982,8 @@ class MyApp(toga.App):
         global wella
         global attrib
         tv = [textbox.value for textbox in self.textboxes2]
+        tv[0] = (float(tv[0])*ureg(ul[unitchoice[0]])).to('metre').magnitude
+        tv[1] = (float(tv[1])*ureg(ul[unitchoice[0]])).to('metre').magnitude
         wella.location.ekb = tv[0]
         wella.location.kb = tv[0]
         wella.location.egl = tv[1]
@@ -990,6 +992,7 @@ class MyApp(toga.App):
         #wella.location.td = tv[2]
         wella.location.latitude = tv[3]
         wella.location.longitude = tv[4]
+        tv[5] = (float(tv[5])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(tv[5]) !=0 else 0
         wella.header.bht = tv[5]
         wella.header.rm = tv[6]
         wella.header.rmf = tv[7]
@@ -1124,8 +1127,8 @@ class MyApp(toga.App):
                     'water': float(model[15]),
                     'mudtemp': float(model[16]),
                     'window': int(float(model[17])),
-                    'zulu': float(model[18]), 
-                    'tango': float(model[19])
+                    'zulu': (float(model[18])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
+                    'tango': (float(model[19])*ureg(ul[unitchoice[0]])).to('metre').magnitude
                 }          
             )
         print("Calculation complete")        
@@ -2794,18 +2797,28 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print("calculating aligned far field stresses")
     for i in range(0,len(tvd),window):
         #print(i)
-        sigmaVmpa = np.nanmean(obgpsi[i-int(window/2):i+int(window/2)])/145.038
-        sigmahminmpa = np.nanmean(psifg[i-int(window/2):i+int(window/2)])/145.038
-        sigmaHMaxmpa = np.nanmean(sgHMpsi[i-int(window/2):i+int(window/2)])/145.038
-        ppmpa = np.nanmean(psipp[i-int(window/2):i+int(window/2)])/145.038
-        bhpmpa = np.nanmean(mudpsi[i-int(window/2):i+int(window/2)])/145.038
-        ucsmpa = np.nanmean(horsud[i-int(window/2):i+int(window/2)])
-        deltaP = bhpmpa-ppmpa
-        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
-        devdoi = well.location.deviation[i]
-        incdoi = devdoi[2]
-        azmdoi = devdoi[1]
+        if window>=2.0:
+            sigmaVmpa = np.nanmean(obgpsi[i-int(window/2):i+int(window/2)])/145.038
+            sigmahminmpa = np.nanmean(psifg[i-int(window/2):i+int(window/2)])/145.038
+            sigmaHMaxmpa = np.nanmean(sgHMpsi[i-int(window/2):i+int(window/2)])/145.038
+            ppmpa = np.nanmean(psipp[i-int(window/2):i+int(window/2)])/145.038
+            bhpmpa = np.nanmean(mudpsi[i-int(window/2):i+int(window/2)])/145.038
+            ucsmpa = np.nanmean(horsud[i-int(window/2):i+int(window/2)])
+            deltaP = bhpmpa-ppmpa
+            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+        else:
+            sigmaVmpa = np.nanmean(obgpsi[i])/145.038
+            sigmahminmpa = np.nanmean(psifg[i])/145.038
+            sigmaHMaxmpa = np.nanmean(sgHMpsi[i])/145.038
+            ppmpa = np.nanmean(psipp[i])/145.038
+            bhpmpa = np.nanmean(mudpsi[i])/145.038
+            ucsmpa = np.nanmean(horsud[i])
+            deltaP = bhpmpa-ppmpa
+            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         try:
+            devdoi = well.location.deviation[i]
+            incdoi = devdoi[2]
+            azmdoi = devdoi[1]
             osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],offset,tilt,tiltgamma)
             Sb[i] = getAlignedStress(osx,osy,osz,offset,tilt,tiltgamma,azmdoi,incdoi)
             SbFF[i] = Sb[i]
@@ -2944,10 +2957,28 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 converted_data[col] = (converted_data[col].values * ureg.MPa).to(unit_mappings['strength'][strength_unit])
         
         # Convert depth index
-        #converted_data.index = (converted_data.index.values * ureg.m).to(unit_mappings['depth'][depth_unit]).magnitude
+        converted_data.index = (converted_data.index.values * ureg.m).to(ul[unitchoice[0]]).magnitude
         
         return converted_data
 
+    def convert_points_data(points_data, pressure_unit, gradient_unit, strength_unit):
+        converted_points = {}
+        
+        for key, (x_vals, y_vals) in points_data.items():
+            # Convert x values based on their type
+            if key in ['frac_grad', 'flow_grad']:
+                x_vals = (np.array(x_vals) * ureg.gcc).to(ureg(gradient_unit)).magnitude
+            elif key in ['frac_psi', 'flow_psi']:
+                x_vals = (np.array(x_vals) * ureg.psi).to(ureg(pressure_unit)).magnitude
+            elif key == 'ucs':
+                x_vals = (np.array(x_vals) * ureg.MPa).to(ureg(strength_unit)).magnitude
+            
+            # Convert depth values
+            #y_vals = (np.array(y_vals) * ureg.m).to(ul[unitchoice[0]]).magnitude
+            
+            converted_points[key] = (x_vals, y_vals)
+        
+        return converted_points
     
     #unitchoice = [1,0,2,0,0] #pressure, strength, gradient, length, temperature
     try:
@@ -2964,8 +2995,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     strength_unit = us[unitchoice[3]]  # Get the selected strength unit (using the same as pressure)
     depth_unit = ul[unitchoice[0]]  # Get the selected depth unit
     
-    #maxchartpressure = round(maxchartpressure.to(pressure_unit).magnitude)
-    #minpressure = round(minpressure.to(pressure_unit).magnitude)
+    #maxchartpressure = round(maxchartpressure.to(pressure_unit).magnitude)# This is now computed inside the dataframes function
+    #minpressure = round(minpressure.to(pressure_unit).magnitude)# This is now computed inside the dataframes function
     
     data = convert_units(results, pressure_unit, gradient_unit, strength_unit)
     """pd.DataFrame({
@@ -2997,7 +3028,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         
     # Convert y values to tvd
     def convert_to_tvd(y_values):
-        return [tvdm[find_nearest_depth(md, y)[0]] for y in y_values]
+        if unitchoice[0]==0:
+            return [tvd[find_nearest_depth(md, y)[0]] for y in y_values]
+        else:
+            return [tvdf[find_nearest_depth(md, y)[0]] for y in y_values]
 
     # Convert data points to DataFrame
     def create_points_dataframe(points_data):
@@ -3045,10 +3079,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print("Track 5 added")
         styles.update({
             'CALIPER1': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"},
-            'CALIPER2': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"}
+            'CALIPER3': {"color": "brown", "linewidth": 0.5, "style": '-', "track": 5, "left": -15, "right": 15, "type": 'linear', "unit": "in"}
         })
         data['CALIPER1'] = cald / 2
-        data['CALIPER2'] = cald / (-2)
+        data['CALIPER3'] = cald / (-2)
         pointstyles.update({
         'casingshoe': {'color': 'black', 'pointsize': 30, 'symbol': 1, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True},
         'casingshoe2': {'color': 'black', 'pointsize': 30, 'symbol': 0, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True}
@@ -3057,7 +3091,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         points_data['casingshoe'] = zip(*casing_dia)
         points_data['casingshoe2'] = zip(*casing_dia2)
     
-    points_df = create_points_dataframe(points_data)
+    converted_points = convert_points_data(points_data, pressure_unit, gradient_unit, strength_unit)
+    points_df = create_points_dataframe(converted_points)
+    #points_df = create_points_dataframe(points_data)
     # Ensure the points DataFrame handles missing data gracefully
     points_df = points_df.apply(lambda col: col.dropna())
     print(points_df)
@@ -3068,8 +3104,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         dpif=100
     if dpif>900:
         dpif=900
-    figname = wella.uwi if wella.uwi != "" else wella.name
-    fig, axes = plot_logs(data, styles, y_min=tango, y_max=zulu, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=dpif,output_dir = output_dir)
+    figname = wella.uwi if wella.uwi != "" and wella.uwi != None else wella.name
+    fig, axes = plot_logs(data, styles, y_min=(float(tango)*ureg('metre').to(ul[unitchoice[0]])).magnitude, y_max=(float(zulu)*ureg('metre').to(ul[unitchoice[0]])).magnitude, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=dpif,output_dir = output_dir)
     fig.suptitle("Wellbore : "+figname,fontsize=14,y=0.9)
     plt.savefig(output_file,dpi=dpif)
     choptop(20*(dpif/100), 0, os.path.join(output_dir,"BottomLabel.png"))

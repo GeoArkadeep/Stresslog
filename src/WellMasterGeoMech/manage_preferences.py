@@ -6,6 +6,10 @@ import csv
 class PreferencesWindow(toga.Window):
     def __init__(self, title, csv1_path, csv2_path, csv3_path, dropdown_options, unitpath):
         super().__init__(title=title)
+        self.csv1_path = csv1_path
+        self.csv2_path = csv2_path
+        self.csv3_path = csv3_path
+        self.unitpath = unitpath
         try:
             with open(unitpath, 'r') as f:
                 reader = csv.reader(f)
@@ -13,14 +17,8 @@ class PreferencesWindow(toga.Window):
                 unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
         except:
             unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
-        self.csv1_path = csv1_path
-        self.csv2_path = csv2_path
-        self.csv3_path = csv3_path
-        self.unitpath = unitpath
         self.dropdown_options = dropdown_options
         self.unitchoice = unitchoice
-        # Define the order of unit types
-        self.unit_order = ['Depth', 'Pressure', 'Gradient', 'Strength', 'Temperature']
         
         # Load CSV contents
         with open(csv1_path, 'r') as f:
@@ -42,13 +40,8 @@ class PreferencesWindow(toga.Window):
         # Create drop-downs
         self.dropdowns = {}
         dropdowns_widgets = []
-        for i, unit_type in enumerate(self.unit_order):
-            if unit_type not in dropdown_options:
-                print(f"Warning: {unit_type} not found in dropdown options. Skipping.")
-                continue
-            
-            options = dropdown_options[unit_type]
-            dropdown_label = toga.Label(unit_type, style=Pack(padding_bottom=5))
+        for i, (label, options) in enumerate(dropdown_options.items()):
+            dropdown_label = toga.Label(label, style=Pack(padding_bottom=5))
             dropdown = toga.Selection(items=options, style=Pack(flex=1, padding_bottom=5))
             
             # Set initial value based on unitchoice
@@ -56,11 +49,10 @@ class PreferencesWindow(toga.Window):
                 try:
                     dropdown.value = options[self.unitchoice[i]]
                 except IndexError:
-                    print(f"Warning: Invalid index {self.unitchoice[i]} for {unit_type}. Using default.")
+                    print(f"Warning: Invalid index {self.unitchoice[i]} for {label}. Using default.")
             
-            self.dropdowns[unit_type] = dropdown
+            self.dropdowns[label] = dropdown
             dropdowns_widgets.append(toga.Box(children=[dropdown_label, dropdown], style=Pack(direction=COLUMN, padding_right=5)))
-        
         dropdown_box = toga.Box(children=dropdowns_widgets, style=Pack(direction=ROW, padding_bottom=10))
         
         # Create layout
@@ -87,20 +79,16 @@ class PreferencesWindow(toga.Window):
         
         # Save unit choices
         unitchoice = []
-        for unit_type in self.unit_order:
-            if unit_type in self.dropdowns:
-                value = self.dropdowns[unit_type].value
-                options = self.dropdown_options[unit_type]
-                try:
-                    index = options.index(value)
-                except ValueError:
-                    # If the value is not in the list, default to 0
-                    index = 0
-                    print(f"Warning: '{value}' not found in options for {unit_type}. Defaulting to first option.")
-                unitchoice.append(index)
-            else:
-                print(f"Warning: {unit_type} not found in dropdowns. Using 0 as default.")
-                unitchoice.append(0)
+        for unit_type in ['Depth', 'Pressure', 'Gradient', 'Strength', 'Temperature']:
+            value = self.dropdowns[unit_type].value
+            options = self.dropdown_options[unit_type]
+            try:
+                index = options.index(value)
+            except ValueError:
+                # If the value is not in the list, default to 0
+                index = 0
+                print(f"Warning: '{value}' not found in options for {unit_type}. Defaulting to first option.")
+            unitchoice.append(index)
         
         with open(self.unitpath, 'w', newline='') as f:
             writer = csv.writer(f)
