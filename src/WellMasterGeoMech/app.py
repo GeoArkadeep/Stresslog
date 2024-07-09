@@ -135,6 +135,7 @@ print(data_into_list)
 model = data_into_list[0]
 print(model)
 class MyApp(toga.App):
+    global unitchoice
     def set_preferences(self, command):
         # This method is needed to set the preferences command
         self._preferences = command
@@ -1064,6 +1065,15 @@ class MyApp(toga.App):
         global wella
         global attrib
         global model
+        global unitchoice
+        try:
+            with open(unitpath, 'r') as f:
+                reader = csv.reader(f)
+                unitchoice = next(reader)
+                unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
+        except:
+            unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
+
         
         self.progress.text = "Status: Calculating, Standby"
         self.getwelldev()
@@ -1389,6 +1399,7 @@ def interpolate_nan(array_like):
 
 
 def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[13], b = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+    global unitchoice
     alias = read_aliases_from_file()
     from welly import Curve
     #print(alias)
