@@ -159,15 +159,23 @@ class CustomEditorWindow(toga.Window):
                 
                 # Check if the CSV columns match the expected headers
                 if list(new_df.columns) != self.headers:
-                    print(f"Warning: CSV columns {list(new_df.columns)} don't match expected headers {self.headers}. Renaming columns.")
+                    print(f"Warning: CSV columns {list(new_df.columns)} don't match expected headers {self.headers}. Adjusting columns.")
+                    # If there are more columns in the CSV than expected, discard extra columns
+                    if len(new_df.columns) > len(self.headers):
+                        n = len(new_df.columns) - len(self.headers)
+                        new_df = new_df.iloc[:,:-n]
+                        new_df.reset_index(drop=True,inplace=True)
+                        print(f"Discarded extra columns. Using only: {self.headers}")
                     
-                    # If the number of columns matches, rename them
-                    if len(new_df.columns) == len(self.headers):
-                        new_df.columns = self.headers
-                    else:
-                        # If the number of columns doesn't match, we'll need to handle this case
-                        # For now, we'll raise an exception, but you might want to implement a more sophisticated solution
-                        raise ValueError(f"Number of columns in CSV ({len(new_df.columns)}) doesn't match expected number of columns ({len(self.headers)})")
+                    # If there are fewer columns in the CSV than expected
+                    elif len(new_df.columns) < len(self.headers):
+                        # Add missing columns to the dataframe
+                        for header in self.headers[len(new_df.columns):]:
+                            new_df[header] = ''
+                        print(f"Added missing columns: {self.headers[len(new_df.columns):]}")
+                    
+                    # Rename the columns to match the headers
+                    new_df.columns = self.headers
                 
                 self.df = new_df
                 self.update_data_display()
@@ -183,7 +191,8 @@ class CustomEditorWindow(toga.Window):
                 "Error",
                 f"Failed to load CSV: {str(e)}"
             )
-
+            print(f"Error details: {str(e)}")
+        
     def clear_data(self, widget):
         self.on_close_future.set_result(None)
         self.close()
@@ -210,7 +219,14 @@ class CustomEditorWindow(toga.Window):
                 self.df[header] = self.df[header].astype(dtype)
             except:
                 self.df[header] = np.nan
-        self.df.dropna(inplace=True)
+        
+        # Drop only rows where all values are NaN
+        self.df.dropna(how='all', inplace=True)
+        
+         # Remove duplicates in the first column, keeping the first occurrence
+        first_column = self.headers[0]
+        self.df.drop_duplicates(subset=[first_column], keep='first', inplace=True)
+        
         #check for empty dataframe
         if self.df.empty:
             self.on_close_future.set_result(None)
@@ -221,7 +237,8 @@ class CustomEditorWindow(toga.Window):
 
     def cancel(self, widget):
         self.df.replace('', np.nan, inplace=True)
-        self.df.dropna(inplace=True)
+        # Drop only rows where all values are NaN
+        self.df.dropna(how='all', inplace=True)
         if self.df.empty:
             self.on_close_future.set_result(None)
             self.close()

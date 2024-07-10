@@ -3149,6 +3149,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         points_data['casingshoe2'] = zip(*casing_dia2)
     
     converted_points = convert_points_data(points_data, pressure_unit, gradient_unit, strength_unit)
+    print(converted_points)
     points_df = create_points_dataframe(converted_points)
     #points_df = create_points_dataframe(points_data)
     # Ensure the points DataFrame handles missing data gracefully
