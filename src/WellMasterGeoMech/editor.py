@@ -37,76 +37,103 @@ class CustomEditorWindow(toga.Window):
         self.current_units = {header: self.unitdict[unittype][0] for header, unittype in zip(self.headers, self.unittypes)}
 
     def create_content(self):
-        main_box = toga.Box(style=Pack(direction=COLUMN))
-
-        # Header labels and unit selection dropdowns at the top
-        header_unit_box = toga.Box(style=Pack(direction=COLUMN, padding=(5, 5, 5, 5)))
+        main_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
         
-        # Header labels
-        header_box = toga.Box(style=Pack(direction=ROW))
+        # Create a box for all content (headers, units, and data)
+        self.all_content_box = toga.Box(style=Pack(direction=COLUMN, padding=5))
+        
+        # Fixed column width
+        column_width = 120
+        
+        # Header row
+        header_row = toga.Box(style=Pack(direction=ROW))
         for header in self.headers:
-            header_box.add(toga.Label(header, style=Pack(flex=1, text_align='center')))
-        header_unit_box.add(header_box)
+            header_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
+            header_label = toga.Label(
+                header, 
+                style=Pack(width=column_width-4, text_align='center', padding=5)
+            )
+            header_box.add(header_label)
+            header_row.add(header_box)
+        self.all_content_box.add(header_row)
         
-        # Unit selection dropdowns
-        unit_box = toga.Box(style=Pack(direction=ROW))
+        # Unit selection row
+        unit_row = toga.Box(style=Pack(direction=ROW))
         for header, unittype in zip(self.headers, self.unittypes):
+            unit_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
             current_unit = toga.Selection(
                 items=self.unitdict[unittype],
                 on_change=lambda widget, header=header: self.on_current_unit_change(widget, header),
-                style=Pack(flex=1, padding=5)
+                style=Pack(width=column_width-4, padding=5)
             )
             self.current_selections[header] = current_unit
             unit_box.add(current_unit)
+            unit_row.add(unit_box)
+        self.all_content_box.add(unit_row)
         
-        header_unit_box.add(unit_box)
-        #main
-
-        # Scrollable data display and edit area
-        self.data_box = toga.Box(style=Pack(direction=COLUMN, padding=(5, 0)))
-        self.data_box.add(header_unit_box)
-        self.scroll_container = toga.ScrollContainer(content=self.data_box, style=Pack(flex=1))
-        self.update_data_display()
+        # Data display area (will be populated in update_data_display)
+        self.data_box = toga.Box(style=Pack(direction=COLUMN))
+        self.all_content_box.add(self.data_box)
+        
+        # Put all content in a scroll container
+        self.scroll_container = toga.ScrollContainer(content=self.all_content_box, style=Pack(flex=1))
         main_box.add(self.scroll_container)
-
+        
+        # Button area
+        button_area = toga.Box(style=Pack(direction=COLUMN))
+        
         # Add/Remove row buttons
         row_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
         add_row_button = toga.Button('Add Row', on_press=self.add_row, style=Pack(flex=1))
         remove_row_button = toga.Button('Remove Row', on_press=self.remove_row, style=Pack(flex=1))
         row_buttons.add(add_row_button)
         row_buttons.add(remove_row_button)
-        main_box.add(row_buttons)
-
+        button_area.add(row_buttons)
+        
         # Load CSV and Clear Data buttons
         data_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
         load_csv_button = toga.Button('Load CSV', on_press=self.load_csv_wrapper, style=Pack(flex=1))
-        
         clear_data_button = toga.Button('Clear Data', on_press=self.clear_data, style=Pack(flex=1))
         data_buttons.add(load_csv_button)
         data_buttons.add(clear_data_button)
-        main_box.add(data_buttons)
-
+        button_area.add(data_buttons)
+        
         # Save and Cancel buttons
-        button_box = toga.Box(style=Pack(direction=ROW, padding=5))
+        action_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
         save_button = toga.Button('Save', on_press=self.save, style=Pack(flex=1))
         cancel_button = toga.Button('Cancel', on_press=self.cancel, style=Pack(flex=1))
-        button_box.add(save_button)
-        button_box.add(cancel_button)
-        main_box.add(button_box)
-
+        action_buttons.add(save_button)
+        action_buttons.add(cancel_button)
+        button_area.add(action_buttons)
+        
+        main_box.add(button_area)
+        
         self.content = main_box
+        
+        # Update data display after setting up the structure
+        self.update_data_display()
 
     def update_data_display(self):
-        # Preserve header_unit_box, remove only data rows
-        for widget in self.data_box.children[1:]:  # Skip the first child (header_unit_box)
-            self.data_box.remove(widget)
+        # Clear existing data rows
+        for child in list(self.data_box.children):
+            self.data_box.remove(child)
+        
+        # Fixed column width
+        column_width = 120
+        
+        # Add data rows
         for i, row in self.df.iterrows():
-            row_box = toga.Box(style=Pack(direction=ROW, padding=(0, 5)))
+            data_row = toga.Box(style=Pack(direction=ROW))
             for header in self.headers:
-                input_box = toga.TextInput(value=str(row[header]), style=Pack(flex=1, padding=(0, 5)))
-                row_box.add(input_box)
-            self.data_box.add(row_box)
-
+                data_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
+                input_box = toga.TextInput(
+                    value=str(row[header]), 
+                    style=Pack(width=column_width-4, padding=5)
+                )
+                data_box.add(input_box)
+                data_row.add(data_box)
+            self.data_box.add(data_row)
+        
     def add_row(self, widget):
         new_row = {header: '' for header in self.headers}
         self.df = pd.concat([self.df, pd.DataFrame([new_row])], ignore_index=True)
@@ -163,8 +190,10 @@ class CustomEditorWindow(toga.Window):
 
     def save(self, widget):
         # Update dataframe with edited values
-        for i, row_box in enumerate(self.data_box.children[1:]):  # Skip the first child (header_unit_box)
-            for j, input_box in enumerate(row_box.children):
+        for i, row_box in enumerate(self.data_box.children):
+            for j, cell_box in enumerate(row_box.children):
+                # The TextInput is the first (and only) child of the cell_box
+                input_box = cell_box.children[0]
                 self.df.iloc[i, j] = input_box.value
         
         self.df.replace('', np.nan, inplace=True)
