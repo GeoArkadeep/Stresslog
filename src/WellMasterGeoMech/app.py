@@ -166,8 +166,8 @@ class MyApp(toga.App):
         forms = await custom_edit(
             self, 
             forms, 
-            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp."], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None"], 
-            formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres",""],[float,int,str,float,float,float,float,float,float,float],ureg
+            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None"], 
+            formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres","","","","","","",""],[float,int,str,float,float,float,float,float,float,float,float,float,float,float,float,float,float],ureg
         )
         print(forms)
         
@@ -1741,8 +1741,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         centroid_ratio_list = centroid_ratio_list.astype(float)
         grlist = grlist.astype(float)
         alphalist = np.transpose(formlist)[10]
+        alphalist = np.append(0,alphalist)
         betalist = np.transpose(formlist)[11]
+        betalist = np.append(0,betalist)
         gammalist = np.transpose(formlist)[12]
+        gammalist = np.append(0,gammalist)
         print(alphalist,ftvdlist)
         i=0
         while i<len(fttvdlist):
