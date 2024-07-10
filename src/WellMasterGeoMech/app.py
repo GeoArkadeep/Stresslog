@@ -28,6 +28,7 @@ import json
 import csv
     
 from manage_preferences import show_preferences_window
+from editor import custom_edit
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
@@ -101,15 +102,15 @@ try:
 except:
     unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
 
-up = ['psi','ksc','bar','atm','MPa']
-us = ['MPa','psi','ksc','bar','atm']
+up = ['psi','Ksc','Bar','Atm','MPa']
+us = ['MPa','psi','Ksc','Bar','Atm']
 ug = ['gcc','sg','ppg','psi/foot']
-ul = ['metre','foot']
+ul = ['metres','feet']
 ut = ['degC','degF','degR','degK']
 unitdict = {"Depth": ["Metres", "Feet"],
-            "Pressure": ['psi','KSC','Bar','Atm','MPa'],
+            "Pressure": ['psi','Ksc','Bar','Atm','MPa'],
             "Gradient": ['G/CC','SG','PPG','psi/foot'],
-            "Strength": ["MPa", "psi", "Ksc","bar"],
+            "Strength": ['MPa','psi','Ksc','Bar','Atm'],
             "Temperature": ["Centigrade", "Farenheit", "Rankine","Kelvin"]}
 
 modelheader = "RhoA,AMC_exp,EATON_fac,tec_fac,NCT_exp,dtML,dtMAT,UL_exp,UL_depth,re_sub,A_dep,SHM_azi,Beta,Gamma,perm_cutoff,w_den,MudTempC,window,start,stop,nu_shale,nu_sst,nu_lst,dt_lst"
@@ -137,11 +138,39 @@ print(model)
 class MyApp(toga.App):
     global unitchoice
     def set_preferences(self, command):
-        # This method is needed to set the preferences command
+        # This method sets up the preferences command
         self._preferences = command
     def preferences(self, widget):
         # This method will be called when the preferences command is activated
         show_preferences_window(aliaspath, stylespath, pstylespath,unitdict,unitpath)
+    def custom_edit_ucs(self, widget):
+        asyncio.create_task(self.run_custom_ucs())
+
+    async def run_custom_ucs(self):
+        global UCSs
+        UCSs = await custom_edit(
+            self, 
+            UCSs, 
+            ["MD", "UCS"], ["Depth", "Strength"], 
+            unitdict,["Metres","MPa"],[float,float],ureg
+        )
+        print(UCSs)
+        
+    def custom_edit_forms(self, widget):
+        asyncio.create_task(self.run_custom_forms())
+
+    async def run_custom_forms(self):
+        global forms
+        formunitdict = {"Depth": ["Metres", "Feet"],
+            "None": [""]}
+        forms = await custom_edit(
+            self, 
+            forms, 
+            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp."], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None"], 
+            formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres",""],[float,int,str,float,float,float,float,float,float,float],ureg
+        )
+        print(forms)
+        
     def startup(self):
         PREFERENCES = toga.Command(
             self.preferences,
@@ -156,6 +185,23 @@ class MyApp(toga.App):
 
         # Explicitly set it as the preferences command
         #self.set_preferences(PREFERENCES)
+        
+        custom_edit_ucs = toga.Command(
+            self.custom_edit_ucs,
+            text='Edit UCS data',
+            shortcut=toga.Key.MOD_1 + 'u',
+            group=toga.Group.EDIT
+        )
+        self.commands.add(custom_edit_ucs)
+        
+        custom_edit_forms = toga.Command(
+            self.custom_edit_forms,
+            text='Edit Formation data',
+            shortcut=toga.Key.MOD_1 + 'f',
+            group=toga.Group.EDIT
+        )
+        self.commands.add(custom_edit_forms)
+
         
         self.page1 = toga.Box(style=Pack(direction=COLUMN, flex=1))
         self.bg1 = BackgroundImageView("BG1.png", style=Pack(flex = 5))
@@ -232,7 +278,7 @@ class MyApp(toga.App):
         def add_depth_mw_row(self, widget):
             row_box = toga.Box(style=Pack(direction=ROW, alignment='center', padding=5))
             
-            depth_label = toga.Label("Casing Shoe Depth (m)", style=Pack(padding_right=2,text_direction='rtl'))
+            depth_label = toga.Label("Casing Shoe Depth", style=Pack(padding_right=2,text_direction='rtl'))
             depth_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="0")
             row_box.add(depth_label)
             row_box.add(depth_entry)
@@ -257,7 +303,7 @@ class MyApp(toga.App):
             row_box.add(iv_label)
             row_box.add(iv_entry)
             
-            ppf_label = toga.Label("BHT (C)", style=Pack(padding_right=5,text_direction='rtl'))
+            ppf_label = toga.Label("BHT", style=Pack(padding_right=5,text_direction='rtl'))
             ppf_entry = toga.TextInput(style=Pack(padding_left=2, flex=1), value="0")
             row_box.add(ppf_label)
             row_box.add(ppf_entry)
@@ -539,9 +585,9 @@ class MyApp(toga.App):
         depth_label = toga.Label("MD", style=Pack(text_align="center", flex=1, padding_top=5))
         
         if row_type == 'frac_grad':
-            second_label = toga.Label("Frac Grad gcc", style=Pack(text_align="center", flex=1, padding_top=5))
+            second_label = toga.Label("Frac Grad "+ug[unitchoice[2]], style=Pack(text_align="center", flex=1, padding_top=5))
         elif row_type == 'frac_psi':
-            second_label = toga.Label("Frac BHP psi", style=Pack(text_align="center", flex=1, padding_top=5))
+            second_label = toga.Label("Frac BHP "+up[unitchoice[1]], style=Pack(text_align="center", flex=1, padding_top=5))
         else:
             raise ValueError("Invalid row type")
 
@@ -570,9 +616,9 @@ class MyApp(toga.App):
         depth_label = toga.Label("MD", style=Pack(text_align="center", flex=1, padding_top=5))
         
         if row_type == 'flow_grad':
-            second_label = toga.Label("PP Grad gcc", style=Pack(text_align="center", flex=1, padding_top=5))
+            second_label = toga.Label("PP Grad "+ug[unitchoice[2]], style=Pack(text_align="center", flex=1, padding_top=5))
         elif row_type == 'flow_psi':
-            second_label = toga.Label("PP BHP psi", style=Pack(text_align="center", flex=1, padding_top=5))
+            second_label = toga.Label("PP BHP "+up[unitchoice[1]], style=Pack(text_align="center", flex=1, padding_top=5))
         else:
             raise ValueError("Invalid row type")
 
@@ -1129,13 +1175,13 @@ class MyApp(toga.App):
                     'ul_exp': float(model[7]),
                     'ul_depth': float(model[8]),
                     'underbalancereject': float(model[9]),
-                    'doi': float(model[10]), 
+                    'doi': (float(model[10])*ureg(ul[unitchoice[0]])).to('metre').magnitude, 
                     'offset': float(model[11]), 
                     'strike': float(model[12]), 
                     'dip': float(model[13]),
                     'sfs': float(model[14]),
                     'water': float(model[15]),
-                    'mudtemp': float(model[16]),
+                    'mudtemp': (float(model[16])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(model[16]) !=0 else 0,
                     'window': int(float(model[17])),
                     'zulu': (float(model[18])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
                     'tango': (float(model[19])*ureg(ul[unitchoice[0]])).to('metre').magnitude
