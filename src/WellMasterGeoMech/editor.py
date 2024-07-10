@@ -93,17 +93,17 @@ class CustomEditorWindow(toga.Window):
         # Load CSV and Clear Data buttons
         data_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
         load_csv_button = toga.Button('Load CSV', on_press=self.load_csv_wrapper, style=Pack(flex=1))
-        clear_data_button = toga.Button('Clear Data', on_press=self.clear_data, style=Pack(flex=1))
+        paste_data_button = toga.Button('Paste data', on_press=self.load_from_clipboard, style=Pack(flex=1))
         data_buttons.add(load_csv_button)
-        data_buttons.add(clear_data_button)
+        data_buttons.add(paste_data_button)
         button_area.add(data_buttons)
         
         # Save and Cancel buttons
         action_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
         save_button = toga.Button('Save', on_press=self.save, style=Pack(flex=1))
-        cancel_button = toga.Button('Cancel', on_press=self.cancel, style=Pack(flex=1))
+        clear_button = toga.Button('Clear', on_press=self.clear_data, style=Pack(flex=1))
         action_buttons.add(save_button)
-        action_buttons.add(cancel_button)
+        action_buttons.add(clear_button)
         button_area.add(action_buttons)
         
         main_box.add(button_area)
@@ -196,7 +196,47 @@ class CustomEditorWindow(toga.Window):
     def clear_data(self, widget):
         self.on_close_future.set_result(None)
         self.close()
+    
+    def load_from_clipboard(self, widget):
+        asyncio.create_task(self.load_clipboard_async(widget))
 
+    async def load_clipboard_async(self, widget):
+        try:
+            # Read data from clipboard
+            new_df = pd.read_clipboard(sep='\s+')
+            
+            # Check if the clipboard data columns match the expected headers
+            if list(new_df.columns) != self.headers:
+                print(f"Warning: Clipboard data columns {list(new_df.columns)} don't match expected headers {self.headers}. Adjusting columns.")
+                # If there are more columns in the clipboard data than expected, discard extra columns
+                if len(new_df.columns) > len(self.headers):
+                    new_df = new_df.iloc[:, :len(self.headers)]
+                    print(f"Discarded extra columns. Using only: {self.headers}")
+                
+                # If there are fewer columns in the clipboard data than expected
+                elif len(new_df.columns) < len(self.headers):
+                    # Add missing columns to the dataframe
+                    for header in self.headers[len(new_df.columns):]:
+                        new_df[header] = ''
+                    print(f"Added missing columns: {self.headers[len(new_df.columns):]}")
+                
+                # Rename the columns to match the headers
+                new_df.columns = self.headers
+            
+            self.df = new_df
+            self.update_data_display()
+            
+            await self.info_dialog(
+                "Success",
+                "Data loaded from clipboard successfully."
+            )
+        except Exception as e:
+            await self.info_dialog(
+                "Error",
+                f"Failed to load data from clipboard: {str(e)}"
+            )
+            print(f"Error details: {str(e)}")
+    
     def save(self, widget):
         # Update dataframe with edited values
         for i, row_box in enumerate(self.data_box.children):
