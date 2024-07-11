@@ -245,6 +245,8 @@ class CustomEditorWindow(toga.Window):
                 input_box = cell_box.children[0]
                 self.df.iloc[i, j] = input_box.value
         
+        self.df.replace('NaN', np.nan, inplace=True)
+        self.df.replace('nan', np.nan, inplace=True)
         self.df.replace('', np.nan, inplace=True)
         # Perform unit conversion
         for header, current_unit, target_unit in zip(self.headers, self.current_units.values(), self.target_units):
