@@ -255,6 +255,14 @@ class CustomEditorWindow(toga.Window):
         first_column = self.headers[0]
         self.df.drop_duplicates(subset=[first_column], keep='first', inplace=True)
         
+        # Drop rows where the first column is NaN
+        self.df = self.df[~(self.df[first_column].isna() | 
+                    (self.df[first_column].astype(str).str.strip() == '0') | 
+                    (self.df[first_column] == 0))]
+        
+        # Sort the dataframe based on the first column in ascending order
+        self.df.sort_values(by=[first_column], inplace=True)
+        
         #check for empty dataframe
         if self.df.empty:
             self.on_close_future.set_result(None)
