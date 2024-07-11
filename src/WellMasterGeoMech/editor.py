@@ -121,28 +121,46 @@ class CustomEditorWindow(toga.Window):
         # Fixed column width
         column_width = 120
         
-        # Add data rows
-        for i, row in self.df.iterrows():
-            data_row = toga.Box(style=Pack(direction=ROW))
-            for header in self.headers:
-                data_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
-                input_box = toga.TextInput(
-                    value=str(row[header]), 
-                    style=Pack(width=column_width-4, padding=5)
-                )
-                data_box.add(input_box)
-                data_row.add(data_box)
-            self.data_box.add(data_row)
+        # Create all rows at once, with a maximum of 1000 rows to prevent memory issues
+        all_rows = []
+        for i, row in self.df.head(100).iterrows():
+            data_row = self.create_data_row(row, column_width)
+            all_rows.append(data_row)
+        
+        # Add all rows to the data_box at once
+        self.data_box.add(*all_rows)
+
+        # If there are more than 1000 rows, inform the user
+        if len(self.df) > 100:
+            print(f"Warning: Only displaying first 1000 rows out of {len(self.df)} total rows.")
+
+    def create_data_row(self, row, column_width):
+        data_row = toga.Box(style=Pack(direction=ROW))
+        for header in self.headers:
+            data_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
+            input_box = toga.TextInput(
+                value=str(row[header]), 
+                style=Pack(width=column_width-4, padding=5)
+            )
+            data_box.add(input_box)
+            data_row.add(data_box)
+        return data_row
         
     def add_row(self, widget):
         new_row = {header: '' for header in self.headers}
         self.df = pd.concat([self.df, pd.DataFrame([new_row])], ignore_index=True)
-        self.update_data_display()
+        
+        # Create and add only the new row
+        new_data_row = self.create_data_row(new_row, 120)
+        self.data_box.add(new_data_row)
 
     def remove_row(self, widget):
         if len(self.df) > 0:
             self.df = self.df.iloc[:-1]
-            self.update_data_display()
+            
+            # Remove only the last row from the UI
+            if self.data_box.children:
+                self.data_box.remove(self.data_box.children[-1])
 
     def on_current_unit_change(self, widget, header):
         self.current_units[header] = widget.value
@@ -156,42 +174,14 @@ class CustomEditorWindow(toga.Window):
             )
             if file_path:
                 new_df = pd.read_csv(file_path)
-                
-                # Check if the CSV columns match the expected headers
-                if list(new_df.columns) != self.headers:
-                    print(f"Warning: CSV columns {list(new_df.columns)} don't match expected headers {self.headers}. Adjusting columns.")
-                    # If there are more columns in the CSV than expected, discard extra columns
-                    if len(new_df.columns) > len(self.headers):
-                        n = len(new_df.columns) - len(self.headers)
-                        new_df = new_df.iloc[:,:-n]
-                        new_df.reset_index(drop=True,inplace=True)
-                        print(f"Discarded extra columns. Using only: {self.headers}")
-                    
-                    # If there are fewer columns in the CSV than expected
-                    elif len(new_df.columns) < len(self.headers):
-                        # Add missing columns to the dataframe
-                        for header in self.headers[len(new_df.columns):]:
-                            new_df[header] = ''
-                        print(f"Added missing columns: {self.headers[len(new_df.columns):]}")
-                    
-                    # Rename the columns to match the headers
-                    new_df.columns = self.headers
-                
-                self.df = new_df
-                self.update_data_display()
-                
-                await self.info_dialog(
-                    "Success",
-                    "CSV file loaded successfully."
-                )
+                self.process_loaded_data(new_df, "CSV")
+                await self.info_dialog("Success", "CSV file loaded successfully.")
             else:
                 print("File selection was canceled.")
         except Exception as e:
-            await self.info_dialog(
-                "Error",
-                f"Failed to load CSV: {str(e)}"
-            )
+            await self.error_dialog("Error", f"Failed to load CSV: {str(e)}")
             print(f"Error details: {str(e)}")
+            
         
     def clear_data(self, widget):
         self.on_close_future.set_result(None)
@@ -202,40 +192,36 @@ class CustomEditorWindow(toga.Window):
 
     async def load_clipboard_async(self, widget):
         try:
-            # Read data from clipboard
             new_df = pd.read_clipboard(sep='\s+')
-            
-            # Check if the clipboard data columns match the expected headers
-            if list(new_df.columns) != self.headers:
-                print(f"Warning: Clipboard data columns {list(new_df.columns)} don't match expected headers {self.headers}. Adjusting columns.")
-                # If there are more columns in the clipboard data than expected, discard extra columns
-                if len(new_df.columns) > len(self.headers):
-                    new_df = new_df.iloc[:, :len(self.headers)]
-                    print(f"Discarded extra columns. Using only: {self.headers}")
-                
-                # If there are fewer columns in the clipboard data than expected
-                elif len(new_df.columns) < len(self.headers):
-                    # Add missing columns to the dataframe
-                    for header in self.headers[len(new_df.columns):]:
-                        new_df[header] = ''
-                    print(f"Added missing columns: {self.headers[len(new_df.columns):]}")
-                
-                # Rename the columns to match the headers
-                new_df.columns = self.headers
-            
-            self.df = new_df
-            self.update_data_display()
-            
-            await self.info_dialog(
-                "Success",
-                "Data loaded from clipboard successfully."
-            )
+            self.process_loaded_data(new_df, "Clipboard")
+            await self.info_dialog("Success", "Data loaded from clipboard successfully.")
         except Exception as e:
-            await self.info_dialog(
-                "Error",
-                f"Failed to load data from clipboard: {str(e)}"
-            )
+            await self.error_dialog("Error", f"Failed to load data from clipboard: {str(e)}")
             print(f"Error details: {str(e)}")
+    
+    def process_loaded_data(self, new_df, source):
+        print(f"Processing {source} data...")
+        print(f"{source} columns: {list(new_df.columns)}")
+        print(f"Expected headers: {self.headers}")
+
+        # Create a new dataframe with the expected columns
+        processed_df = pd.DataFrame(columns=self.headers)
+
+        # Copy data from new_df to processed_df column by column
+        for i, header in enumerate(self.headers):
+            if i < len(new_df.columns):
+                processed_df[header] = new_df.iloc[:, i]
+            else:
+                processed_df[header] = ''  # Add blank column if source has fewer columns
+                print(f"Added missing column: {header}")
+
+        # If new_df has more columns than expected, print a warning
+        if len(new_df.columns) > len(self.headers):
+            print(f"Warning: {source} has {len(new_df.columns) - len(self.headers)} extra columns that were not loaded.")
+
+        # Update the dataframe and display
+        self.df = processed_df
+        self.update_data_display()
     
     def save(self, widget):
         # Update dataframe with edited values
@@ -246,7 +232,7 @@ class CustomEditorWindow(toga.Window):
                 self.df.iloc[i, j] = input_box.value
         
         self.df.replace('NaN', np.nan, inplace=True)
-        self.df.replace('nan', np.nan, inplace=True)
+        self.df.replace("nan", np.nan, inplace=True)
         self.df.replace('', np.nan, inplace=True)
         # Perform unit conversion
         for header, current_unit, target_unit in zip(self.headers, self.current_units.values(), self.target_units):
