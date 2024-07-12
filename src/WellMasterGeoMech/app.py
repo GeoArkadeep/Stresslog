@@ -141,8 +141,7 @@ class MyApp(toga.App):
         # This method sets up the preferences command
         self._preferences = command
     def preferences(self, widget):
-        # This method will be called when the preferences command is activated
-        show_preferences_window(aliaspath, stylespath, pstylespath,unitdict,unitpath)
+        show_preferences_window(self, aliaspath, stylespath, pstylespath, unitdict, unitpath)
     def custom_edit_ucs(self, widget):
         asyncio.create_task(self.run_custom_ucs())
 

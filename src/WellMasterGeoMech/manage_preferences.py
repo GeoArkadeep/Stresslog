@@ -99,6 +99,8 @@ class PreferencesWindow(toga.Window):
     def cancel(self, widget):
         self.close()
 
-def show_preferences_window(csv1_path, csv2_path, csv3_path, drops, unitpath):
+def show_preferences_window(app, csv1_path, csv2_path, csv3_path, drops, unitpath):
     window = PreferencesWindow("Manage Preferences", csv1_path, csv2_path, csv3_path, drops, unitpath)
+    #window.app = app
+    app.windows.add(window)
     window.show()
