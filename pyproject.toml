@@ -37,8 +37,8 @@ requires = [
     "lasio",
     "wellpathpy",
     "matplotlib",
-    "numpy",
-    "pandas==2.1.1",
+    "numpy==1.23.5",
+    "pandas==1.5.3",
     "scipy",
     "pillow",
     "pint"
@@ -50,8 +50,8 @@ test_requires = [
     "lasio",
     "wellpathpy",
     "matplotlib",
-    "numpy",
-    "pandas==2.1.1",
+    "numpy==1.23.5",
+    "pandas==1.5.3",
     "scipy",
     "pillow",
     "pint"
