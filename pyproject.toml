@@ -41,7 +41,6 @@ requires = [
     "pandas==2.1.1",
     "scipy",
     "pillow",
-    "json",
     "pint"
 ]
 test_requires = [
@@ -55,7 +54,6 @@ test_requires = [
     "pandas==2.1.1",
     "scipy",
     "pillow",
-    "json",
     "pint"
     
 ]
