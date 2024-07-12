@@ -22,6 +22,10 @@ sources = [
     "src/WellMasterGeoMech/plotangle.py",
     "src/WellMasterGeoMech/PlotVec.py",
     "src/WellMasterGeoMech/Plotter.py"
+    "src/WellMasterGeoMech/manage_preferences.py"
+    "src/WellMasterGeoMech/editor.py"
+    "src/WellMasterGeoMech/failure_criteria.py"
+    "src/WellMasterGeoMech/hydraulics.py"
 ]
 installer_icon = "src/WellMasterGeoMech/resources/WellMasterGeoMech"
 installer_background = "src/WellMasterGeoMech/resources/ibg"
