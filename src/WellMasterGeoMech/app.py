@@ -1066,7 +1066,7 @@ class MyApp(toga.App):
             kwargs['dtmt'],
             kwargs['water'],
             kwargs['underbalancereject'],
-            kwargs['b'],
+            kwargs['tecb'],
             kwargs['doi'],
             kwargs['offset'],
             kwargs['strike'],
@@ -1168,7 +1168,7 @@ class MyApp(toga.App):
                     'rhoappg': float(model[0]),
                     'a': float(model[1]),
                     'nu': float(model[2]),
-                    'b': float(model[3]),
+                    'tecb': float(model[3]),
                     'lamb': float(model[4]),
                     'dtml': float(model[5]), 
                     'dtmt': float(model[6]),
@@ -1187,6 +1187,7 @@ class MyApp(toga.App):
                     'tango': (float(model[19])*ureg(ul[unitchoice[0]])).to('metre').magnitude
                 }          
             )
+        print(model[3])
         print("Calculation complete")        
     
     
@@ -1444,7 +1445,7 @@ def interpolate_nan(array_like):
     return array
 
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[13], b = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = model[13], tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93):
     global unitchoice
     alias = read_aliases_from_file()
     from welly import Curve
@@ -1675,9 +1676,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     btvd = np.full(len(tvd),np.nan)
     btvd2 = np.full(len(tvd),np.nan)
     grcut = np.full(len(tvd),np.nan)
-    alphas = np.full(len(tvd),np.nan)
-    betas = np.full(len(tvd),np.nan)
-    gammas = np.full(len(tvd),np.nan)
+    alphas = np.full(len(tvd),offset)
+    betas = np.full(len(tvd),strike)
+    gammas = np.full(len(tvd),dip)
+    tecB = np.full(len(tvd),tecb)
+    SHsh = np.full(len(tvd),np.nan)
+    biot = np.full(len(tvd),1)
     #cdtvd1 = np.full(len(tvd),np.nan)
     #cdtvd2 = np.full(len(tvd),np.nan)
     
@@ -1741,11 +1745,26 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         centroid_ratio_list = centroid_ratio_list.astype(float)
         grlist = grlist.astype(float)
         alphalist = np.transpose(formlist)[10]
-        alphalist = np.append(0,alphalist)
+        alphalist = np.append(offset,alphalist)
         betalist = np.transpose(formlist)[11]
-        betalist = np.append(0,betalist)
+        betalist = np.append(strike,betalist)
         gammalist = np.transpose(formlist)[12]
-        gammalist = np.append(0,gammalist)
+        gammalist = np.append(dip,gammalist)
+        
+        tecBlist = np.transpose(formlist)[13]
+        tecBlist = np.append(tecb,tecBlist)
+        SHshlist = np.transpose(formlist)[14]
+        SHshlist = np.append(1,SHshlist)
+        biotlist = np.transpose(formlist)[15]
+        biotlist = np.append(1,biotlist)
+        
+        alphalist = alphalist.astype(float)
+        betalist = betalist.astype(float)
+        gammalist = gammalist.astype(float)
+        tecBlist = tecBlist.astype(float)
+        SHshlist = SHshlist.astype(float)
+        biotlist = biotlist.astype(float)
+        print("TecFackist: ",tecBlist)
         print(alphalist,ftvdlist)
         i=0
         while i<len(fttvdlist):
@@ -1881,9 +1900,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             #cdtvd1[i] = np.interp(tvd[i],logtoplist,cdtvdlist)
             if tvd[i]<=float(ftvdlist[p]):
                 #cdtvd2[i] = cdtvdlist[p]
-                alphas[i] = alphalist[p]
-                betas[i] = betalist[p]
-                gammas[i] = gammalist[p]
+                alphas[i] = alphalist[p] if np.isfinite(alphalist[p]) else offset
+                betas[i] = betalist[p] if np.isfinite(betalist[p]) else strike
+                gammas[i] = gammalist[p] if np.isfinite(gammalist[p]) else dip
+                tecB[i] = tecBlist[p] if np.isfinite(tecBlist[p]) else tecb
+                SHsh[i] = SHshlist[p] 
+                biot[i] = biotlist[p] if np.isfinite(biotlist[p]) else 1
                 grcut[i] = grlist[p]
                 ttvd[i] = logtoplist[p]
                 btvd[i] = logbotlist[p]
@@ -1918,7 +1940,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #tempG[:] = tempG[:]*1000
 
     #check plot
-    
     """plt.plot(lithotype,md)
     plt.plot(nu3,md)
     plt.plot(nu2,md)
@@ -2319,6 +2340,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     
     #Eatons/Daines
+    print("Tectonic factor input = ",tecb)
     i = 0
     mu = 0.65
     if b > 10.0:
@@ -2331,7 +2353,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     while i<(len(ObgTppg)-1):
         if tvdbgl[i]>0:
             if shaleflag[i]<0.5:
-                fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-ppgZhang[i])+ppgZhang[i] +(b*ObgTppg[i])
+                fgppg[i] = (nu2[i]/(1-nu2[i]))*(ObgTppg[i]-(biot[i]*ppgZhang[i]))+(biot[i]*ppgZhang[i]) +(tecB[i]*(ObgTppg[i]))
                 mufgppg[i] = ((1/((((mu**2)+1)**0.5)+mu)**2)*(ObgTppg[i]-ppgZhang[i])) + ppgZhang[i]
                 mufgcc[i] = 0.11982642731*mufgppg[i]
             else:
@@ -2453,10 +2475,19 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     sgHMpsiU = np.zeros(len(tvd))
     psisfl = np.zeros(len(tvd))
     while i<len(tvd)-1:
-        result = getSP(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],phi[i],ilog[i],mu2[i],nu2[i],bt[i],ym[i],delTempC[i])
-        sgHMpsi[i] = (result[2])*145.038
-        sgHMpsiL[i] = (result[0])*145.038
-        sgHMpsiU[i] = (result[1])*145.038
+        try:
+            stresshratio = SHsh[i]
+        except:
+            stresshratio = np.nan
+        if np.isfinite(stresshratio):
+            sgHMpsi[i] = psifg[i]*stresshratio
+            sgHMpsiL[i] = sgHMpsi[i]*0.9 #10% margin of uncertainity
+            sgHMpsiU[i] = sgHMpsi[i]*1.1 #10% margin of uncertainity
+        else:
+            result = getSP(obgpsi[i]/145.038,psipp[i]/145.038,mudpsi[i]/145.038,psifg[i]/145.038,ucs2[i],phi[i],ilog[i],mu2[i],nu2[i],bt[i],ym[i],delTempC[i])
+            sgHMpsi[i] = (result[2])*145.038
+            sgHMpsiL[i] = (result[0])*145.038
+            sgHMpsiU[i] = (result[1])*145.038
         if psifg[i]<obgpsi[i]:#in normal and strikeslip regimes
             psifg[i] = np.nanmin([psifg[i],sgHMpsiL[i]])
         #psisfl[i] = 0.5*((3*sgHMpsi[i])-psifg[i])*(1-np.sin(np.radians(phi[i]))) -(horsud[i]*145.038/10*np.cos(np.radians(phi[i])))+ (psipp[i]*np.sin(np.radians(phi[i])))
@@ -2570,7 +2601,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         beta= tilt
         gamma= tiltgamma
         from BoreStab import getRota
-        Rmat = getRota(alpha,beta,gamma)
+        Rmat = getRota(alphas[doiX],betas[doiX],gammas[doiX])
         #sigmas[2] = sigmaVmpa+(sigmaVmpa - sigmaVmpa*Rmat[2][2])/Rmat[2][2]
         print(sigmas)
         #sigmas.sort(reverse=True)
@@ -2582,13 +2613,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         from BoreStab import getStens
         print("Actual Sv is ",sigmas[2],"Mpa")
         m = np.min([sigmas[0],sigmas[1],sigmas[2]])
-        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
-        sten = getStens(osx,osy,osz,alpha,beta,gamma)
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[doiX],betas[doiX],gammas[doiX])
+        sten = getStens(osx,osy,osz,alphas[doiX],betas[doiX],gammas[doiX])
         sn,se,sd = np.linalg.eigh(sten)[0]
         on,oe,od = np.linalg.eigh(sten)[1]
         savevec(on,oe,od,2,sn,se,sd,output_fileVec)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alpha,beta,gamma,0,nu2[doiX],incdoi,azmdoi,bt[doiX],ym[doiX],delTempC[doiX])
+        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alphas[doiX],betas[doiX],gammas[doiX],0,nu2[doiX],incdoi,azmdoi,bt[doiX],ym[doiX],delTempC[doiX])
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
@@ -2681,7 +2712,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             ucsmpa = horsud[i]
             deltaP = bhpmpa-ppmpa
             sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
-            osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+            osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
             sigmas = [osx,osy,osz]
             devdoi = well.location.deviation[i]
             incdoi = devdoi[2]
@@ -2707,7 +2738,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             alpha = alpha + offset
             beta= beta+tilt
             """
-            cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i])
+            cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
             crush[j] = cr
             frac[j] = fr
             if np.max(frac[j])>0:
@@ -2726,12 +2757,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         ucsmpa = horsud[i]
         deltaP = bhpmpa-ppmpa
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
-        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         sigmas = [osx,osy,osz]
         devdoi = well.location.deviation[i]
         incdoi = devdoi[2]
         azmdoi = devdoi[1]
-        cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i])
+        cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
         fr = np.array(fr)
         angles = np.array(angles)
         data2 = j,fr,angles,minazi,maxazi
@@ -2765,12 +2796,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         ucsmpa = horsud[i]
         deltaP = bhpmpa-ppmpa
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
-        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         sigmas = [osx,osy,osz]
         devdoi = well.location.deviation[i]
         incdoi = devdoi[2]
         azmdoi = devdoi[1]
-        getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
+        getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
         
     def drawSand(doi):
         doiactual = find_nearest_depth(tvdm,doi)
@@ -2785,12 +2816,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         ucsmpa = horsud[i]
         deltaP = bhpmpa-ppmpa
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
-        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alpha,beta,gamma)
+        osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         #sigmas = [osx,osy,osz]
         devdoi = well.location.deviation[i]
         incdoi = devdoi[2]
         azmdoi = devdoi[1]
-        Sl = getAlignedStress(osx,osy,osz,alpha,beta,gamma,azmdoi,incdoi)
+        Sl = getAlignedStress(osx,osy,osz,alphas[i],betas[i],gammas[i],azmdoi,incdoi)
         sigmamax = max(Sl[0][0],Sl[1][1])
         sigmamin = min(Sl[0][0],Sl[1][1])
         sigma_axial = Sl[2][2]
@@ -2879,8 +2910,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             devdoi = well.location.deviation[i]
             incdoi = devdoi[2]
             azmdoi = devdoi[1]
-            osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],offset,tilt,tiltgamma)
-            Sb[i] = getAlignedStress(osx,osy,osz,offset,tilt,tiltgamma,azmdoi,incdoi)
+            osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
+            Sb[i] = getAlignedStress(osx,osy,osz,alphas[i],betas[i],gammas[i],azmdoi,incdoi)
             SbFF[i] = Sb[i]
             Sb[i][0][0] = Sb[i][0][0] - ppmpa
             Sb[i][1][1] = Sb[i][1][1] - ppmpa

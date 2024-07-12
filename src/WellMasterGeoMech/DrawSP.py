@@ -398,10 +398,10 @@ from BoreStab import drawStab
 import numpy as np
 import math
 
-def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6):
+def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6, biot=1):
     
     ThetaB=15
-    biot=1
+    #biot=1
     
     ufac = ((((mu**2) + 1)**0.5) + mu)**2
 
