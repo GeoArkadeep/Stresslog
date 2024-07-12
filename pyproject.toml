@@ -2,7 +2,7 @@
 [tool.briefcase]
 project_name = "LasApps"
 bundle = "in.rocklab"
-version = "1.1.0"
+version = "1.1.05"
 url = "https://rocklab.in/WellMasterGeoMech"
 license = "AGPL-3.0"
 author = "Arkadeep Ghosh"
@@ -41,7 +41,8 @@ requires = [
     "pandas==2.1.1",
     "scipy",
     "PIL",
-    "json"
+    "json",
+    "pint"
 ]
 test_requires = [
     "pytest",
@@ -52,7 +53,10 @@ test_requires = [
     "matplotlib",
     "numpy",
     "pandas==2.1.1",
-    "scipy"
+    "scipy",
+    "PIL",
+    "json",
+    "pint"
     
 ]
 
