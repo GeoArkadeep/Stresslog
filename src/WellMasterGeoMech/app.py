@@ -49,12 +49,19 @@ output_fileHoop = os.path.join(output_dir, "PlotHoop.png")
 output_fileFrac = os.path.join(output_dir, "PlotFrac.png")
 output_fileAll = os.path.join(output_dir, "PlotAll.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
+output_forms = os.path.join(output_dir1, "tempForms.csv")
+output_ucs = os.path.join(output_dir1, "tempUCS.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
 aliaspath = os.path.join(input_dir, "alias.txt")
 unitpath = os.path.join(input_dir, "units.txt")
 stylespath = os.path.join(input_dir, "styles.txt")
 pstylespath = os.path.join(input_dir, "pstyles.txt")
+
+
+os.remove(output_forms) if os.path.exists(output_forms) else None
+os.remove(output_ucs) if os.path.exists(output_ucs) else None
+
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
         super().__init__(image=toga.Image(image_path), *args, **kwargs)
@@ -146,10 +153,10 @@ class MyApp(toga.App):
         asyncio.create_task(self.run_custom_ucs())
 
     async def run_custom_ucs(self):
-        global UCSs
-        UCSs = await custom_edit(
+        #global UCSs
+        await custom_edit(
             self, 
-            UCSs, 
+            output_ucs, 
             ["MD", "UCS"], ["Depth", "Strength"], 
             unitdict,["Metres","MPa"],[float,float],ureg
         )
@@ -159,12 +166,12 @@ class MyApp(toga.App):
         asyncio.create_task(self.run_custom_forms())
 
     async def run_custom_forms(self):
-        global forms
+        #global forms
         formunitdict = {"Depth": ["Metres", "Feet"],
             "None": [""]}
-        forms = await custom_edit(
+        await custom_edit(
             self, 
-            forms, 
+            output_forms, 
             ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None"], 
             formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres","","","","","","",""],[float,int,str,float,float,float,float,float,float,float,float,float,float,float,float,float,float],ureg
         )
@@ -1111,6 +1118,8 @@ class MyApp(toga.App):
         global attrib
         global model
         global unitchoice
+        global UCSs
+        global forms
         try:
             with open(unitpath, 'r') as f:
                 reader = csv.reader(f)
@@ -1118,8 +1127,14 @@ class MyApp(toga.App):
                 unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
         except:
             unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
-
-        
+        try:
+            UCSs = pd.read_csv(output_ucs)
+        except:
+            UCSs = None
+        try:
+            forms = pd.read_csv(output_forms)
+        except:
+            forms = None
         self.progress.text = "Status: Calculating, Standby"
         self.getwelldev()
         data = pd.read_csv(modelpath, index_col=False)

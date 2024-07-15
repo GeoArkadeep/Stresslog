@@ -5,11 +5,13 @@ import asyncio
 import pandas as pd
 import pint
 import numpy as np
+import os
 
 class CustomEditorWindow(toga.Window):
-    def __init__(self, id, title, df, headers, unittypes, unitdict, target_units, datatypes, ureg, on_close_future):
+    def __init__(self, id, title, csv_path, headers, unittypes, unitdict, target_units, datatypes, ureg, on_close_future):
         super().__init__(id=id, title=title)
         
+        self.csv_path = csv_path
         self.headers = headers
         self.unittypes = unittypes
         self.unitdict = unitdict
@@ -19,17 +21,17 @@ class CustomEditorWindow(toga.Window):
         self.on_close_future = on_close_future
         self.current_selections = {}
         
-        self.initialize_dataframe(df)
+        self.initialize_dataframe()
         self.create_content()
         
     def load_csv_wrapper(self, widget):
         asyncio.create_task(self.load_csv(widget))
 
-    def initialize_dataframe(self, df):
-        if df is None:
-            self.df = pd.DataFrame(columns=self.headers)
+    def initialize_dataframe(self):
+        if os.path.exists(self.csv_path):
+            self.df = pd.read_csv(self.csv_path)
         else:
-            self.df = df.copy()
+            self.df = pd.DataFrame(columns=self.headers)
         
         if list(self.df.columns) != self.headers:
             self.df.columns = self.headers
@@ -263,32 +265,23 @@ class CustomEditorWindow(toga.Window):
         # Sort the dataframe based on the first column in ascending order
         self.df.sort_values(by=[first_column], inplace=True)
         
-        #check for empty dataframe
-        if self.df.empty:
-            self.on_close_future.set_result(None)
-            self.close()
-        else:
-            self.on_close_future.set_result(self.df)
-            self.close()
+        # Save the dataframe back to the CSV file
+        self.df.to_csv(self.csv_path, index=False)
+        
+        self.on_close_future.set_result(None)
+        self.close()
 
     def cancel(self, widget):
-        self.df.replace('', np.nan, inplace=True)
-        # Drop only rows where all values are NaN
-        self.df.dropna(how='all', inplace=True)
-        if self.df.empty:
-            self.on_close_future.set_result(None)
-            self.close()
-        else:
-            self.on_close_future.set_result(self.df)
-            self.close()
+        self.on_close_future.set_result(None)
+        self.close()
 
-async def custom_edit(app, df, headers, unittypes, unitdict, target_units, datatypes, ureg=pint.UnitRegistry()):
+async def custom_edit(app, csv_path, headers, unittypes, unitdict, target_units, datatypes, ureg=pint.UnitRegistry()):
     on_close_future = asyncio.Future()
 
     editor_window = CustomEditorWindow(
         id='data_editor',
         title='Data Editor',
-        df=df,
+        csv_path=csv_path,
         headers=headers,
         unittypes=unittypes,
         unitdict=unitdict,
@@ -300,5 +293,5 @@ async def custom_edit(app, df, headers, unittypes, unitdict, target_units, datat
     app.windows.add(editor_window)
     editor_window.show()
 
-    result_df = await on_close_future
-    return result_df
+    await on_close_future
+    # No return value, as we're overwriting the CSV in place
