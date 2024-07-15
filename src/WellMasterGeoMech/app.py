@@ -160,7 +160,7 @@ class MyApp(toga.App):
             ["MD", "UCS"], ["Depth", "Strength"], 
             unitdict,["Metres","MPa"],[float,float],ureg
         )
-        print(UCSs)
+        #print(UCSs)
         
     def custom_edit_forms(self, widget):
         asyncio.create_task(self.run_custom_forms())
@@ -175,7 +175,7 @@ class MyApp(toga.App):
             ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None"], 
             formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres","","","","","","",""],[float,int,str,float,float,float,float,float,float,float,float,float,float,float,float,float,float],ureg
         )
-        print(forms)
+        #print(forms)
         
     def startup(self):
         PREFERENCES = toga.Command(

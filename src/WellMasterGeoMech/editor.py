@@ -186,6 +186,7 @@ class CustomEditorWindow(toga.Window):
             
         
     def clear_data(self, widget):
+        os.remove(self.csv_path) if os.path.exists(self.csv_path) else None
         self.on_close_future.set_result(None)
         self.close()
     
@@ -266,7 +267,8 @@ class CustomEditorWindow(toga.Window):
         self.df.sort_values(by=[first_column], inplace=True)
         
         # Save the dataframe back to the CSV file
-        self.df.to_csv(self.csv_path, index=False)
+        if not self.df.empty:
+            self.df.to_csv(self.csv_path, index=False)
         
         self.on_close_future.set_result(None)
         self.close()
