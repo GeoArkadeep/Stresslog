@@ -37,6 +37,7 @@ Temporary Items
 # Distribution / packaging
 .Python
 env/
+.venv/
 build/
 develop-eggs/
 dist/
