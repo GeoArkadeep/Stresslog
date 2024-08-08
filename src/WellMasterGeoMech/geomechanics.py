@@ -8,34 +8,13 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import lasio as laua
 import json
+from welly import Curve
+from welly import Well
+from collections import defaultdict
+
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
-output_dir = os.path.join(user_home, "ppp_app_plots")
-output_dir1 = os.path.join(user_home, "ppp_app_data")
-input_dir = os.path.join(user_home, "ppp_app_models")
-# Create the output directory if it doesn't exist
-os.makedirs(output_dir, exist_ok=True)
-os.makedirs(output_dir1, exist_ok=True)
-os.makedirs(input_dir, exist_ok=True)
-
-output_file = os.path.join(output_dir, "PlotFigure.png")
-output_fileS = os.path.join(output_dir, "PlotStability.png")
-output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
-output_fileVec = os.path.join(output_dir, "PlotVec.png")
-output_fileBHI = os.path.join(output_dir, "PlotBHI.png")
-output_fileHoop = os.path.join(output_dir, "PlotHoop.png")
-output_fileFrac = os.path.join(output_dir, "PlotFrac.png")
-output_fileAll = os.path.join(output_dir, "PlotAll.png")
-output_file2 = os.path.join(output_dir1, "output.csv")
-output_forms = os.path.join(output_dir1, "tempForms.csv")
-output_ucs = os.path.join(output_dir1, "tempUCS.csv")
-output_file3 = os.path.join(output_dir1, "output.las")
-modelpath = os.path.join(input_dir, "model.csv")
-aliaspath = os.path.join(input_dir, "alias.txt")
-unitpath = os.path.join(input_dir, "units.txt")
-stylespath = os.path.join(input_dir, "styles.txt")
-pstylespath = os.path.join(input_dir, "pstyles.txt")
 
 up = ['psi','Ksc','Bar','Atm','MPa']
 us = ['MPa','psi','Ksc','Bar','Atm']
@@ -43,9 +22,9 @@ ug = ['gcc','sg','ppg','psi/foot']
 ul = ['metres','feet']
 ut = ['degC','degF','degR','degK']
 
-def getNu(well, nun):
+def getNu(well, nun, aliaspath):
     import math
-    alias = read_aliases_from_file()
+    alias = read_aliases_from_file(aliaspath)
     header = well._get_curve_mnemonics()
     #print(header)
     alias['gr'] = [elem for elem in header if elem in set(alias['gr'])]
@@ -69,7 +48,7 @@ def getNu(well, nun):
 
 
 
-def read_aliases_from_file(file_path=aliaspath):
+def read_aliases_from_file(file_path):
     import json
     try:
         with open(file_path, 'r') as file:
@@ -92,7 +71,7 @@ def read_aliases_from_file(file_path=aliaspath):
         return aliases
 
 
-def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path=stylespath):
+def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path):
     
     def convert_value(value, from_unit, to_unit, ureg=ureg):
         return (value * ureg(from_unit)).to(to_unit).magnitude
@@ -147,7 +126,7 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
 
     return styles
 
-def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path=pstylespath):
+def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path):
     
     def convert_value(value, from_unit, to_unit,ureg=ureg):
         return (value * ureg(from_unit)).to(to_unit).magnitude
@@ -220,39 +199,6 @@ def interpolate_nan(array_like):
     array[nans] = np.interp(get_x(nans), get_x(~nans), array[~nans])
 
     return array
-
-
-def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
-    dev=pd.read_csv(devpath, sep=delim)
-    dheader = list(dev.columns)
-    return dheader
-def readLithoFromAscii(lithopath, delim = r'[ ,	]'):
-    global lithos
-    litho=pd.read_csv(lithopath, sep=delim)
-    lithos=litho
-    lithoheader = list(litho.columns)
-    return litho
-
-def readUCSFromAscii(ucspath, delim = r'[ ,	]'):
-    global UCSs
-    ucs=pd.read_csv(ucspath, sep=delim)
-    UCSs=ucs
-    ucsheader = list(ucs.columns)
-    return ucs
-
-def readFlagFromAscii(flagpath, delim = r'[ ,	]'):
-    global flags
-    flag=pd.read_csv(flagpath, sep=delim)
-    flags=flag
-    flagheader = list(flag.columns)
-    return flag
-
-def readFormFromAscii(formpath, delim = r'[ ,	]'):
-    global forms
-    form=pd.read_csv(formpath, sep=delim)
-    forms=form
-    formheader = list(form.columns)
-    return form
 
 
 def datasets_to_las(path, datasets, custom_units={}, **kwargs):
@@ -382,21 +328,269 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     with open(path, mode='w') as f:
         las.write(f, **kwargs)
 
+from scipy.signal import medfilt
+def median_filter_interpolation(curve, window_size=21):
+    # Handle edge cases where the window size might be larger than the curve length
+    if len(curve.values) < window_size:
+        window_size = len(curve.values)
+    
+    # Create a sliding window view of the data
+    shape = (curve.values.size - window_size + 1, window_size)
+    strides = (curve.values.strides[0], curve.values.strides[0])
+    sliding_windows = np.lib.stride_tricks.as_strided(curve.values, shape=shape, strides=strides)
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=None, ureg=pint.UnitRegistry(autoconvert_offset_to_baseunit = True), mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None):
+    # Compute the mean along the window axis, ignoring NaNs
+    filtered_data = np.nanmedian(sliding_windows, axis=1)
+
+    # Recreate the curve with the filtered data
+    filtered_curve = Curve(mnemonic=curve.mnemonic, units=curve.units, data=filtered_data, basis=curve.basis[window_size//2 : -(window_size//2)])
+
+    # Resample the curve if necessary
+    resampled_curve = filtered_curve.to_basis(step=curve.step * window_size)
+
+    return resampled_curve
+
+def average_interpolation(curve, window_size=21):
+    # Handle edge cases where the window size might be larger than the curve length
+    if len(curve.values) < window_size:
+        window_size = len(curve.values)
+    
+    # Create a sliding window view of the data
+    shape = (curve.values.size - window_size + 1, window_size)
+    strides = (curve.values.strides[0], curve.values.strides[0])
+    sliding_windows = np.lib.stride_tricks.as_strided(curve.values, shape=shape, strides=strides)
+
+    # Compute the mean along the window axis, ignoring NaNs
+    filtered_data = np.nanmean(sliding_windows, axis=1)
+
+    # Recreate the curve with the filtered data
+    filtered_curve = Curve(mnemonic=curve.mnemonic, units=curve.units, data=filtered_data, basis=curve.basis[window_size//2 : -(window_size//2)])
+
+    # Resample the curve if necessary
+    resampled_curve = filtered_curve.to_basis(step=curve.step * window_size)
+
+    return resampled_curve
+
+def generate_weights(window_size, window_type='v_shape'):
+    if window_type == 'v_shape':
+        # V-shaped weights
+        weights = np.abs(np.arange(window_size) - (window_size - 1) / 2)
+        weights = 1 - weights / weights.max()
+    elif window_type == 'hanning':
+        # Hanning weights (hardcoded)
+        weights = 0.5 - 0.5 * np.cos(2 * np.pi * np.arange(window_size) / (window_size - 1))
+    elif window_type == 'hamming':
+        # Hamming weights (hardcoded)
+        weights = 0.54 - 0.46 * np.cos(2 * np.pi * np.arange(window_size) / (window_size - 1))
+    else:
+        raise ValueError("Invalid window_type. Choose from 'v_shape', 'hanning', 'hamming'.")
+    
+    return weights
+
+def weighted_average_interpolation(curve, window_size=21, window_type='v_shape'):
+    # Generate weights based on the selected window type
+    weights = generate_weights(window_size, window_type)
+
+    # Handle edge cases where the window size might be larger than the curve length
+    if len(curve.values) < window_size:
+        window_size = len(curve.values)
+        weights = weights[:window_size]
+
+    # Create a sliding window view of the data
+    shape = (curve.values.size - window_size + 1, window_size)
+    strides = (curve.values.strides[0], curve.values.strides[0])
+    sliding_windows = np.lib.stride_tricks.as_strided(curve.values, shape=shape, strides=strides)
+
+    # Normalize weights
+    normalized_weights = weights / np.nansum(weights)
+
+    # Compute the weighted mean along the window axis, ignoring NaNs
+    filtered_data = np.nansum(sliding_windows * normalized_weights, axis=1)
+
+    # Recreate the curve with the filtered data
+    filtered_curve = Curve(mnemonic=curve.mnemonic, units=curve.units, data=filtered_data, basis=curve.basis[window_size//2 : -(window_size//2)])
+
+    # Resample the curve if necessary
+    resampled_curve = filtered_curve.to_basis(step=curve.step * window_size)
+
+    return resampled_curve
+
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=None, ureg=pint.UnitRegistry(autoconvert_offset_to_baseunit = True), mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home):
 #def plotPPzhang(well, unitchoice, finaldepth, mwvalues, flowgradvals, fracgradvals, flowpsivals, fracpsivals, attrib):
+    """
+    Calculates and plots geomechanical parameters for the entire well. These include
+    i) Overburden pressure and gradient
+    ii) Pore pressure and gradient
+    iii) Shmin pressure and gradient
+    iv) SHMax pressure and gradient
+    v) UCS
+    vi) Far field 6 component stress tensor
+    vii) Hoop Stresses around the wellbore
+    viii) Fracture Gradient
+    ix) Shear Failure Gradient
+
+    Also plots the following at a chosen depth of interest (optional):
+    i) Stress Polygon
+    ii) Stability vs Well orientation plot
+    iii) Stress Tensor as three vectors and their orientations w.r.t geographic coordinate system (NED)
+    iv) Expected orientation of fractures if any
+    v) Hoop Stress and failure angles
+    
+    This function generates various plots related to pore pressure prediction using Zhang's method based on well data.
+    The function processes well log data after optional downsampling using median filtering, and generates plots for
+    various geomechanical parameters.
+
+    Parameters:
+    well : Well object
+        The well data containing curves for various parameters.
+    rhoappg : float, optional
+        Apparent density at mudline in g/cc (default is 16.33).
+    lamb : float, optional
+        A parameter related to the geomechanical model (default is 0.0008).
+    ul_exp : float, optional
+        Unloading exponent (default is 0.0008).
+    ul_depth : float, optional
+        Unloading depth (default is 0).
+    a : float, optional
+        A parameter related to the geomechanical model (default is 0.630).
+    nu : float, optional
+        Poisson's ratio (default is 0.4).
+    sfs : float, optional
+        Shale flag resistivity cutoff (difference between deep and shallow resistivity in, default is 1.0).
+    window : int, optional
+        The window size for downsampling (default is 1).
+    zulu : int, optional
+        Start depth for analysis (default is 0).
+    tango : int, optional
+        End depth for analysis (default is 2000).
+    dtml : int, optional
+        deltaT at mudline in uspf (default is 210).
+    dtmt : int, optional
+        deltaT of matrix in uspf (default is 60).
+    water : float, optional
+        Water density in g/cc (default is 1.0).
+    underbalancereject : int, optional
+        Minimum PP gradient below which to reject underbalanced data (default is 1).
+    tecb : int, optional
+        Daines parameter related to tectonic stress (default is 0).
+    doi : int, optional
+        Depth of interest (default is 0).
+    offset : int, optional
+        SHMax azimuth parameter (default is 0).
+    strike : int, optional
+        Strike parameter (default is 0).
+    dip : int, optional
+        Dip parameter (default is 0).
+    mudtemp : int, optional
+        Mud temperature (default is 0).
+    lala : float, optional
+        Parameter for Lal's method (default is -1.0).
+    lalb : float, optional
+        Parameter for Lal's method (default is 1.0).
+    lalm : int, optional
+        Parameter for Lal's method (default is 5).
+    lale : float, optional
+        Parameter for Lal's method (default is 0.5).
+    lall : int, optional
+        Parameter for Lal's method (default is 5).
+    horsuda : float, optional
+        Parameter for Horsud's method (default is 0.77).
+    horsude : float, optional
+        Parameter for Horsud's method (default is 2.93).
+    unitchoice : list, optional
+        Unit choices for output (default is [0,0,0,0,0]).
+    ureg : pint.UnitRegistry, optional
+        Unit registry for unit conversions (default is pint.UnitRegistry with autoconvert_offset_to_baseunit=True).
+    mwvalues : list, optional
+        List of mud weight values (default is [[1.0, 0.0, 0.0, 0.0, 0.0, 0]]).
+    flowgradvals : list, optional
+        List of flow gradient values (default is [[0,0]]).
+    fracgradvals : list, optional
+        List of fracture gradient values (default is [[0,0]]).
+    flowpsivals : list, optional
+        List of flow psi values (default is [[0,0]]).
+    fracpsivals : list, optional
+        List of fracture psi values (default is [[0,0]]).
+    attrib : list, optional
+        List of section attributes comprising of max ECD, casing shoe depth, casing dia, bit dia, mud salinity and BHT at shoe
+        (default is [1,0,0,0,0,0,0,0]).
+    flags : list, optional
+        Dataframe containing depths of identified conditions (breakouts/DIFs/None) from image log (default is None).
+    UCSs : list, optional
+        Dataframe containing MD and UCS values (default is None).
+    forms : list, optional
+        Dataframe containing formation tops and other formation-specific parameters (default is None).
+    lithos : list, optional
+        Dataframe containing interpreted lithology data, as well as lithology-specific parameters (default is None).
+    user_home : str, optional
+        Path to the root of output directories (default is Documents).
+
+    Returns:
+    A tuple consisting of the well dataframe and the modified well object
+
+    Notes:
+    The function generates and saves the following plots:
+    - PlotFigure.png: General plot figure.
+    - PlotStability.png: Stability plot.
+    - PlotPolygon.png: Polygon plot.
+    - PlotVec.png: Vector plot.
+    - PlotBHI.png: BHI plot.
+    - PlotHoop.png: Hoop stress plot.
+    - PlotFrac.png: Fracture plot.
+    - PlotAll.png: Combined plot.
+    Additionally, it saves the output as files in CSV and LAS formats.
+    """
+    
+    output_dir = os.path.join(user_home, "ppp_app_plots")
+    output_dir1 = os.path.join(user_home, "ppp_app_data")
+    input_dir = os.path.join(user_home, "ppp_app_models")
+    
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_dir1, exist_ok=True)
+    os.makedirs(input_dir, exist_ok=True)
+
+
+    output_file = os.path.join(output_dir, "PlotFigure.png")
+    output_fileS = os.path.join(output_dir, "PlotStability.png")
+    output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
+    output_fileVec = os.path.join(output_dir, "PlotVec.png")
+    output_fileBHI = os.path.join(output_dir, "PlotBHI.png")
+    output_fileHoop = os.path.join(output_dir, "PlotHoop.png")
+    output_fileFrac = os.path.join(output_dir, "PlotFrac.png")
+    output_fileAll = os.path.join(output_dir, "PlotAll.png")
+    output_file2 = os.path.join(output_dir1, "output.csv")
+    output_forms = os.path.join(output_dir1, "tempForms.csv")
+    output_ucs = os.path.join(output_dir1, "tempUCS.csv")
+    output_file3 = os.path.join(output_dir1, "output.las")
+    modelpath = os.path.join(input_dir, "model.csv")
+    aliaspath = os.path.join(input_dir, "alias.txt")
+    unitpath = os.path.join(input_dir, "units.txt")
+    stylespath = os.path.join(input_dir, "styles.txt")
+    pstylespath = os.path.join(input_dir, "pstyles.txt")
+
+    #from downsampler import downsample_well_average
+    #well = downsample_well_average(well, factor=window)
+    
+    for curve_name, curve in well.data.items():
+        print(f"Curve: {curve_name}")
+        curve = average_interpolation(curve,window)
+        #curve = curve.to_basis(step=0.15*window)
+        well.data[curve_name] = curve
+    
     #ureg.define('ppg = 0.051948 psi/foot')
     #ureg.define('sg = 0.4335 psi/foot = gcc')
     #ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
     finaldepth = well.df().index[-1]
     #global unitchoice
-    alias = read_aliases_from_file()
-    from welly import Curve
+    alias = read_aliases_from_file(aliaspath)
+    
     #print(alias)
     print(well.uwi,well.name)
     #print(well.location.location)
     start_depth = well.df().index[0]
     final_depth = well.df().index[-1]
+    
     #global finaldepth
     plt.clf()
     #well.location.plot_3d()
@@ -408,7 +602,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         tilt, tiltgamma = getEuler(offset,strike,dip)
         print("Alpha :",offset,", Beta: ",tilt,", Gamma :",tiltgamma)
     else:
-    
         tilt = 0
         tiltgamma = 0
     
@@ -471,7 +664,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     md = well.data['MD'].values
     try:
-        nu2 = getNu(well, nu)
+        nu2 = getNu(well, nu, aliaspath)
     except:
         nu2 = [nu] * (len(md))
     
@@ -620,8 +813,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     btvd2 = np.full(len(tvd),np.nan)
     grcut = np.full(len(tvd),np.nan)
     alphas = np.full(len(tvd),offset)
-    betas = np.full(len(tvd),strike)
-    gammas = np.full(len(tvd),dip)
+    betas = np.full(len(tvd),tilt)
+    gammas = np.full(len(tvd),tiltgamma)
     tecB = np.full(len(tvd),tecb)
     SHsh = np.full(len(tvd),np.nan)
     biot = np.full(len(tvd),1)
@@ -711,7 +904,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print(alphalist,ftvdlist)
         i=0
         while i<len(fttvdlist):
-            betalist[i],gammalist[i] = getEuler(float(alphalist[i]),float(betalist[i]),float(gammalist[i]))
+            betalist[i],gammalist[i] = getEuler(float(alphalist[i]),float(betalist[i]),float(gammalist[i])) if np.isfinite(float(alphalist[i])) and np.isfinite(float(betalist[i])) and np.isfinite(float(gammalist[i])) else (betalist[i],gammalist[i])
+            print(betalist[i],gammalist[i])
             difftvd[i] = float(fttvdlist[i])-float(ttvdlist[i])
             fttvdlist[i] = float(fttvdlist[i])
             ttvdlist[i] = float(ttvdlist[i])
@@ -844,8 +1038,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             if tvd[i]<=float(ftvdlist[p]):
                 #cdtvd2[i] = cdtvdlist[p]
                 alphas[i] = alphalist[p] if np.isfinite(alphalist[p]) else offset
-                betas[i] = betalist[p] if np.isfinite(betalist[p]) else strike
-                gammas[i] = gammalist[p] if np.isfinite(gammalist[p]) else dip
+                betas[i] = betalist[p] if np.isfinite(betalist[p]) else tilt
+                gammas[i] = gammalist[p] if np.isfinite(gammalist[p]) else tiltgamma
                 tecB[i] = tecBlist[p] if np.isfinite(tecBlist[p]) else tecb
                 SHsh[i] = SHshlist[p] 
                 biot[i] = biotlist[p] if np.isfinite(biotlist[p]) else 1
@@ -1166,6 +1360,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     c=ct
     b=ct
     print("Max velocity is ",deltmu0,"uspf")
+    from obgppshmin import get_PPgrad_Zhang_gcc
     while i<(len(ObgTppg)-1):
         if glwd>=0: #Onshore Cases
             if tvd[i]>ul_depth:
@@ -1173,7 +1368,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5: #Shale PorePressure
                     gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
+                    #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
+                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccZhang2[i] = np.nan
@@ -1207,8 +1403,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:#Shale Pore Pressure
                     gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
-                    gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
+                    #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
+                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccZhang2[i] = np.nan
@@ -1468,6 +1665,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     ssgHMpsi = sgHMpsi
     ssgHMpsiL = sgHMpsiL
     ssgHMpsiU = sgHMpsiU
+    
+    """
     while i<len(fgcc):
         sum1 = np.sum(gccZhang[(i-window):i+(window)])
         spp[i] = sum1/(2*window)
@@ -1494,6 +1693,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sum12 = np.sum(sgHMpsiU[(i-window):i+(window)])
         ssgHMpsiU[i] = sum12/(2*window)
         i+=1
+    """
+    
+    
     finaldepth = find_nearest_depth(tvdm,finaldepth)[1]
     doi = min(doi,finaldepth-1)
     if doi>0:
@@ -1544,6 +1746,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         beta= tilt
         gamma= tiltgamma
         from BoreStab import getRota
+        
         Rmat = getRota(alphas[doiX],betas[doiX],gammas[doiX])
         #sigmas[2] = sigmaVmpa+(sigmaVmpa - sigmaVmpa*Rmat[2][2])/Rmat[2][2]
         print(sigmas)
@@ -1554,6 +1757,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         from PlotVec import savevec
         from PlotVec import showvec
         from BoreStab import getStens
+        print("Alpha :",alphas[doiX],", Beta: ",betas[doiX],", Gamma :",gammas[doiX])
         print("Actual Sv is ",sigmas[2],"Mpa")
         m = np.min([sigmas[0],sigmas[1],sigmas[2]])
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[doiX],betas[doiX],gammas[doiX])
@@ -1829,9 +2033,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     lademin = np.full(len(tvd),np.nan)
     from failure_criteria import mod_lad_cmw, mogi
     print("calculating aligned far field stresses")
-    for i in range(0,len(tvd),window):
+    print("Total depth-points to be calculated: ",len(tvd))
+    
+    skip = 21 if 2.0 <= window < 21 else window
+    
+    for i in range(0,len(tvd),skip):
         #print(i)
-        if window>=2.0:
+        if window>=2.0 and window<21:
             sigmaVmpa = np.nanmean(obgpsi[i-int(window/2):i+int(window/2)])/145.038
             sigmahminmpa = np.nanmean(psifg[i-int(window/2):i+int(window/2)])/145.038
             sigmaHMaxmpa = np.nanmean(sgHMpsi[i-int(window/2):i+int(window/2)])/145.038
@@ -2056,7 +2264,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     }, index=tvdm)"""
     #print(data)
     # Define styles for the new plotter function
-    styles = read_styles_from_file(minpressure,maxchartpressure,pressure_unit,strength_unit,gradient_unit,ureg)
+    styles = read_styles_from_file(minpressure,maxchartpressure,pressure_unit,strength_unit,gradient_unit,ureg, stylespath)
     
     print("max pressure is ",maxchartpressure)
         
@@ -2068,18 +2276,22 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             return [tvdf[find_nearest_depth(md, y)[0]] for y in y_values]
 
     # Convert data points to DataFrame
+    # Convert data points to DataFrame
     def create_points_dataframe(points_data):
-        points_df = {}
+        aggregated_points = defaultdict(lambda: defaultdict(list))
+        
+        # Aggregate values by index within the dictionary
         for key, (x_vals, y_vals) in points_data.items():
             y_vals_tvd = convert_to_tvd(y_vals)
-            points_df[key] = pd.Series(data=x_vals, index=y_vals_tvd)
-        points_df = pd.DataFrame(points_df)
+            for x, y_tvd in zip(x_vals, y_vals_tvd):
+                aggregated_points[y_tvd][key].append(x)
         
-        # Handle duplicate indices
-        points_df = points_df.groupby(points_df.index).first()
+        # Compute the mean of aggregated values
+        aggregated_means = {index: {key: np.nanmean(values) for key, values in data.items()} 
+                            for index, data in aggregated_points.items()}
         
-        # Drop the first row
-        #points_df = points_df.iloc[1:]
+        # Convert the aggregated dictionary to a DataFrame
+        points_df = pd.DataFrame.from_dict(aggregated_means, orient='index')
         
         # Replace zero values with NaN
         points_df = points_df.replace(0, np.nan)
@@ -2106,7 +2318,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         ucss = np.array([[depth, ucs] for ucs, depth in ucss])
         points_data['ucs'] = zip(*ucss)
     
-    pointstyles = read_pstyles_from_file(minpressure, maxchartpressure, pressure_unit, strength_unit, gradient_unit, ureg)
+    pointstyles = read_pstyles_from_file(minpressure, maxchartpressure, pressure_unit, strength_unit, gradient_unit, ureg, pstylespath)
     
     # Add CALIPER styles only if cald is not empty
     if np.any(~np.isnan(cald)) > 0 or len(casing_dia)>1:

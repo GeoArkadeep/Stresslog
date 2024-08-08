@@ -1096,7 +1096,8 @@ class MyApp(toga.App):
             kwargs['flags'],
             kwargs['UCSs'],
             kwargs['forms'],
-            kwargs['lithos']
+            kwargs['lithos'],
+            kwargs['user_home']
             
         )
     
@@ -1197,7 +1198,7 @@ class MyApp(toga.App):
 
         loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
-            welldf,wello = await loop.run_in_executor(
+            await loop.run_in_executor(
                 pool, 
                 self.start_plotPPzhang_thread, 
                 loop, wella,{
@@ -1239,7 +1240,8 @@ class MyApp(toga.App):
                     'flags': flags,
                     'UCSs': UCSs,
                     'forms': forms,
-                    "lithos": lithos
+                    "lithos": lithos,
+                    "user_home": user_home
                 }          
             )
         print(model[3])

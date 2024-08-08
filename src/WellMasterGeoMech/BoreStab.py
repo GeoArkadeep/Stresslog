@@ -207,7 +207,7 @@ def getRota(alpha,beta,gamma):
     return Rs
 
 
-def getStens(s1,s2,s3,alpha,beta,gamma):
+def getStens(sx,sy,sz,alpha,beta,gamma):
     
     #print(Ss)
 
@@ -220,7 +220,7 @@ def getStens(s1,s2,s3,alpha,beta,gamma):
                    [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
     #print(Rs)
     RsT = np.transpose(Rs)
-    Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
+    Ss = np.array([[sx,0,0],[0,sy,0],[0,0,sz]])
     Sg = RsT@Ss@Rs
     print(Sg)
     print(np.linalg.eigh(Sg))
