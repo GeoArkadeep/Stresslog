@@ -1,6 +1,6 @@
 
 ![BG1](https://github.com/GeoArkadeep/WellMasterGeoMech/assets/160126374/27efa304-817d-4520-a5f5-65e63e679c15)
-# Well Master GeoMech
+# Stresslog
 
 A *libre* application to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary semi-realtime stress prediction (for example if the wellsite geologist fetches and updates the las from MWD/LWD provider every single or so).
 
