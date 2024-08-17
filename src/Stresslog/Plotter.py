@@ -32,13 +32,15 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
         invert_yaxis = False
         pltsign = -1
 
-    if len(data.columns) != len(styles):
-        raise ValueError("The number of columns in the data must match the number of entries in the styles dictionary.")
+    
+    #if len(data.columns) != len(styles):
+    #    raise ValueError("The number of columns in the data must match the number of entries in the styles dictionary.")
 
     if points is not None and pointstyles is not None:
         if len(points.columns) != len(pointstyles):
             raise ValueError("The number of columns in the points must match the number of entries in the pointstyles dictionary.")
-
+    
+    
     n_tracks = max(max(style["track"] for style in styles.values()), 
                    max(pointstyle["track"] for pointstyle in pointstyles.values()) if pointstyles else 0) + 1
     fig, axes = plt.subplots(nrows=1, ncols=n_tracks, figsize=figsize, sharey=True)

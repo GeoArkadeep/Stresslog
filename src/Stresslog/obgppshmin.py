@@ -76,6 +76,8 @@ def get_PPgrad_Zhang_gcc(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, d
     
     return numerator / biot
 
+
+
 def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot=1):
     # Ensure all inputs are numpy arrays
     ObgTgcc = np.asarray(ObgTgcc)
@@ -101,6 +103,77 @@ def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltm
     )
     
     return numerator / biot
+
+def get_PPgrad_Eaton_gcc(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1):
+    numerator = ObgTgcc - ((ObgTgcc - pn)*((resdeep/(res0*np.exp(be*tvdbgl)))**ne))
+    return numerator / biot
+
+def get_PPgrad_Eaton_gcc_vec(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1):
+    # Ensure all inputs are numpy arrays
+    ObgTgcc = np.asarray(ObgTgcc)
+    pn = np.asarray(pn)
+    be = np.asarray(be)
+    ne = np.asarray(ne)
+    tvdbgl = np.asarray(tvdbgl)
+    res0 = np.asarray(res0)
+    resdeep = np.asarray(resdeep)
+    biot = np.asarray(biot)
+
+    # Broadcast scalar values to match the shape of the largest array
+    ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot = np.broadcast_arrays(
+        ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot
+    )
+
+    # Calculate numerator
+    numerator = ObgTgcc - ((ObgTgcc - pn) * ((resdeep / (res0 * np.exp(be * tvdbgl))) ** ne))
+    return numerator / biot
+
+
+def get_PPgrad_Dxc_gcc(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
+    numerator = ObgTgcc - ((ObgTgcc - pn)*((Dxc/(D0*np.exp(d*tvdbgl)))**nde))
+    return numerator / biot
+
+def get_PPgrad_Dxc_gcc_vec(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
+    # Ensure all inputs are numpy arrays
+    ObgTgcc = np.asarray(ObgTgcc)
+    pn = np.asarray(pn)
+    d = np.asarray(d)
+    nde = np.asarray(nde)
+    tvdbgl = np.asarray(tvdbgl)
+    D0 = np.asarray(D0)
+    Dxc = np.asarray(Dxc)
+    biot = np.asarray(biot)
+
+    # Broadcast scalar values to match the shape of the largest array
+    ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot = np.broadcast_arrays(
+        ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot
+    )
+
+    # Calculate numerator
+    numerator = ObgTgcc - ((ObgTgcc - pn) * ((Dxc / (D0 * np.exp(d * tvdbgl))) ** nde))
+    return numerator / biot
+
+def get_Dxc(ROP,RPM,WOB,BTDIA,ECD,pn):
+    #units= ROP:ft/hr, WOB:lbs, BTDIA:in, 
+    Dxc = (np.log10(ROP/(60*RPM))*pn)/(np.log10((12*WOB)/((10**6)*BTDIA))*ECD)
+    return Dxc
+
+def get_Dxc_vec(ROP, RPM, WOB, BTDIA, ECD, pn):
+    # Ensure all inputs are numpy arrays
+    ROP = np.asarray(ROP)
+    RPM = np.asarray(RPM)
+    WOB = np.asarray(WOB)
+    BTDIA = np.asarray(BTDIA)
+    ECD = np.asarray(ECD)
+    pn = np.asarray(pn)
+
+    # Broadcast scalar values to match the shape of the largest array
+    ROP, RPM, WOB, BTDIA, ECD, pn = np.broadcast_arrays(ROP, RPM, WOB, BTDIA, ECD, pn)
+
+    # Calculate Dxc
+    Dxc = (np.log10(ROP / (60 * RPM)) * pn) / (np.log10((12 * WOB) / (10**6 * BTDIA)) * ECD)
+    return Dxc
+
 
 def get_Shmin_grad_Daine_ppg(nu2, ObgTppg, biot, ppgZhang, tecB):
     """

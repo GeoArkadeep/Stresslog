@@ -1,35 +1,35 @@
 # This project was generated with Unknown using template: https://github.com/beeware/briefcase-template@v0.3.13
 [tool.briefcase]
-project_name = "LasApps"
+project_name = "Stresslog"
 bundle = "in.rocklab"
 version = "1.1.2"
-url = "https://rocklab.in/WellMasterGeoMech"
+url = "https://rocklab.in/Stresslog"
 license = "AGPL-3.0"
 author = "Arkadeep Ghosh"
 author_email = "arkadeep_ghosh@rocklab.in"
 
-[tool.briefcase.app.WellMasterGeoMech]
-formal_name = "WellMasterGeoMech"
+[tool.briefcase.app.Stresslog]
+formal_name = "Stresslog"
 description = "An application to calculate and plot pore pressure from p-wave velocity from las files."
 long_description = """More details about the app should go here.
 """
-icon = "src/WellMasterGeoMech/resources/WellMasterGeoMechC"
+icon = "src/Stresslog/resources/StresslogC"
 sources = [
-    "src/WellMasterGeoMech",
-    "src/WellMasterGeoMech/app.py",
-    "src/WellMasterGeoMech/DrawSP.py",
-    "src/WellMasterGeoMech/BoreStab.py",
-    "src/WellMasterGeoMech/plotangle.py",
-    "src/WellMasterGeoMech/PlotVec.py",
-    "src/WellMasterGeoMech/Plotter.py",
-    "src/WellMasterGeoMech/manage_preferences.py",
-    "src/WellMasterGeoMech/editor.py",
-    "src/WellMasterGeoMech/failure_criteria.py",
-    "src/WellMasterGeoMech/hydraulics.py",
+    "src/Stresslog",
+    "src/Stresslog/app.py",
+    "src/Stresslog/DrawSP.py",
+    "src/Stresslog/BoreStab.py",
+    "src/Stresslog/plotangle.py",
+    "src/Stresslog/PlotVec.py",
+    "src/Stresslog/Plotter.py",
+    "src/Stresslog/manage_preferences.py",
+    "src/Stresslog/editor.py",
+    "src/Stresslog/failure_criteria.py",
+    "src/Stresslog/hydraulics.py",
 ]
-installer_icon = "src/WellMasterGeoMech/resources/WellMasterGeoMech"
-installer_background = "src/WellMasterGeoMech/resources/ibg"
-splash = "src/WellMasterGeoMech/resources/splash"
+installer_icon = "src/Stresslog/resources/Stresslog"
+installer_background = "src/Stresslog/resources/ibg"
+splash = "src/Stresslog/resources/splash"
 test_sources = [
     "tests",
 ]
@@ -64,18 +64,18 @@ test_requires = [
     
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.macOS]
+[tool.briefcase.app.Stresslog.macOS]
 requires = [
     "toga-cocoa~=0.4.4",
     "std-nslog~=1.0.0"
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.linux]
+[tool.briefcase.app.Stresslog.linux]
 requires = [
     "toga-gtk~=0.4.4",
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.linux.system.debian]
+[tool.briefcase.app.Stresslog.linux.system.debian]
 system_requires = [
     # Needed to compile pycairo wheel
     'libcairo2-dev',
@@ -94,7 +94,7 @@ system_runtime_requires = [
     # "gir1.2-webkit2-4.0",
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.linux.system.rhel]
+[tool.briefcase.app.Stresslog.linux.system.rhel]
 system_requires = [
     # Needed to compile pycairo wheel
     'cairo-gobject-devel',
@@ -111,7 +111,7 @@ system_runtime_requires = [
     # "webkit2gtk3",
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.linux.system.arch]
+[tool.briefcase.app.Stresslog.linux.system.arch]
 system_requires = [
     # Needed to compile pycairo wheel
     'cairo',
@@ -126,7 +126,7 @@ system_runtime_requires = [
     # "webkit2gtk",
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.linux.appimage]
+[tool.briefcase.app.Stresslog.linux.appimage]
 system_requires = [
     "libcairo2-dev",
     "libgirepository1.0-dev",
@@ -141,30 +141,30 @@ linuxdeploy_plugins = [
     "DEPLOY_GTK_VERSION=3 gtk",
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.linux.flatpak]
+[tool.briefcase.app.Stresslog.linux.flatpak]
 flatpak_runtime = "org.gnome.Platform"
 flatpak_runtime_version = "42"
 flatpak_sdk = "org.gnome.Sdk"
 
-[tool.briefcase.app.WellMasterGeoMech.windows]
+[tool.briefcase.app.Stresslog.windows]
 requires = [
     "toga-winforms~=0.4.4",
 ]
 
 # Mobile deployments
-[tool.briefcase.app.WellMasterGeoMech.iOS]
+[tool.briefcase.app.Stresslog.iOS]
 requires = [
     "toga-iOS~=0.3.0",
     "std-nslog~=1.0.0"
 ]
 
-[tool.briefcase.app.WellMasterGeoMech.android]
+[tool.briefcase.app.Stresslog.android]
 requires = [
     "toga-android~=0.3.0"
 ]
 
 # Web deployments
-[tool.briefcase.app.WellMasterGeoMech.web]
+[tool.briefcase.app.Stresslog.web]
 requires = [
     "toga-web~=0.3.0",
 ]

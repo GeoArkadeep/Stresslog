@@ -98,8 +98,10 @@ attrib = [1,0,0,0,0,0,0,0]
 
 ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit = True)
 ureg.define('ppg = 0.051948 psi/foot')
-ureg.define('sg = 0.4335 psi/foot = gcc')
+ureg.define('sg = 0.4335 psi/foot = gcc = SG = GCC')
 ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
+ureg.define('HR = hour')
+ureg.define('M = meter')
 
 try:
     with open(unitpath, 'r') as f:
@@ -857,7 +859,7 @@ class MyApp(toga.App):
     async def open_las0(self, widget):
         global laspath
         try:
-            laspath_dialog = await self.main_window.open_file_dialog(title="Select a las file",file_types=['las'], multiselect=False)
+            laspath_dialog = await self.main_window.open_file_dialog(title="Select a las file",file_types=['las'], multiple_select=False)
             if laspath_dialog:  # Check if the user selected a file and didn't cancel the dialog
                 laspath = laspath_dialog
                 self.on_result0(widget)
@@ -1341,7 +1343,9 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
     except:
         styles = {
             'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
-            'dtNormal': {"color": "blue", "linewidth": 1.5, "style": ':', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+            'dtNormal': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+            'lresnormal': {"color": "red", "linewidth": 1.5, "style": ':', "track": 1, "left": -2, "right": 2, "type": 'linear', "unit": "ohm.m"},
+            'lresdeep': {"color": "red", "linewidth": 1.5, "style": '-', "track": 1, "left": -2, "right": 2, "type": 'linear', "unit": "ohm.m"},
             'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
             'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
             'pp': {"color": "red", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
@@ -1629,10 +1633,10 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
 
 
 def main():
-    app = MyApp('WellMasterGeoMech', 'com.example.porepressurebuddy')
+    app = MyApp('Stresslog', 'in.rocklab.stresslog')
     return app
 
 if __name__ == "__main__":
-    app = MyApp("WellMasterGeoMech", "in.rocklab.porepressurebuddy")
+    app = MyApp("Stresslog", "in.rocklab.stresslog")
     app.main_loop()
 

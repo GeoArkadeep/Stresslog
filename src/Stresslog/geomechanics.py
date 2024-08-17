@@ -3,7 +3,7 @@ import os
 import numpy as np
 import scipy
 import matplotlib
-matplotlib.use("svg")
+#matplotlib.use("svg")
 from matplotlib import pyplot as plt
 import pandas as pd
 import lasio as laua
@@ -63,7 +63,12 @@ def read_aliases_from_file(file_path):
             'resshal': ['none', 'LLS', 'HMRS', 'M2R1', 'RS', 'RFOC', 'ILM', 'RSFL', 'RMED', 'RACEHM'],
             'density': ['none', 'ZDEN', 'RHOB', 'RHOZ', 'RHO', 'DEN', 'RHO8', 'BDCFM'],
             'neutron': ['none', 'CNCF', 'NPHI', 'NEU'],
-            'pe': ['none','PE']
+            'pe': ['none','PE'],
+            'ROP': ['none','ROPAVG'],
+            'RPM': ['none','SURFRPM'],
+            'WOB': ['none','WOBAVG'],
+            'ECD': ['none','ACTECDM'],
+            'BIT': ['none','BIT'],
         }
         # Convert aliases dictionary to JSON string and write to the file
         with open(file_path, 'w') as file:
@@ -82,7 +87,9 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
     except:
         styles = {
             'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
-            'dtNormal': {"color": "blue", "linewidth": 1.5, "style": ':', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+            'dtNormal': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
+            'lresnormal': {"color": "red", "linewidth": 1.5, "style": ':', "track": 1, "left": -1, "right": 1, "type": 'linear', "unit": "ohm.m"},
+            'lresdeep': {"color": "red", "linewidth": 1.5, "style": '-', "track": 1, "left": -1, "right": 1, "type": 'linear', "unit": "ohm.m"},
             'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
             'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
             'pp': {"color": "red", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
@@ -329,7 +336,9 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
         las.write(f, **kwargs)
 
 from scipy.signal import medfilt
-def median_filter_interpolation(curve, window_size=21):
+def median_filter_downsampler(curve, window_size=21):
+    if window_size==1:
+        return curve
     # Handle edge cases where the window size might be larger than the curve length
     if len(curve.values) < window_size:
         window_size = len(curve.values)
@@ -350,7 +359,9 @@ def median_filter_interpolation(curve, window_size=21):
 
     return resampled_curve
 
-def average_interpolation(curve, window_size=21):
+def average_downsampler(curve, window_size=21):
+    if window_size==1:
+        return curve
     # Handle edge cases where the window size might be larger than the curve length
     if len(curve.values) < window_size:
         window_size = len(curve.values)
@@ -387,7 +398,7 @@ def generate_weights(window_size, window_type='v_shape'):
     
     return weights
 
-def weighted_average_interpolation(curve, window_size=21, window_type='v_shape'):
+def weighted_average_downsampler(curve, window_size=21, window_type='v_shape'):
     # Generate weights based on the selected window type
     weights = generate_weights(window_size, window_type)
 
@@ -540,6 +551,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     - PlotAll.png: Combined plot.
     Additionally, it saves the output as files in CSV and LAS formats.
     """
+    program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm
+    res0 = 0.98
+    be = 0.00014
+    ne = 0.6
+    
+    
     
     output_dir = os.path.join(user_home, "ppp_app_plots")
     output_dir1 = os.path.join(user_home, "ppp_app_data")
@@ -574,7 +591,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     for curve_name, curve in well.data.items():
         print(f"Curve: {curve_name}")
-        curve = average_interpolation(curve,window)
+        if program_option[4]==0:
+            curve = average_downsampler(curve,window)
+        else:
+            curve = median_filter_downsampler(curve,window)
         #curve = curve.to_basis(step=0.15*window)
         well.data[curve_name] = curve
     
@@ -614,6 +634,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
+    alias['ROP'] = [elem for elem in header if elem in set(alias['ROP'])]
+    alias['WOB'] = [elem for elem in header if elem in set(alias['WOB'])]
+    alias['ECD'] = [elem for elem in header if elem in set(alias['ECD'])]
+    alias['RPM'] = [elem for elem in header if elem in set(alias['RPM'])]
+    alias['BIT'] = [elem for elem in header if elem in set(alias['BIT'])]
     #alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
     
     #global mwvalues
@@ -652,23 +677,65 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print("BHTs: ",bht_point)
     print(len(bht_point))
     print (alias['sonic'])
-    if alias['sonic'][0] == 'none':
-        print("Without sonic log, no prediction possible")
-        return
+    if program_option[1]==0:
+        if alias['sonic'][0] == 'none':
+            print("No p-sonic velocity log found, no pore pressure calculable")
+            return
+    if program_option[1]==1:
+        if alias['resdeep'][0] == 'none':
+            print("No deep resistivity log found, no pore pressure calculable")
+            return
     vp = 0
     vs = 0
     vpvs = 0
     nu2 = []
     
     dt = well.data[alias['sonic'][0]]
+    rdeep = well.data[alias['resdeep'][0]]
     
     md = well.data['MD'].values
+    from unit_converter import convert_rop, convert_wob, convert_ecd
+    try:
+        rop = convert_rop(well.data[alias['ROP'][0]].values,well.data[alias['ROP'][0]].units)
+        print("ROP units as specified:")
+        print(well.data[alias['ROP'][0]].units)
+    except:
+        rop = np.full(len(md), np.nan)
+    try:
+        wob = convert_wob(well.data[alias['WOB'][0]].values,well.data[alias['WOB'][0]].units)
+        print("WOB units as specified:")
+        print(well.data[alias['WOB'][0]].units)
+    except:
+        wob = np.full(len(md), np.nan)
+    try:
+        rpm = well.data[alias['RPM'][0]]
+        print("RPM units as specified:")
+        print(well.data[alias['RPM'][0]].units)
+    except:
+        rpm = np.full(len(md), np.nan)
+    
+    try:
+        ecd = convert_ecd(well.data[alias['ECD'][0]].values,well.data[alias['ECD'][0]].units)
+        print("ECD units as specified:")
+        print(well.data[alias['ECD'][0]].units)
+    except:
+        ecd = np.full(len(md), np.nan)    
+    
+    try:
+        bit = well.data[alias['BIT'][0]]
+        print("BIT units as specified:")
+        print(well.data[alias['BIT'][0]].units)
+    except:
+        bit = np.full(len(md), np.nan)
+    
+    
     try:
         nu2 = getNu(well, nu, aliaspath)
     except:
         nu2 = [nu] * (len(md))
     
-    
+    plt.plot(rpm,md)
+    plt.show()
     #kth = well.data['KTH']
         
 
@@ -1278,11 +1345,15 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     mudline = dtml #us/ft
     print("HUZZAH")
     dalm = dt.as_numpy()*1
+    resdeep = rdeep.as_numpy()*1
     tvdm = well.data['TVDM'].as_numpy()*1
     tvdm[0] = 0.1
     print("TVDM",tvdm)
     #dalm = 1000000/dalm
     matrix = np.zeros(len(dalm))
+    resnormal = res0*np.exp(be*tvdbgl)
+    lresdeep = np.log10(resdeep)
+    lresnormal = np.log10(resnormal)
     
     i=0
     while i<(len(dalm)):
@@ -1294,8 +1365,17 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 dalm[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
             if(np.isnan(dalm[i])):
                 dalm[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+            if(np.isnan(resdeep[i])):
+                resdeep[i] = res0*np.exp(be*tvdbgl[i])
         
         i+=1
+    
+    plt.plot(resdeep,tvd)
+    plt.plot(resnormal,tvd)
+    plt.xscale("log")
+    plt.gca().invert_yaxis()
+    plt.show()
+    plt.close()
     import math
     print(dalm)
     
@@ -1315,7 +1395,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     i = 0
     ppgZhang = np.zeros(len(tvdf))
     gccZhang = np.zeros(len(tvdf))
+    gccEaton = np.zeros(len(tvdf))
+    gccDexp = np.zeros(len(tvdf))
     psiZhang = np.zeros(len(tvdf))
+    psiEaton = np.zeros(len(tvdf))
+    psiDexp = np.zeros(len(tvdf))
     psiZhang2 = np.zeros(len(tvdf))
     psiftZhang = np.zeros(len(tvdf))
     psiftZhang2 = np.zeros(len(tvdf))
@@ -1360,7 +1444,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     c=ct
     b=ct
     print("Max velocity is ",deltmu0,"uspf")
-    from obgppshmin import get_PPgrad_Zhang_gcc
+    from obgppshmin import get_PPgrad_Zhang_gcc, get_PPgrad_Eaton_gcc
     while i<(len(ObgTppg)-1):
         if glwd>=0: #Onshore Cases
             if tvd[i]>ul_depth:
@@ -1370,11 +1454,15 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
+                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,be,ne,tvdbgl[i],res0,resdeep[i],biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
+                    gccEaton[i] = np.nan
                     gccZhang2[i] = np.nan
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
+                if gccEaton[i]<underbalancereject:
+                    gccEaton[i]=underbalancereject
                 if gccZhang2[i]<underbalancereject:
                     gccZhang2[i]=underbalancereject
                 
@@ -1402,15 +1490,19 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 b = ul_exp
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:#Shale Pore Pressure
-                    gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))#this is legacy code and should be removed
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                     gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
+                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,be,ne,tvdbgl[i],res0,resdeep[i],biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
+                    gccEaton[i] = np.nan
                     gccZhang2[i] = np.nan
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
+                if gccEaton[i]<underbalancereject:
+                    gccEaton[i]=underbalancereject
                 if gccZhang2[i]<underbalancereject:
                     gccZhang2[i]=underbalancereject
                 
@@ -1439,6 +1531,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt.legend()
     plt.show()
     plt.close()"""
+    plt.plot(gccZhang,tvd, label='zhang')
+    plt.plot(gccEaton,tvd, label='eaton')
+    plt.gca().invert_yaxis()
+    plt.legend()
+    plt.show()
+    plt.close()
     #gccZhang[0] = np.nan
     dphi = np.degrees(phi[:])
     gccZhang[-1] = hydrostatic[-1]
@@ -2150,6 +2248,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     results = pd.DataFrame({
         'dalm': dalm,
         'dtNormal': dtNormal,
+        'lresnormal': lresnormal,
+        'lresdeep': lresdeep,
         'mudweight': mudweight*ureg.gcc,
         'fg': fg.as_numpy()*ureg.gcc,
         'pp': pp.as_numpy()*ureg.gcc,
