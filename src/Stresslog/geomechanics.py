@@ -1477,6 +1477,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
                     gccZhang2[i] = np.nan
+                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
                 if gccEaton[i]<underbalancereject:
@@ -1519,6 +1520,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
                     gccZhang2[i] = np.nan
+                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
                 if gccEaton[i]<underbalancereject:
