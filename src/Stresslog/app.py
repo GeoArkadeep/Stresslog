@@ -32,9 +32,9 @@ from geomechanics import plotPPzhang
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
-output_dir = os.path.join(user_home, "ppp_app_plots")
-output_dir1 = os.path.join(user_home, "ppp_app_data")
-input_dir = os.path.join(user_home, "ppp_app_models")
+output_dir = os.path.join(user_home, "Stresslog_Plots")
+output_dir1 = os.path.join(user_home, "Stresslog_Data")
+input_dir = os.path.join(user_home, "Stresslog_Models")
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(output_dir1, exist_ok=True)

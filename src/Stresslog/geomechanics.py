@@ -557,9 +557,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
     
     
-    output_dir = os.path.join(user_home, "ppp_app_plots")
-    output_dir1 = os.path.join(user_home, "ppp_app_data")
-    input_dir = os.path.join(user_home, "ppp_app_models")
+    output_dir = os.path.join(user_home, "Stresslog_Plots")
+    output_dir1 = os.path.join(user_home, "Stresslog_Data")
+    input_dir = os.path.join(user_home, "Stresslog_Models")
     
     # Create the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
