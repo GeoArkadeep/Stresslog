@@ -1140,7 +1140,7 @@ class MyApp(toga.App):
         self.page3_btn3.enabled = True
         self.page3_btn4.enabled = True
         self.progress.stop()
-        if float(model[10]) > 0:
+        if float(model[16]) > 0:
             self.page3_btn5.enabled = True
             self.bg4.image = toga.Image(output_fileAll)
         else:
