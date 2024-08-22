@@ -156,7 +156,7 @@ def get_PPgrad_Dxc_gcc_vec(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
 def get_Dxc(ROP,RPM,WOB,BTDIA,ECD,pn):
     #units= ROP:ft/hr, WOB:lbs, BTDIA:in, 
     Dxc = (np.log10(ROP/(60*RPM))*pn)/(np.log10((12*WOB)/((10**6)*BTDIA))*ECD)
-    return Dxc
+    return Dxc if Dxc>0.1 else np.nan
 
 def get_Dxc_vec(ROP, RPM, WOB, BTDIA, ECD, pn):
     # Ensure all inputs are numpy arrays

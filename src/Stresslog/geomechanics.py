@@ -3,7 +3,7 @@ import os
 import numpy as np
 import scipy
 import matplotlib
-#matplotlib.use("svg")
+matplotlib.use("svg")
 from matplotlib import pyplot as plt
 import pandas as pd
 import lasio as laua
@@ -69,6 +69,9 @@ def read_aliases_from_file(file_path):
             'WOB': ['none','WOBAVG'],
             'ECD': ['none','ACTECDM'],
             'BIT': ['none','BIT'],
+            'TORQUE': ['none','TORQUE'],
+            'FLOWRATE': ['none','FLOWRATE'],
+
         }
         # Convert aliases dictionary to JSON string and write to the file
         with open(file_path, 'w') as file:
@@ -556,6 +559,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     be = 0.00014
     ne = 0.6
     
+    dex0 = 0.5
+    de = 0.00014
+    nde = 0.5
+    
     
     
     output_dir = os.path.join(user_home, "ppp_app_plots")
@@ -639,6 +646,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     alias['ECD'] = [elem for elem in header if elem in set(alias['ECD'])]
     alias['RPM'] = [elem for elem in header if elem in set(alias['RPM'])]
     alias['BIT'] = [elem for elem in header if elem in set(alias['BIT'])]
+    alias['TORQUE'] = [elem for elem in header if elem in set(alias['TORQUE'])]
+    alias['FLOWRATE'] = [elem for elem in header if elem in set(alias['FLOWRATE'])]
     #alias['pe'] = [elem for elem in header if elem in set(alias['pe'])]
     
     #global mwvalues
@@ -654,12 +663,18 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     mud_weight = []
     bht_point = []
     casing_dia = []
+    bit_dia = []
     while i<len(detail):
         mud_weight.append([detail[i][0],detail[i][1]])
         bht_point.append([detail[i][-1],detail[i][1]])
         casing_dia.append([detail[i][3],detail[i][1]])
+        bit_dia.append([detail[i][2],detail[i][1]])
         i+=1    
     print(mud_weight)
+    print("Hole size array:")
+    bit_dia[-1][1] = final_depth
+    print(bit_dia)
+    
     first = [mud_weight[0][0],0]
     last = [mud_weight[-1][0],final_depth]
     top_bht =[15,0]
@@ -708,7 +723,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     except:
         wob = np.full(len(md), np.nan)
     try:
-        rpm = well.data[alias['RPM'][0]]
+        rpm = well.data[alias['RPM'][0]].values
+        print(rpm)
+        rpm = np.where((rpm < 0) | (rpm > 300), np.nan, rpm)
+        print(rpm)
         print("RPM units as specified:")
         print(well.data[alias['RPM'][0]].units)
     except:
@@ -726,16 +744,16 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print("BIT units as specified:")
         print(well.data[alias['BIT'][0]].units)
     except:
-        bit = np.full(len(md), np.nan)
-    
-    
+        bit_dia = np.array(bit_dia)
+        indices = np.clip(np.searchsorted(bit_dia[:, 1], md, side='right'), 0, len(bit_dia) - 1)
+        bit = np.take(bit_dia[:, 0], indices)
+        
     try:
         nu2 = getNu(well, nu, aliaspath)
     except:
         nu2 = [nu] * (len(md))
     
-    plt.plot(rpm,md)
-    plt.show()
+
     #kth = well.data['KTH']
         
 
@@ -1334,7 +1352,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=tvd, null=0)
     litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=tvd, null=0)
     
-    #zhangs
+    #Pore Pressure Section
 
     ct = 0 #delta m/s per metre of depth
     ct = ct*0.1524
@@ -1352,6 +1370,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #dalm = 1000000/dalm
     matrix = np.zeros(len(dalm))
     resnormal = res0*np.exp(be*tvdbgl)
+    dexnormal = dex0*np.exp(de*tvdbgl)
     lresdeep = np.log10(resdeep)
     lresnormal = np.log10(resnormal)
     
@@ -1370,12 +1389,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         
         i+=1
     
-    plt.plot(resdeep,tvd)
-    plt.plot(resnormal,tvd)
-    plt.xscale("log")
-    plt.gca().invert_yaxis()
-    plt.show()
-    plt.close()
+    
     import math
     print(dalm)
     
@@ -1396,7 +1410,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     ppgZhang = np.zeros(len(tvdf))
     gccZhang = np.zeros(len(tvdf))
     gccEaton = np.zeros(len(tvdf))
-    gccDexp = np.zeros(len(tvdf))
+    Dexp = np.full(len(tvdf),np.nan)
+    gccDexp = np.full(len(tvdf),np.nan)
     psiZhang = np.zeros(len(tvdf))
     psiEaton = np.zeros(len(tvdf))
     psiDexp = np.zeros(len(tvdf))
@@ -1444,7 +1459,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     c=ct
     b=ct
     print("Max velocity is ",deltmu0,"uspf")
-    from obgppshmin import get_PPgrad_Zhang_gcc, get_PPgrad_Eaton_gcc
+    from obgppshmin import get_PPgrad_Zhang_gcc, get_PPgrad_Eaton_gcc, get_PPgrad_Dxc_gcc
+    from obgppshmin import get_Dxc
     while i<(len(ObgTppg)-1):
         if glwd>=0: #Onshore Cases
             if tvd[i]>ul_depth:
@@ -1455,6 +1471,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
                     gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,be,ne,tvdbgl[i],res0,resdeep[i],biot[i])
+                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, de, nde, tvdbgl[i], dex0, Dexp[i], biot[i]) 
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
@@ -1495,6 +1513,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                     gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
                     gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,be,ne,tvdbgl[i],res0,resdeep[i],biot[i])
+                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, de, nde, tvdbgl[i], dex0, Dexp[i], biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
@@ -1530,13 +1550,27 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt.plot(philang-phi,tvd, label='delta')
     plt.legend()
     plt.show()
-    plt.close()"""
+    plt.close()
+    
+    plt.plot(lresdeep,tvd, label='Resistivity')
+    plt.plot(lresnormal,tvd)
+    plt.plot(Dexp,tvd, label = 'Dxc')
+    plt.plot(dexnormal,tvd)
+    #plt.xscale("log")
+    plt.gca().invert_yaxis()
+    plt.legend()
+    plt.show()
+    plt.close()
+    
+    plt.plot(gccDexp,tvd, label = 'Dxc')
     plt.plot(gccZhang,tvd, label='zhang')
     plt.plot(gccEaton,tvd, label='eaton')
     plt.gca().invert_yaxis()
     plt.legend()
     plt.show()
     plt.close()
+    """
+    
     #gccZhang[0] = np.nan
     dphi = np.degrees(phi[:])
     gccZhang[-1] = hydrostatic[-1]
@@ -2244,12 +2278,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print(sgHMpsiU)
     print(slal)
     print(shorsud)"""
-    
+
     results = pd.DataFrame({
         'dalm': dalm,
         'dtNormal': dtNormal,
         'lresnormal': lresnormal,
         'lresdeep': lresdeep,
+        'Dexp': Dexp,
+        'dexnormal': dexnormal,
         'mudweight': mudweight*ureg.gcc,
         'fg': fg.as_numpy()*ureg.gcc,
         'pp': pp.as_numpy()*ureg.gcc,
@@ -2433,8 +2469,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         'casingshoe': {'color': 'black', 'pointsize': 30, 'symbol': 1, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True},
         'casingshoe2': {'color': 'black', 'pointsize': 30, 'symbol': 0, 'track': 5, 'left': -15, 'right': 15, 'type': 'linear', 'unit': 'in', 'uptosurface':True}
         })
-        casing_dia2 = [[-x, y] for x, y in casing_dia]
-        points_data['casingshoe'] = zip(*casing_dia)
+        casing_dia2 = [[-x/2, y] for x, y in casing_dia]
+        casing_dia3 = [[x/2, y] for x, y in casing_dia]
+        points_data['casingshoe'] = zip(*casing_dia3)
         points_data['casingshoe2'] = zip(*casing_dia2)
     
     converted_points = convert_points_data(points_data, pressure_unit, gradient_unit, strength_unit)
