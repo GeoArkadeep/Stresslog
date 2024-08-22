@@ -122,8 +122,8 @@ unitdict = {"Depth": ["Metres", "Feet"],
             "Strength": ['MPa','psi','Ksc','Bar','Atm'],
             "Temperature": ["Centigrade", "Farenheit", "Rankine","Kelvin"]}
 
-modelheader = "RhoA,AMC_exp,EATON_fac,tec_fac,NCT_exp,dtML,dtMAT,UL_exp,UL_depth,re_sub,A_dep,SHM_azi,Beta,Gamma,perm_cutoff,w_den,MudTempC,window,start,stop,nu_shale,nu_sst,nu_lst,dt_lst"
-defaultmodel = "17,0.8,0.35,0,0.0008,250,60,0.0008,0,1,3500,0,0,0,0.35,1.025,60,21,0,2900,0.32,0.27,0.25,65"
+modelheader = "RhoA,AMC_exp,EATON_fac,tec_fac,NCT_exp,dtML,dtMAT,UL_exp,UL_depth,Res0,Be,Ne,Dex0,De,Nde,re_sub,A_dep,SHM_azi,Beta,Gamma,perm_cutoff,w_den,MudTempC,window,start,stop,nu_shale,nu_sst,nu_lst,dt_lst"
+defaultmodel = "17,0.8,0.35,0,0.0008,250,60,0.0008,0,0.98,0.00014,0.6,0.5,0.00014,0.5,1,3500,0,0,0,0.35,1.025,60,21,0,2900,0.32,0.27,0.25,65"
 
 print(os.getcwd())
 try:
@@ -428,25 +428,31 @@ class MyApp(toga.App):
             {'label': "Eaton's Nu", 'default_value': str(model[2])},
             {'label': 'TectonicFactor', 'default_value': str(model[3])},
             
-            {'label': 'NCT Exp', 'default_value': str(model[4])},
-            {'label': 'DTml (us/ft)', 'default_value': str(model[5])},
-            {'label': 'DTmat (us/ft)', 'default_value': str(model[6])},
+            {'label': 'DT NCT Exponent', 'default_value': str(model[4])},
+            {'label': 'DT @ mudline (us/ft)', 'default_value': str(model[5])},
+            {'label': 'DT matrix (us/ft)', 'default_value': str(model[6])},
             {'label': 'Unloading Exp', 'default_value': str(model[7])},
             {'label': 'Unloading Depth', 'default_value': "0"},
-            {'label': 'PP Gr. L.Limit', 'default_value': str(model[9])},
+            {'label': 'Resistivity @ mudline', 'default_value': str(model[9])},
+            {'label': 'RES NCT Exponent', 'default_value': str(model[10])},
+            {'label': 'RES PP Exponent', 'default_value': str(model[11])},
+            {'label': 'D.Exponent @ mudline', 'default_value': str(model[12])},
+            {'label': 'D.Exp NCT Exponent', 'default_value': str(model[13])},
+            {'label': 'D.Exp PP Exponent', 'default_value': str(model[14])},
+            {'label': 'PP Gr. L.Limit', 'default_value': str(model[15])},
 
             {'label': 'Analysis TVD', 'default_value': "0"},
-            {'label': 'Fast Shear Azimuth', 'default_value': str(model[11])},
-            {'label': 'Dip Azim.', 'default_value': str(model[12])},
-            {'label': 'Dip Angle', 'default_value': str(model[13])},
+            {'label': 'Fast Shear Azimuth', 'default_value': str(model[17])},
+            {'label': 'Dip Azim.', 'default_value': str(model[18])},
+            {'label': 'Dip Angle', 'default_value': str(model[19])},
             
-            {'label': 'ShaleFlag Cutoff', 'default_value': str(model[14])},
-            {'label': 'WaterDensity', 'default_value': str(model[15])},
-            {'label': 'MudTemp', 'default_value': str(model[16])},
+            {'label': 'ShaleFlag Cutoff', 'default_value': str(model[20])},
+            {'label': 'WaterDensity', 'default_value': str(model[21])},
+            {'label': 'MudTemp', 'default_value': str(model[22])},
             
-            {'label': 'Window', 'default_value': str(model[17])},
-            {'label': 'Start', 'default_value': str(model[18])},
-            {'label': 'Stop', 'default_value': str(model[19])}
+            {'label': 'Window', 'default_value': str(model[23])},
+            {'label': 'Start', 'default_value': str(model[24])},
+            {'label': 'Stop', 'default_value': str(model[25])}
             
             
             
@@ -485,7 +491,7 @@ class MyApp(toga.App):
 
         # Pore Pressure Properties
         left_pane_box.add(create_divider("Pore Pressure Parameters"))
-        for i in range(6):
+        for i in range(12):
             row_box, entry = create_parameter_row(entries_info[current_index])
             left_pane_box.add(row_box)
             self.textboxes.append(entry)
@@ -1080,6 +1086,12 @@ class MyApp(toga.App):
             kwargs['strike'],
             kwargs['dip'],
             kwargs['mudtemp'],
+            kwargs['res0'],
+            kwargs['be'],
+            kwargs['ne'],
+            kwargs['dex0'],
+            kwargs['de'],
+            kwargs['nde'],
             kwargs['lala'],
             kwargs['lalb'],
             kwargs['lalm'],
@@ -1164,7 +1176,7 @@ class MyApp(toga.App):
         data_into_list = data.values.tolist()
         print(data_into_list)
         model = data_into_list[0]
-        tail = model[20:23]
+        tail = model[-4:]
         tv = [textbox.value for textbox in self.textboxes]
         self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
@@ -1213,17 +1225,24 @@ class MyApp(toga.App):
                     'dtmt': float(model[6]),
                     'ul_exp': float(model[7]),
                     'ul_depth': float(model[8]),
-                    'underbalancereject': float(model[9]),
-                    'doi': (float(model[10])*ureg(ul[unitchoice[0]])).to('metre').magnitude, 
-                    'offset': float(model[11]), 
-                    'strike': float(model[12]), 
-                    'dip': float(model[13]),
-                    'sfs': float(model[14]),
-                    'water': float(model[15]),
-                    'mudtemp': (float(model[16])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(model[16]) !=0 else 0,
-                    'window': int(float(model[17])),
-                    'zulu': (float(model[18])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
-                    'tango': (float(model[19])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
+                    'res0': (float(model[9])),
+                    'be': (float(model[10])),
+                    'ne': (float(model[11])),
+                    'dex0':(float(model[12])),
+                    'de':(float(model[13])),
+                    'nde':(float(model[14])),
+                    'underbalancereject': float(model[15]),
+                    'doi': (float(model[16])*ureg(ul[unitchoice[0]])).to('metre').magnitude, 
+                    'offset': float(model[17]), 
+                    'strike': float(model[18]), 
+                    'dip': float(model[19]),
+                    'sfs': float(model[20]),
+                    'water': float(model[21]),
+                    'mudtemp': (float(model[22])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(model[16]) !=0 else 0,
+                    
+                    'window': int(float(model[23])),
+                    'zulu': (float(model[24])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
+                    'tango': (float(model[25])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
                     'lala': -1.0, 
                     'lalb': 1.0, 
                     'lalm': 5, 
