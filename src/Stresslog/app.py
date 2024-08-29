@@ -174,8 +174,8 @@ class MyApp(toga.App):
         await custom_edit(
             self, 
             output_forms, 
-            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None"], 
-            formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres","","","","","","",""],[float,int,str,float,float,float,float,float,float,float,float,float,float,float,float,float,float],ureg
+            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None","None","None","None"], 
+            formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres","","","","","","","","","",""],[float,int,str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float],ureg
         )
         #print(forms)
         
@@ -306,7 +306,7 @@ class MyApp(toga.App):
             row_box.add(bitdia_label)
             row_box.add(bitdia_entry)
             
-            iv_label = toga.Label("Casing volume (bbl/100ft)", style=Pack(padding_right=2,text_direction='rtl'))
+            iv_label = toga.Label("Mud Motor Identifier", style=Pack(padding_right=2,text_direction='rtl'))
             iv_entry = toga.TextInput(style=Pack(padding_left=5, flex=1), value="0")
             row_box.add(iv_label)
             row_box.add(iv_entry)

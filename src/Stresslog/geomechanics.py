@@ -897,6 +897,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     tecB = np.full(len(tvd),tecb)
     SHsh = np.full(len(tvd),np.nan)
     biot = np.full(len(tvd),1)
+    dt_ncts = np.full(len(tvd),lamb)
+    res_ncts = np.full(len(tvd),be)
+    res_zeros = np.full(len(tvd),res0)
+    res_exp = np.full(len(tvd),ne)
+    dex_ncts = np.full(len(tvd),de)
+    dex_zeros = np.full(len(tvd),dex0)
+    dex_exp = np.full(len(tvd),nde)
     #cdtvd1 = np.full(len(tvd),np.nan)
     #cdtvd2 = np.full(len(tvd),np.nan)
     
@@ -972,6 +979,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         SHshlist = np.append(1,SHshlist)
         biotlist = np.transpose(formlist)[15]
         biotlist = np.append(1,biotlist)
+        dt_nct_list = np.transpose(formlist)[16]
+        dt_nct_list = np.append(lamb,dt_nct_list)
+        res_nct_list = np.transpose(formlist)[17]
+        res_nct_list = np.append(be,res_nct_list)
+        dex_nct_list = np.transpose(formlist)[18]
+        dex_nct_list = np.append(de,dex_nct_list)
         
         alphalist = alphalist.astype(float)
         betalist = betalist.astype(float)
@@ -979,6 +992,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         tecBlist = tecBlist.astype(float)
         SHshlist = SHshlist.astype(float)
         biotlist = biotlist.astype(float)
+        dt_nct_list = dt_nct_list.astype(float)
+        res_nct_list = res_nct_list.astype(float)
+        dex_nct_list = dex_nct_list.astype(float)
         print("TecFackist: ",tecBlist)
         print(alphalist,ftvdlist)
         i=0
@@ -1120,6 +1136,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 betas[i] = betalist[p] if np.isfinite(betalist[p]) else tilt
                 gammas[i] = gammalist[p] if np.isfinite(gammalist[p]) else tiltgamma
                 tecB[i] = tecBlist[p] if np.isfinite(tecBlist[p]) else tecb
+                dt_ncts[i] = dt_nct_list[p] if np.isfinite(dt_nct_list[p]) else lamb
+                res_ncts[i] = res_nct_list[p] if np.isfinite(res_nct_list[p]) else be
+                dex_ncts[i] = dex_nct_list[p] if np.isfinite(dex_nct_list[p]) else de 
                 SHsh[i] = SHshlist[p] 
                 biot[i] = biotlist[p] if np.isfinite(biotlist[p]) else 1
                 grcut[i] = grlist[p]
@@ -1136,6 +1155,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     bt[i] = 0
             else:
                 #cdtvd2[i] = cdtvdlist[p]
+                dt_ncts[i] = dt_nct_list[p] if np.isfinite(dt_nct_list[p]) else lamb
+                res_ncts[i] = res_nct_list[p] if np.isfinite(res_nct_list[p]) else be
+                dex_ncts[i] = dex_nct_list[p] if np.isfinite(dex_nct_list[p]) else de 
                 grcut[i] = grlist[p]
                 ttvd[i] = logtoplist[p]
                 btvd[i] = logbotlist[p]
@@ -1156,6 +1178,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #tempG[:] = tempG[:]*1000
 
     #check plot
+
     """plt.plot(lithotype,md)
     plt.plot(nu3,md)
     plt.plot(nu2,md)
@@ -1363,23 +1386,23 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print("TVDM",tvdm)
     #dalm = 1000000/dalm
     matrix = np.zeros(len(dalm))
-    resnormal = res0*np.exp(be*tvdbgl)
-    dexnormal = dex0*np.exp(de*tvdbgl)
+    resnormal = res0*np.exp(res_ncts*tvdbgl)
+    dexnormal = dex0*np.exp(dex_ncts*tvdbgl)
     lresdeep = np.log10(resdeep)
     lresnormal = np.log10(resnormal)
     
     i=0
     while i<(len(dalm)):
-        matrix[i] = matrick + (ct*i)
+        matrix[i] = matrick + (dt_ncts[i]*i)
         if lithotype[i]>1.5:
             matrix[i] = 65
         if tvdbgl[i]>0:
             if(dalm[i]<matrick):
-                dalm[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+                dalm[i] = matrick + (mudline-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
             if(np.isnan(dalm[i])):
-                dalm[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+                dalm[i] = matrick + (mudline-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
             if(np.isnan(resdeep[i])):
-                resdeep[i] = res0*np.exp(be*tvdbgl[i])
+                resdeep[i] = res0*np.exp(res_ncts[i]*tvdbgl[i])
         
         i+=1
     
@@ -1461,27 +1484,26 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 b = ul_exp
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5: #Shale PorePressure
-                    gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))
+                    #gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(dt_ncts[i]*tvdbgl[i])))
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
-                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
-                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,be,ne,tvdbgl[i],res0,resdeep[i],biot[i])
+                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],mudline,matrick,deltmu0,dalm[i],biot[i])
+                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],ne,tvdbgl[i],res0,resdeep[i],biot[i])
                     Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
-                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, de, nde, tvdbgl[i], dex0, Dexp[i], biot[i]) 
+                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], nde, tvdbgl[i], dex0, Dexp[i], biot[i]) 
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
-                    gccZhang2[i] = np.nan
+                    #gccZhang2[i] = np.nan
                     Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
                 if gccEaton[i]<underbalancereject:
                     gccEaton[i]=underbalancereject
-                if gccZhang2[i]<underbalancereject:
-                    gccZhang2[i]=underbalancereject
-                
-                gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
+                #if gccZhang2[i]<underbalancereject:
+                    #gccZhang2[i]=underbalancereject
+                #gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
                 ppgZhang[i] = gccZhang[i]*8.33
-                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale) #S0, cohesive strength, in MPa, for all rocks, for gassy rocks apply gassman correction
                 horsud[i] = horsuda*(vp[i]**horsude)
@@ -1503,13 +1525,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 b = ul_exp
             if tvdbgl[i]>0:
                 if shaleflag[i]<0.5:#Shale Pore Pressure
-                    gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(ct*tvdbgl[i])))#this is legacy code and should be removed
+                    #gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(dt_ncts[i]*tvdbgl[i])))#this is legacy code and should be removed
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
-                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],c,mudline,matrick,deltmu0,dalm[i],biot[i])
-                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,be,ne,tvdbgl[i],res0,resdeep[i],biot[i])
+                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],mudline,matrick,deltmu0,dalm[i],biot[i])
+                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],ne,tvdbgl[i],res0,resdeep[i],biot[i])
                     Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
-                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, de, nde, tvdbgl[i], dex0, Dexp[i], biot[i])
+                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], nde, tvdbgl[i], dex0, Dexp[i], biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
@@ -1519,10 +1541,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     gccZhang[i]=underbalancereject
                 if gccEaton[i]<underbalancereject:
                     gccEaton[i]=underbalancereject
-                if gccZhang2[i]<underbalancereject:
-                    gccZhang2[i]=underbalancereject
+                #if gccZhang2[i]<underbalancereject:
+                    #gccZhang2[i]=underbalancereject
                 
-                gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
+                #gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
                 ppgZhang[i] = gccZhang[i]*8.33
                 dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
