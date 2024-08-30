@@ -1345,6 +1345,7 @@ class MyApp(toga.App):
         
         self.webview1.set_content(content=self.img_html, root_url="http://localhost:8010/")
         #self.bg3.image = toga.Image(output_file)
+        self.show_page3()
         #self.bg3.refresh()
 
         print("Wrapper done")
