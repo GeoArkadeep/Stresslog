@@ -3,11 +3,82 @@ import numpy as np
 import pandas as pd
 import matplotlib.colors as mcolors
 from PIL import Image
+
+import plotly.tools as tls
+import plotly.io as pio
+
 import os
 
 user_home = os.path.expanduser("~/Documents")
 
-def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, figsize=(15, 10), label_height=20, dpi=100, output_dir = os.path.join(user_home, "ppp_app_plots")):
+def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots")):
+    """
+    Wrapper function that calls plot_logs three times to generate the main plot and label plots.
+    
+    Parameters:
+    - Same as plot_logs function, except plot_labels is not included as it's handled internally.
+    
+    Returns:
+    - fig, axes: The figure and axes objects of the main plot.
+    """
+    labelmax = int(y_max) #2600
+    print(labelmax)
+    # Generate simulated data for label plots
+    simulated_depth = np.array([labelmax])
+    simulated_data = pd.DataFrame({key: np.random.rand(1) for key in data.columns}, index=simulated_depth)
+    
+    # Call plot_logs for bottom labels
+    plot_logs(simulated_data, styles, None, None, labelmax+1, labelmax+2, 
+              plot_labels=True, width=width, height=3, label_height=98, 
+              dpi=dpi)
+    
+    # Call plot_logs for top labels
+    plot_logs(simulated_data, styles, None, None, labelmax+1, labelmax, 
+              plot_labels=True, width=width, height=3, label_height=98, 
+              dpi=dpi)
+    # Call plot_logs for the main plot without labels
+    fig, axes = plot_logs(data, styles, points, pointstyles, y_min, y_max, 
+                          plot_labels=False, width=width,height=height, label_height=label_height, 
+                          dpi=dpi)
+    plotfile = os.path.join(output_dir,"PlotFigure.png")
+    plt.savefig(plotfile,dpi=dpi)
+    plotly_fig = tls.mpl_to_plotly(fig)
+    #plt.close()
+    # Fix the x-axis range for both subplots
+    plotly_fig.update_xaxes(fixedrange=True)
+
+    # Share the y-axis between subplots
+    plotly_fig.update_yaxes(matches='y')
+
+    # Make sure the plot fits the width of the browser
+    plotly_fig.update_layout(
+        autosize=True,
+        width=None,  # Remove the fixed width to make it responsive
+        #height=600,  # Set a fixed height if needed, or leave it auto-sized
+        margin=dict(l=30, r=30, t=30, b=30)  # Adjust margins as needed
+    )
+    plotly_fig.update_xaxes(showgrid=True, gridcolor = 'grey', tickcolor='rgba(0, 0, 0, 0)', showticklabels=False)
+    plotly_fig.update_yaxes(automargin=False,showgrid=True, gridcolor = 'grey', tickcolor='rgba(0, 0, 0, 0)', tickformat='.0f', linecolor='grey', linewidth=1)
+    plotly_fig.update_layout(
+        yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
+        yaxis2=dict(showticklabels=False),  # Hide labels for the second column
+        yaxis3=dict(showticklabels=False),  # Hide labels for the third column
+        yaxis4=dict(showticklabels=False),
+        yaxis5=dict(showticklabels=False),
+        yaxis6=dict(showticklabels=False),
+    )
+    plotly_fig.update_layout(margin=dict(l=30,r=0,t=0,b=0))
+    plotly_fig.update_layout(
+        paper_bgcolor='white',  # Background of the entire figure
+        plot_bgcolor='white',   # Background of the plot area
+    )
+    #plotly_fig.update_yaxes(showticklabels=False) # hide all the yticks
+    # Save as an interactive HTML file and open it in the browser
+    pio.write_json(plotly_fig,os.path.join(output_dir,'plotly.json'))
+    #pio.write_html(plotly_fig,'plotly.html')
+    return fig, axes
+
+def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, width=15,height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots")):
     """
     Plots well log data in tracks and sparse data points.
 
@@ -25,6 +96,8 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
     - label_height: Height of the label rectangles (default is 20).
     - dpi: Dots per inch for the saved figure.
     """
+    
+    figsize=(width, height)
     if y_max is not None and y_min is not None and y_max > y_min:
         invert_yaxis = True
         pltsign = 1
@@ -32,15 +105,13 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
         invert_yaxis = False
         pltsign = -1
 
-    
-    #if len(data.columns) != len(styles):
-    #    raise ValueError("The number of columns in the data must match the number of entries in the styles dictionary.")
+    if len(data.columns) != len(styles):
+        raise ValueError("The number of columns in the data must match the number of entries in the styles dictionary.")
 
     if points is not None and pointstyles is not None:
         if len(points.columns) != len(pointstyles):
             raise ValueError("The number of columns in the points must match the number of entries in the pointstyles dictionary.")
-    
-    
+
     n_tracks = max(max(style["track"] for style in styles.values()), 
                    max(pointstyle["track"] for pointstyle in pointstyles.values()) if pointstyles else 0) + 1
     fig, axes = plt.subplots(nrows=1, ncols=n_tracks, figsize=figsize, sharey=True)
@@ -221,21 +292,40 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
     fig.subplots_adjust(left=0.05, right=0.95, wspace=0.025)
     
     if plot_labels:
+        plotly_fig = tls.mpl_to_plotly(fig)
         if pltsign > 0:
             #plt.tight_layout()
             plt.savefig(os.path.join(output_dir,"BottomLabel.png"), dpi=dpi)
+            return
         else:
             #plt.tight_layout()
-            plt.savefig(os.path.join(output_dir,"TopLabel.png"), dpi=dpi)
-    else:
-        simulated_depth = np.array([2600])
-        simulated_data = pd.DataFrame({key: np.random.rand(len(data.columns)) for key in data.columns})
-        plot_logs(simulated_data, styles, None, None, 2601, 2602, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi, output_dir=output_dir)
-        plot_logs(simulated_data, styles, None, None, 2601, 2600, plot_labels=True, figsize=(15, 3), label_height=98, dpi=dpi, output_dir=output_dir)
-        return fig, axes
+            plotly_fig.update_layout(
+                autosize=True,
+                width=None,  # Remove the fixed width to make it responsive
+                #height=600,  # Set a fixed height if needed, or leave it auto-sized
+                margin=dict(l=30, r=0, t=0, b=20)  # Adjust margins as needed
+            )
+            plotly_fig.update_layout(
+                paper_bgcolor='white',  # Background of the entire figure
+                plot_bgcolor='white',   # Background of the plot area
+            )
+            plotly_fig.update_xaxes(showgrid=False, tickcolor='rgba(0, 0, 0, 0)',showticklabels=False)
+            plotly_fig.update_yaxes(automargin=False,showgrid=False, tickcolor='rgba(0, 0, 0, 0)',tickformat='.0f',tickfont=dict(color='rgba(0, 0, 0, 0)'), linecolor='grey', linewidth=1)
+            plotly_fig.update_layout(
+                yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
+                yaxis2=dict(showticklabels=False),  # Hide labels for the second column
+                yaxis3=dict(showticklabels=False),# Hide labels for the third column
+                yaxis4=dict(showticklabels=False),
+                yaxis5=dict(showticklabels=False),
+                yaxis6=dict(showticklabels=False),
+            )
+            plotly_fig.update_layout(margin=dict(l=50,r=50,t=0,b=0))
+            pio.write_json(plotly_fig,os.path.join(output_dir,"TopPlotly.json"))
+            #plotly_fig.write_image("TopPlotly.png")
+            #plt.savefig('TopLabel.png', dpi=dpi)
+            return
     
-    plt.close()
-
+    return fig, axes
     
 
 

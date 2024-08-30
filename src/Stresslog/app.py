@@ -23,7 +23,10 @@ import traceback
 import pint
 import json
 import csv
-    
+
+import http.server
+import socketserver
+
 from manage_preferences import show_preferences_window
 from editor import custom_edit
 
@@ -381,8 +384,8 @@ class MyApp(toga.App):
         self.add_flow_grad_data_row(None, row_type='flow_grad')
         self.add_flow_grad_data_row(None, row_type='flow_psi')
 
-        self.bg3 = BackgroundImageView("BG2.png", style=Pack(flex=1))
-        plot_and_data_box.add(self.bg3)
+        
+        #plot_and_data_box.add(self.webview1)
 
         # Initialize the frac_grad_data_box
         self.frac_grad_data_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
@@ -548,9 +551,69 @@ class MyApp(toga.App):
 
         # Add the image display to the right pane box
         my_image = toga.Image("BG2.png")
-        self.bg3 = toga.ImageView(my_image, style=Pack(direction='row',flex=1))
+        self.bg_img_html = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, initial-scale=1.0, maximum-scale=1.0">
+    <title>Dynamic Background</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents scrolling */
+            height: 100vh; /* Full viewport height */
+            width: 100vw; /* Full viewport width */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0000; /* Optional: Background color for better visibility */
+        }
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Keeps aspect ratio and fits within available space */
+        }
+    </style>
+</head>
+<body>
+    <img src="http://localhost:8010/BG2.png" alt="Dynamic Image">
+    <script>
+        // Prevent zooming with keyboard shortcuts
+        window.addEventListener('keydown', function (event) {
+            if ((event.ctrlKey || event.metaKey) && (event.key === '+' || event.key === '-' || event.key === '0')) {
+                event.preventDefault();
+            }
+        });
+
+        // Prevent pinch zoom on touch devices
+        window.addEventListener('wheel', function (event) {
+            if (event.ctrlKey) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // Prevent double-tap zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
+
+"""
+        print("starting webview background")
+        self.webview1 = toga.WebView(style=Pack(flex=1))
+        self.webview1.set_content(content=self.bg_img_html, root_url="http://localhost:8010/")
         #right_pane_container.add(self.bg3)
-        right_pane_container.content = self.bg3
+        right_pane_container.content = self.webview1
 
         # Add the containers to the main page3 box
         self.page3.add(left_pane_container)
@@ -682,6 +745,11 @@ class MyApp(toga.App):
         self.main_window.content = self.page2
     
     def show_page3(self, widget):
+        if not hasattr(self, 'server2'):
+            #self.start_server2()
+            self.start_server2()
+        if hasattr(self, 'img_html'):
+            self.webview1.set_content(content=self.img_html, root_url="http://localhost:8010/")
         self.set_textbox2_values(widget)
         self.main_window.content = self.page3
     
@@ -1133,8 +1201,6 @@ class MyApp(toga.App):
         return
     
     async def onplotfinish(self):
-        self.bg3.image = toga.Image(output_file)
-        #self.bg3.refresh()
         self.page3_btn1.enabled = True
         self.page3_btn2.enabled = True
         self.page3_btn3.enabled = True
@@ -1145,6 +1211,142 @@ class MyApp(toga.App):
             self.bg4.image = toga.Image(output_fileAll)
         else:
             self.page3_btn5.enabled = False
+
+        self.img_html = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Plotly Charts</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+        #top-plotly-chart, #main-plotly-chart {
+            width: calc(100% - 0px);
+            margin: 0 0px;
+            overflow: hidden;
+        }
+        #top-plotly-chart {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        #main-plotly-chart {
+            position: fixed;
+            top: 20%;
+            left: 0;
+            height: 80%;
+        }
+        #divider {
+            position: fixed;
+            top: 20%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: black;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <div id="top-plotly-chart"></div>
+    <div id="divider"></div>
+    <div id="main-plotly-chart"></div>
+    <script>
+        function loadResource(src) {
+            return new Promise((resolve, reject) => {
+                const isJSON = src.endsWith('.json');
+                if (isJSON) {
+                    fetch(src)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+                    document.head.appendChild(script);
+                }
+            });
+        }
+
+        function createPlot(elementId, data) {
+            data.layout.autosize = true;
+            data.layout.width = window.innerWidth; // Account for 20px padding on each side
+            data.layout.margin = {l: 40, r: 5, t: 10, b: 10};
+            
+            if (elementId === 'top-plotly-chart') {
+                data.layout.height = window.innerHeight * 0.2;
+                data.layout.dragmode = false;
+                data.layout.hovermode = false;
+                data.config = {
+                    scrollZoom: false,
+                    displayModeBar: false,
+                    responsive: true
+                };
+            } else {
+                data.layout.height = window.innerHeight * 0.8;
+                data.layout.dragmode = 'zoom';
+                data.config = {
+                    scrollZoom: false,
+                    displayModeBar: false,
+                    responsive: true
+                };
+            }
+
+            return Plotly.newPlot(elementId, data.data, data.layout, data.config);
+        }
+
+        function resizePlots() {
+            const newWidth = window.innerWidth;
+            Plotly.relayout('top-plotly-chart', {
+                width: newWidth,
+                height: window.innerHeight * 0.2
+            });
+            Plotly.relayout('main-plotly-chart', {
+                width: newWidth,
+                height: window.innerHeight * 0.8
+            });
+        }
+
+        Promise.all([
+            loadResource('http://localhost:8010/plotly-2.34.0.min.js'),
+            loadResource('http://localhost:8010/TopPlotly.json'),
+            loadResource('http://localhost:8010/plotly.json')
+        ])
+        .then(([_, topJsonData, mainJsonData]) => {
+            createPlot('top-plotly-chart', topJsonData);
+            createPlot('main-plotly-chart', mainJsonData);
+            window.addEventListener('resize', resizePlots);
+        })
+        .catch(error => console.error('Error loading resources:', error));
+
+        // Prevent default touch behavior
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
+"""
+        
+        self.webview1.set_content(content=self.img_html, root_url="http://localhost:8010/")
+        #self.bg3.image = toga.Image(output_file)
+        #self.bg3.refresh()
+
         print("Wrapper done")
         return
     
@@ -1178,7 +1380,7 @@ class MyApp(toga.App):
         model = data_into_list[0]
         tail = model[-4:]
         tv = [textbox.value for textbox in self.textboxes]
-        self.bg3.image = toga.Image('BG1.png')
+        #self.bg3.image = toga.Image('BG1.png')
         self.bg4.image = toga.Image('BG1.png')
         model = tv + tail
         print(model)
@@ -1239,7 +1441,6 @@ class MyApp(toga.App):
                     'sfs': float(model[20]),
                     'water': float(model[21]),
                     'mudtemp': (float(model[22])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(model[16]) !=0 else 0,
-                    
                     'window': int(float(model[23])),
                     'zulu': (float(model[24])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
                     'tango': (float(model[25])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
@@ -1315,16 +1516,89 @@ class MyApp(toga.App):
         wella.data['TVDM'] =  TVDM
         
         wella.unify_basis(keys=None, alias=None, basis=md3)
-        self.bg3.image = toga.Image('BG1.png')
         #plotPPzhang(wella,self)
 
         print("Great Success!! :D")
         image_path = 'PlotFigure.png'
         #self.bg3.image = toga.Image(output_file)
-        #Clock.schedule_once(lambda dt: self.refresh_plot(image_path), 5)
         #print(self.output)
         self.main_window.content = self.page2
         #self.bg3.refresh()
+        
+        
+    def start_server(self):
+        class Handler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, directory=os.getcwd(), **kwargs)
+
+        self.server = socketserver.TCPServer(('localhost', 8000), Handler)
+        self.server_thread = threading.Thread(target=self.server.serve_forever)
+        self.server_thread.daemon = True
+        self.server_thread.start()
+        print("server 1 started")
+    
+    def start_server2(self):
+        # Store the local directory
+        local_dir = os.getcwd()
+
+        # Define the request handler class with dual directories
+        class Handler(http.server.SimpleHTTPRequestHandler):
+            def do_GET(self):
+                # Construct the full path for the local and output directories
+                local_path = os.path.join(local_dir, self.path.lstrip('/'))
+                output_path = os.path.join(output_dir, self.path.lstrip('/'))
+
+                if os.path.exists(local_path) and os.path.isfile(local_path):
+                    # Serve from the local directory if file exists
+                    self.directory = local_dir
+                elif os.path.exists(output_path) and os.path.isfile(output_path):
+                    # Serve from the output directory if file exists
+                    self.directory = output_dir
+                else:
+                    # Default to the local directory if file not found
+                    self.directory = local_dir
+
+                print(f"Received GET request for {self.path}, serving from {self.directory}")
+                super().do_GET()
+
+            def end_headers(self):
+                self.send_header('Access-Control-Allow-Origin', '*')
+                super().end_headers()
+
+        # Create the server
+        self.server2 = socketserver.TCPServer(('localhost', 8010), Handler)
+
+        # Start the server in a separate thread
+        self.server2_thread = threading.Thread(target=self.server2.serve_forever)
+        self.server2_thread.daemon = True  # This ensures the server thread exits when the main thread does
+        self.server2_thread.start()
+        print("server 2 started, serving files from both local and:", output_dir)
+   
+    def stop_server(self):
+        """
+        if hasattr(self, 'server'):
+            #self.server.shutdown()
+            print("shutdown")
+            self.server.server_close()
+            print("server close")
+            #self.server_thread.join()
+            print("thread join")
+            del self.server_thread
+            print("del server")
+            del self.server
+            print("server stopped and thread joined")
+        """
+        if hasattr(self, 'server2'):
+            #self.server.shutdown()
+            print("shutdown")
+            self.server2.server_close()
+            print("server2 close")
+            #self.server_thread.join()
+            print("thread join")
+            del self.server2_thread
+            print("del server2")
+            del self.server2
+            print("server2 stopped and thread joined")
 
 
 
@@ -1657,5 +1931,6 @@ def main():
 
 if __name__ == "__main__":
     app = MyApp("Stresslog", "in.rocklab.stresslog")
+    app.start_server2()
     app.main_loop()
 

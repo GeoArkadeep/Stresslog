@@ -26,6 +26,7 @@ sources = [
     "src/Stresslog/editor.py",
     "src/Stresslog/failure_criteria.py",
     "src/Stresslog/hydraulics.py",
+    "src/Stresslog/plotly-2.34.0.min.js",
 ]
 installer_icon = "src/Stresslog/resources/Stresslog"
 installer_background = "src/Stresslog/resources/ibg"
@@ -46,7 +47,8 @@ requires = [
     "pandas==1.5.3",
     "scipy",
     "pillow",
-    "pint"
+    "pint",
+    "plotly==5.23.0"
 ]
 test_requires = [
     "toga==0.4.4",

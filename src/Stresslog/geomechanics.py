@@ -2162,7 +2162,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         combineHarvest()
     
     from matplotlib.ticker import MultipleLocator
-    from Plotter import plot_logs, cutify, cutify2, chopify, choptop
+    from Plotter import plot_logs_labels, cutify, cutify2, chopify, choptop
 
     # Initialize parameters
     tango = min(tango, finaldepth)
@@ -2507,11 +2507,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     if dpif>900:
         dpif=900
     figname = well.uwi if well.uwi != "" and well.uwi != None else well.name
-    fig, axes = plot_logs(data, styles, y_min=(float(tango)*ureg('metre').to(ul[unitchoice[0]])).magnitude, y_max=(float(zulu)*ureg('metre').to(ul[unitchoice[0]])).magnitude, plot_labels=False,figsize=(15, 10),points=points_df,pointstyles=pointstyles,dpi=dpif,output_dir = output_dir)
+    fig, axes = plot_logs_labels(data, styles, y_min=(float(tango)*ureg('metre').to(ul[unitchoice[0]])).magnitude, y_max=(float(zulu)*ureg('metre').to(ul[unitchoice[0]])).magnitude,width=15, height=10,points=points_df,pointstyles=pointstyles,dpi=dpif)
     fig.suptitle("Wellbore : "+figname,fontsize=14,y=0.9)
-    plt.savefig(output_file,dpi=dpif)
-    choptop(20*(dpif/100), 0, os.path.join(output_dir,"BottomLabel.png"))
-    cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,89*(dpif/100),99*(dpif/100),0,0)
+    #plt.savefig(output_file,dpi=dpif)
+    #choptop(20*(dpif/100), 0, os.path.join(output_dir,"BottomLabel.png"))
+    #cutify2(output_file,os.path.join(output_dir,"BottomLabel.png"),output_file,89*(dpif/100),99*(dpif/100),0,0)
     #chopify(output_file,119*6,109*6,120*6,120*6)
     plt.close()
     return df3, well
