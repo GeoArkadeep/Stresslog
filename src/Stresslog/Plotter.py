@@ -43,6 +43,34 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
     plotfile = os.path.join(output_dir,"PlotFigure.png")
     plt.savefig(plotfile,dpi=dpi)
     plotly_fig = tls.mpl_to_plotly(fig)
+    normalization_info = {}
+    for col, style in styles.items():
+        normalization_info[col] = {
+            'type': style['type'],
+            'left': style['left'],
+            'right': style['right']
+        }
+    if pointstyles:
+        for col, style in pointstyles.items():
+            normalization_info[col] = {
+                'type': style['type'],
+                'left': style['left'],
+                'right': style['right']
+            }
+    # Update Plotly figure with custom hover templates
+    for trace in plotly_fig.data:
+        if 'name' in trace and trace.name in normalization_info:
+            col_name = trace.name
+            norm_info = normalization_info[col_name]
+            if norm_info['type'] == 'linear':
+                left, right = norm_info['left'], norm_info['right']
+                # Denormalize the data
+                original_data = [x * (right - left) + left for x in trace.x]
+                trace.customdata = original_data
+                hovertemplate = f"{col_name}: " + "%{customdata:.2f}<br>Depth: %{y}<extra></extra>"
+            elif norm_info['type'] == 'log':
+                hovertemplate = f"{col_name}: " + "%{x:.2e}<br>Depth: %{y}<extra></extra>"
+            trace.update(hovertemplate=hovertemplate)
     #plt.close()
     # Fix the x-axis range for both subplots
     plotly_fig.update_xaxes(fixedrange=True)
@@ -57,8 +85,8 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
         #height=600,  # Set a fixed height if needed, or leave it auto-sized
         margin=dict(l=30, r=30, t=30, b=30)  # Adjust margins as needed
     )
-    plotly_fig.update_xaxes(showgrid=True, gridcolor = 'grey', tickcolor='rgba(0, 0, 0, 0)', showticklabels=False)
-    plotly_fig.update_yaxes(automargin=False,showgrid=True, gridcolor = 'grey', tickcolor='rgba(0, 0, 0, 0)', tickformat='.0f', linecolor='grey', linewidth=1)
+    plotly_fig.update_xaxes(showgrid=True, gridcolor = 'rgba(211, 211, 211, 0.8)', tickcolor='rgba(0, 0, 0, 0)', showticklabels=False)
+    plotly_fig.update_yaxes(automargin=False,showgrid=True, gridcolor = 'rgba(211, 211, 211, 0.8)', tickcolor='rgba(0, 0, 0, 0)', tickformat='.0f', linecolor='grey', linewidth=1)
     plotly_fig.update_layout(
         yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
         yaxis2=dict(showticklabels=False),  # Hide labels for the second column
@@ -152,7 +180,10 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
         y_max = max(depth)
 
     label_offsets = {track: y_min - (y_max - y_min) * (0.01) for i, track in enumerate(range(n_tracks))}
-
+    
+    # Dictionary to store normalization information
+    #normalization_info = {}
+    
     # Plotting data
     for col in data.columns:
         track = styles[col]["track"]
@@ -168,10 +199,12 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
             x_plot_data = x_data
             x_min = original_left
             x_max = original_right
+            #normalization_info[col] = {'type': 'log', 'left': original_left, 'right': original_right}
         else:
             x_plot_data = (x_data - original_left) / (original_right - original_left)
             x_min = 0
             x_max = 1
+            #normalization_info[col] = {'type': 'linear', 'left': original_left, 'right': original_right}
 
         ax.plot(x_plot_data, depth, label=col, color=style["color"], linewidth=style["linewidth"], linestyle=style["style"])
         # Add fill logic
@@ -267,10 +300,13 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
                 x_plot_points = x_points
                 x_min = style["left"]
                 x_max = style["right"]
+                #normalization_info[col] = {'type': 'log', 'left': style["left"], 'right': style["right"]}
             else:
                 x_plot_points = (x_points - style["left"]) / (style["right"] - style["left"])
                 x_min = 0
                 x_max = 1
+                #normalization_info[col] = {'type': 'linear', 'left': style["left"], 'right': style["right"]}
+
 
             ax.scatter(x_plot_points, y_points, color=style["color"], s=style["pointsize"], marker=style["symbol"], zorder=5)
             
@@ -292,12 +328,12 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
     fig.subplots_adjust(left=0.05, right=0.95, wspace=0.025)
     
     if plot_labels:
-        plotly_fig = tls.mpl_to_plotly(fig)
         if pltsign > 0:
             #plt.tight_layout()
             plt.savefig(os.path.join(output_dir,"BottomLabel.png"), dpi=dpi)
             return
         else:
+            plotly_fig = tls.mpl_to_plotly(fig)
             #plt.tight_layout()
             plotly_fig.update_layout(
                 autosize=True,
@@ -324,7 +360,7 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
             #plotly_fig.write_image("TopPlotly.png")
             #plt.savefig('TopLabel.png', dpi=dpi)
             return
-    
+    #print(normalization_info)
     return fig, axes
     
 

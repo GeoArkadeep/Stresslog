@@ -652,7 +652,7 @@ class MyApp(toga.App):
         #self.page4.add(self.dbox2)
         self.page4.add(button_box4)
         
-        self.main_window = toga.MainWindow(title=self.formal_name,size=[1440,720])
+        self.main_window = toga.MainWindow(title=self.formal_name,size=[1080,720])
         self.main_window.content = self.page1
         self.main_window.show()
         
