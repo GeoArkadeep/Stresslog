@@ -539,14 +539,14 @@ class MyApp(toga.App):
         left_pane_container.content = left_pane_box
         
         # Create a scrollable container for the right pane
-        right_pane_container = toga.ScrollContainer(style=Pack(direction='row',flex=1))
+        right_pane_container = toga.Box(style=Pack(direction='row',flex=1))
 
         # Create a box for the progress bar and image
         #right_pane_box = toga.Box(style=Pack(direction=ROW, flex=1))
         
         # Adjust the ScrollContainer to handle overflow properly
         #right_pane_container.content = right_pane_box
-        right_pane_container.horizontal = False
+        #right_pane_container.horizontal = False
         girth = 1000
 
         # Add the image display to the right pane box
@@ -613,7 +613,7 @@ class MyApp(toga.App):
         self.webview1 = toga.WebView(style=Pack(flex=1))
         self.webview1.set_content(content=self.bg_img_html, root_url="http://localhost:8010/")
         #right_pane_container.add(self.bg3)
-        right_pane_container.content = self.webview1
+        right_pane_container.add(self.webview1)
 
         # Add the containers to the main page3 box
         self.page3.add(left_pane_container)
@@ -1211,14 +1211,14 @@ class MyApp(toga.App):
             self.bg4.image = toga.Image(output_fileAll)
         else:
             self.page3_btn5.enabled = False
-
+        self.start_server2()
         self.img_html = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Plotly Charts</title>
+    <title>Plotly Charts with fetchWithRetry</title>
     <style>
         body, html {
             margin: 0;
@@ -1228,14 +1228,14 @@ class MyApp(toga.App):
             width: 100%;
         }
         #top-plotly-chart, #main-plotly-chart {
-            width: calc(100% - 0px);
-            margin: 0 0px;
+            width: 100%;
             overflow: hidden;
         }
         #top-plotly-chart {
             position: fixed;
             top: 0;
             left: 0;
+            height: 20%;
             z-index: 1000;
         }
         #main-plotly-chart {
@@ -1260,32 +1260,88 @@ class MyApp(toga.App):
     <div id="divider"></div>
     <div id="main-plotly-chart"></div>
     <script>
-        function loadResource(src) {
+        console.log('Script execution started');
+
+        const fetchWithTimeout = (url, options, timeout = 5000) => {
+            console.log(`fetchWithTimeout called for ${url}`);
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) => 
+                    setTimeout(() => {
+                        console.log(`Timeout reached for ${url}`);
+                        reject(new Error('Fetch timeout'));
+                    }, timeout)
+                )
+            ]);
+        };
+
+        function fetchWithRetry(url, options, maxRetries = 3) {
+            console.log(`fetchWithRetry called for ${url}, maxRetries: ${maxRetries}`);
             return new Promise((resolve, reject) => {
-                const isJSON = src.endsWith('.json');
-                if (isJSON) {
-                    fetch(src)
+                const attempt = (retryCount) => {
+                    console.log(`Attempt ${maxRetries - retryCount + 1} for ${url}`);
+                    fetchWithTimeout(url, options)
+                        .then(response => {
+                            console.log(`Successful fetch for ${url}`);
+                            resolve(response);
+                        })
+                        .catch((error) => {
+                            console.error(`Error in fetch attempt for ${url}:`, error);
+                            if (retryCount === 0) {
+                                console.log(`All retries exhausted for ${url}`);
+                                reject(error);
+                            } else {
+                                console.log(`Retrying fetch for ${url}. ${retryCount} attempts left.`);
+                                attempt(retryCount - 1);
+                            }
+                        });
+                };
+                attempt(maxRetries);
+            });
+        }
+
+        function loadResource(src) {
+            console.log(`loadResource called for ${src}`);
+            return new Promise((resolve, reject) => {
+                if (src.endsWith('.json')) {
+                    console.log(`Fetching JSON: ${src}`);
+                    fetchWithRetry(src, {})
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP error! status: ${response.status}`);
                             }
+                            console.log(`JSON fetch successful: ${src}`);
                             return response.json();
                         })
-                        .then(resolve)
-                        .catch(reject);
+                        .then(data => {
+                            console.log(`JSON parsed successfully: ${src}`);
+                            resolve(data);
+                        })
+                        .catch(error => {
+                            console.error(`Error loading JSON ${src}:`, error);
+                            reject(error);
+                        });
                 } else {
+                    console.log(`Loading script: ${src}`);
                     const script = document.createElement('script');
                     script.src = src;
-                    script.onload = resolve;
-                    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+                    script.onload = () => {
+                        console.log(`Script loaded successfully: ${src}`);
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        console.error(`Error loading script ${src}`);
+                        reject(new Error(`Failed to load ${src}`));
+                    };
                     document.head.appendChild(script);
                 }
             });
         }
 
         function createPlot(elementId, data) {
+            console.log(`createPlot called for ${elementId}`);
             data.layout.autosize = true;
-            data.layout.width = window.innerWidth; // Account for 20px padding on each side
+            data.layout.width = window.innerWidth;
             data.layout.margin = {l: 40, r: 5, t: 10, b: 10};
             
             if (elementId === 'top-plotly-chart') {
@@ -1307,37 +1363,50 @@ class MyApp(toga.App):
                 };
             }
 
-            return Plotly.newPlot(elementId, data.data, data.layout, data.config);
+            return Plotly.newPlot(elementId, data.data, data.layout, data.config)
+                .then(() => console.log(`Plot created successfully for ${elementId}`))
+                .catch(error => console.error(`Error creating plot for ${elementId}:`, error));
         }
 
         function resizePlots() {
+            console.log('resizePlots called');
             const newWidth = window.innerWidth;
             Plotly.relayout('top-plotly-chart', {
                 width: newWidth,
                 height: window.innerHeight * 0.2
-            });
+            }).catch(error => console.error('Error resizing top chart:', error));
             Plotly.relayout('main-plotly-chart', {
                 width: newWidth,
                 height: window.innerHeight * 0.8
-            });
+            }).catch(error => console.error('Error resizing main chart:', error));
         }
 
+        console.log('Starting to load resources');
         Promise.all([
             loadResource('http://localhost:8010/plotly-2.34.0.min.js'),
             loadResource('http://localhost:8010/TopPlotly.json'),
             loadResource('http://localhost:8010/plotly.json')
         ])
         .then(([_, topJsonData, mainJsonData]) => {
-            createPlot('top-plotly-chart', topJsonData);
-            createPlot('main-plotly-chart', mainJsonData);
-            window.addEventListener('resize', resizePlots);
+            console.log('All resources loaded successfully');
+            return Promise.all([
+                createPlot('top-plotly-chart', topJsonData),
+                createPlot('main-plotly-chart', mainJsonData)
+            ]);
         })
-        .catch(error => console.error('Error loading resources:', error));
+        .then(() => {
+            console.log('Both plots created successfully');
+            window.addEventListener('resize', resizePlots);
+            console.log('Resize event listener added');
+        })
+        .catch(error => console.error('Error in main execution:', error));
 
         // Prevent default touch behavior
         document.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, { passive: false });
+
+        console.log('Script execution completed');
     </script>
 </body>
 </html>
@@ -1412,7 +1481,7 @@ class MyApp(toga.App):
         print("model_fin: ",model)
         
         self.progress.start()
-
+        self.stop_server()
         loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
             await loop.run_in_executor(

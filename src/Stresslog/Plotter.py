@@ -62,15 +62,24 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
         if 'name' in trace and trace.name in normalization_info:
             col_name = trace.name
             norm_info = normalization_info[col_name]
-            if norm_info['type'] == 'linear':
-                left, right = norm_info['left'], norm_info['right']
-                # Denormalize the data
-                original_data = [x * (right - left) + left for x in trace.x]
-                trace.customdata = original_data
-                hovertemplate = f"{col_name}: " + "%{customdata:.2f}<br>Depth: %{y}<extra></extra>"
-            elif norm_info['type'] == 'log':
-                hovertemplate = f"{col_name}: " + "%{x:.2e}<br>Depth: %{y}<extra></extra>"
-            trace.update(hovertemplate=hovertemplate)
+            
+            # Check if it's a line trace (mode should include 'lines')
+            if 'lines' in trace.mode:
+                if norm_info['type'] == 'linear':
+                    left, right = norm_info['left'], norm_info['right']
+                    # Denormalize the data
+                    original_data = [x * (right - left) + left for x in trace.x]
+                    trace.customdata = original_data
+                    hovertemplate = f"{col_name}: " + "%{customdata:.2f}<br>Depth: %{y}<extra></extra>"
+                elif norm_info['type'] == 'log':
+                    hovertemplate = f"{col_name}: " + "%{x:.2e}<br>Depth: %{y}<extra></extra>"
+                trace.update(hovertemplate=hovertemplate)
+            else:
+                # For scatter plots or unidentified traces, turn off hover
+                trace.update(hoverinfo='skip')
+        else:
+            # For any trace we can't identify, turn off hover
+            trace.update(hoverinfo='skip')
     #plt.close()
     # Fix the x-axis range for both subplots
     plotly_fig.update_xaxes(fixedrange=True)
