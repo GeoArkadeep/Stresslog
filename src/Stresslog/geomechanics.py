@@ -82,7 +82,7 @@ def read_aliases_from_file(file_path):
 def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path):
     
     def convert_value(value, from_unit, to_unit, ureg=ureg):
-        return (value * ureg(from_unit)).to(to_unit).magnitude
+        return (value * ureg(from_unit.lower())).to(to_unit.lower()).magnitude
 
     try:
         with open(file_path, 'r') as file:
@@ -141,7 +141,7 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
 def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path):
     
     def convert_value(value, from_unit, to_unit,ureg=ureg):
-        return (value * ureg(from_unit)).to(to_unit).magnitude
+        return (value * ureg(from_unit.lower())).to(to_unit.lower()).magnitude
 
     try:
         with open(file_path, 'r') as file:
@@ -557,7 +557,6 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     Additionally, it saves the output as files in CSV and LAS formats.
     """
     program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
-    
     
     output_dir = os.path.join(user_home, "Stresslog_Plots")
     output_dir1 = os.path.join(user_home, "Stresslog_Data")
@@ -2325,12 +2324,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     def convert_units(data, pressure_unit, gradient_unit, strength_unit,ureg=ureg):
         converted_data = data.copy()
-        
+        pressure_unit = pressure_unit.lower()
+        gradient_unit = gradient_unit.lower()
+        strength_unit = strength_unit.lower()
         # Define unit mappings
         unit_mappings = {
-            'pressure': {'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm, 'MPa': ureg.MPa},
+            'pressure': {'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm, 'mpa': ureg.MPa},
             'gradient': {'gcc': ureg.gcc, 'sg': ureg.sg, 'ppg': ureg.ppg, 'psi/foot': ureg.psi/ureg.foot, 'ksc/m': ureg.ksc/ureg.m},
-            'strength': {'MPa': ureg.MPa, 'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm},
+            'strength': {'mpa': ureg.MPa, 'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm},
             'depth': {'m': ureg.m, 'f': ureg.foot, 'km': ureg.km, 'mile': ureg.mile, 'nm': ureg.nautical_mile, 'in': ureg.inch, 'cm': ureg.cm, 'fathom': ureg.fathom}
         }
         
@@ -2377,13 +2378,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         return converted_points
     
     #unitchoice = [1,0,2,0,0] #pressure, strength, gradient, length, temperature
-    try:
-        with open(unitpath, 'r') as f:
-            reader = csv.reader(f)
-            unitchoice = next(reader)
-            unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
-    except:
-        unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
+
+    print("unitchoice is: ",unitchoice)
+    print("unitdict is: ",ureg)
     # Data preparation for plot_logs
     pressure_unit = up[unitchoice[1]]  # Get the selected pressure unit
     gradient_unit = ug[unitchoice[2]]  # Get the selected gradient unit

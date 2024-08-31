@@ -105,12 +105,14 @@ ureg.define('sg = 0.4335 psi/foot = gcc = SG = GCC')
 ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
 ureg.define('HR = hour')
 ureg.define('M = meter')
+ureg.define('mpa = MPa = Mpa')
 
 try:
     with open(unitpath, 'r') as f:
         reader = csv.reader(f)
         unitchoice = next(reader)
         unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
+        print(unitchoice)
 except:
     unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
 
@@ -745,11 +747,6 @@ class MyApp(toga.App):
         self.main_window.content = self.page2
     
     def show_page3(self, widget):
-        if not hasattr(self, 'server2'):
-            #self.start_server2()
-            self.start_server2()
-        if hasattr(self, 'img_html'):
-            self.webview1.set_content(content=self.img_html, root_url="http://localhost:8010/")
         self.set_textbox2_values(widget)
         self.main_window.content = self.page3
     
@@ -1201,6 +1198,7 @@ class MyApp(toga.App):
         return
     
     async def onplotfinish(self):
+        self.start_server2()
         self.page3_btn1.enabled = True
         self.page3_btn2.enabled = True
         self.page3_btn3.enabled = True
@@ -1211,7 +1209,6 @@ class MyApp(toga.App):
             self.bg4.image = toga.Image(output_fileAll)
         else:
             self.page3_btn5.enabled = False
-        self.start_server2()
         self.img_html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1520,7 +1517,7 @@ class MyApp(toga.App):
         
         self.webview1.set_content(content=self.img_html, root_url="http://localhost:8010/")
         #self.bg3.image = toga.Image(output_file)
-        self.show_page3()
+        #self.show_page3()
         #self.bg3.refresh()
 
         print("Wrapper done")
