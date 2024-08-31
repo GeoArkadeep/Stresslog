@@ -1218,6 +1218,8 @@ class MyApp(toga.App):
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="HandheldFriendly" content="true">
     <title>Plotly Charts with fetchWithRetry</title>
     <style>
         body, html {
@@ -1226,6 +1228,16 @@ class MyApp(toga.App):
             overflow: hidden;
             height: 100%;
             width: 100%;
+            /* Disable text selection */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            /* Prevent iOS text size adjust on orientation change */
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            /* Disable overscroll behavior */
+            overscroll-behavior: none;
         }
         #top-plotly-chart, #main-plotly-chart {
             width: 100%;
@@ -1261,6 +1273,105 @@ class MyApp(toga.App):
     <div id="main-plotly-chart"></div>
     <script>
         console.log('Script execution started');
+
+        // Disable browser back functionality
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, document.URL);
+        });
+
+        // Prevent zooming
+        function preventZoom(e) {
+            var t2 = e.timeStamp;
+            var t1 = e.currentTarget.dataset.lastTouch || t2;
+            var dt = t2 - t1;
+            var fingers = e.touches.length;
+            e.currentTarget.dataset.lastTouch = t2;
+
+            if (!dt || dt > 500 || fingers > 1) return; // not double-tap
+
+            e.preventDefault();
+            e.target.click();
+        }
+
+        document.addEventListener('touchstart', preventZoom, {passive: false});
+
+        // Prevent pinch zooming
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Prevent zoom on double tap
+        var lastTouchEnd = 0;
+        document.addEventListener('touchend', function (e) {
+            var now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Prevent zoom on mouse wheel
+        document.addEventListener('wheel', function(e) {
+            if(e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Prevent zoom on keydown (Ctrl + '+' or Ctrl + '-')
+        document.addEventListener('keydown', function(e) {
+            if(e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=')) {
+                e.preventDefault();
+            }
+        }, false);
+
+        // Prevent swipe to navigate
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+        
+        document.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) {
+                // Swiped left
+                e.preventDefault();
+            } else if (touchEndX - touchStartX > 50) {
+                // Swiped right
+                e.preventDefault();
+            }
+        }, false);
+
+        // Prevent context menu (right-click menu)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        }, false);
+
+        // Prevent refresh
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                e.preventDefault();
+            }
+        }, false);
+
+        // Prevent refresh on mobile pull-down
+        let touchStartY = 0;
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            const touchY = e.touches[0].clientY;
+            const touchYDelta = touchY - touchStartY;
+            
+            if (touchYDelta > 0 && window.scrollY === 0) {
+                e.preventDefault();
+            }
+        }, {passive: false});
 
         const fetchWithTimeout = (url, options, timeout = 5000) => {
             console.log(`fetchWithTimeout called for ${url}`);
@@ -1400,11 +1511,6 @@ class MyApp(toga.App):
             console.log('Resize event listener added');
         })
         .catch(error => console.error('Error in main execution:', error));
-
-        // Prevent default touch behavior
-        document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
 
         console.log('Script execution completed');
     </script>
