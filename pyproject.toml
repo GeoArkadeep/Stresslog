@@ -51,7 +51,8 @@ requires = [
     "scipy",
     "pillow",
     "pint",
-    "plotly==5.23.0"
+    "plotly==5.23.0",
+    "setuptools==65.5.0"
 ]
 test_requires = [
     "toga==0.4.4",
