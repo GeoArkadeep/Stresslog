@@ -157,11 +157,11 @@ class MyApp(toga.App):
     def preferences(self, widget):
         show_preferences_window(self, aliaspath, stylespath, pstylespath, unitdict, unitpath)
     def custom_edit_ucs(self, widget):
-        asyncio.create_task(self.run_custom_ucs())
+        self.run_custom_ucs()
 
-    async def run_custom_ucs(self):
+    def run_custom_ucs(self):
         #global UCSs
-        await custom_edit(
+        custom_edit(
             self, 
             output_ucs, 
             ["MD", "UCS"], ["Depth", "Strength"], 
@@ -170,13 +170,13 @@ class MyApp(toga.App):
         #print(UCSs)
         
     def custom_edit_forms(self, widget):
-        asyncio.create_task(self.run_custom_forms())
+        self.run_custom_forms()
 
-    async def run_custom_forms(self):
+    def run_custom_forms(self):
         #global forms
         formunitdict = {"Depth": ["Metres", "Feet"],
             "None": [""]}
-        await custom_edit(
+        custom_edit(
             self, 
             output_forms, 
             ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None","None","None","None"], 
@@ -195,6 +195,61 @@ class MyApp(toga.App):
         )
         # Add the command to the app commands
         self.commands.add(PREFERENCES)
+        
+        load_las = toga.Command(
+            self.open_las0,
+            text='Load Las file',
+            shortcut=toga.Key.MOD_1 + 'l',
+            tooltip = "Load well log in Las format",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        # Add the command to the app commands
+        self.commands.add(load_las)
+        
+        load_dev = toga.Command(
+            self.open_dev0,
+            text='Load Deviation Survey',
+            shortcut=toga.Key.MOD_1 + 'd',
+            tooltip = "Load well survey ascii file",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        # Add the command to the app commands
+        self.commands.add(load_dev)
+        
+        load_ucs = toga.Command(
+            self.open_ucs,
+            text='Load core UCS data',
+            tooltip = "Core UCS data for calibration",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        # Add the command to the app commands
+        self.commands.add(load_ucs)
+        
+        load_forms = toga.Command(
+            self.open_formations,
+            text='Load Formation Tops',
+            #shortcut=toga.Key.MOD_1 + 'f',
+            tooltip = "Formation Tops and properties",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        
+        # Add the command to the app commands
+        self.commands.add(load_forms)
+        
+        load_lith = toga.Command(
+            self.open_litho,
+            text='Load Interpreted Lithology',
+            #shortcut=toga.Key.MOD_1 + 'l',
+            tooltip = "Interpreted Lithology in RockLab format",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        # Add the command to the app commands
+        self.commands.add(load_lith)
 
         # Explicitly set it as the preferences command
         #self.set_preferences(PREFERENCES)
@@ -950,7 +1005,12 @@ class MyApp(toga.App):
             self.dropdown2.enabled = True
             self.dropdown3.enabled = True
             self.page1_btn4.enabled = True
-            self.page1_btn3.enabled = False            
+            self.page1_btn3.enabled = False
+            try:
+                self.getwelldev()
+            except:
+                print("Load the damn well log first, fool!")
+                pass
         else:
             print(wella)
 
@@ -979,7 +1039,10 @@ class MyApp(toga.App):
         if ucspath is not None:               
             h3 = readUCSFromAscii(ucspath)
             print("Loaded ucs file:", ucspath)
-            print(h3)           
+            print(h3)
+            h3.to_csv(output_ucs)
+            self.run_custom_ucs()
+            
             
         else:
             print("No ucs file loaded")
@@ -999,7 +1062,9 @@ class MyApp(toga.App):
         if formpath is not None:               
             h5 = readFormFromAscii(formpath)
             print("Loaded formation file:", formpath)
-            print(h5)           
+            print(h5)
+            h5.to_csv(output_forms)
+            self.run_custom_forms()
             
         else:
             print("No formation file loaded")
@@ -1537,6 +1602,7 @@ class MyApp(toga.App):
                 unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
         except:
             unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
+        
         try:
             UCSs = pd.read_csv(output_ucs)
         except:
@@ -1545,6 +1611,7 @@ class MyApp(toga.App):
             forms = pd.read_csv(output_forms)
         except:
             forms = None
+            
         self.progress.text = "Status: Calculating, Standby"
         self.getwelldev()
         data = pd.read_csv(modelpath, index_col=False)

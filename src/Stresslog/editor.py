@@ -1,46 +1,72 @@
 import toga
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
-import asyncio
+#import asyncio
 import pandas as pd
 import pint
 import numpy as np
 import os
 
 class CustomEditorWindow(toga.Window):
-    def __init__(self, id, title, csv_path, headers, unittypes, unitdict, target_units, datatypes, ureg, on_close_future):
+    def __init__(self, id, title, csv_path, headers, unittypes, unitdict, target_units, datatypes, ureg):
         super().__init__(id=id, title=title)
         
         self.csv_path = csv_path
-        self.headers = headers
+        self.expected_headers = headers
         self.unittypes = unittypes
         self.unitdict = unitdict
         self.target_units = target_units
         self.datatypes = datatypes
         self.ureg = ureg
-        self.on_close_future = on_close_future
         self.current_selections = {}
+        self.data_box = None
         
         self.initialize_dataframe()
-        self.create_content()
-        
-    def load_csv_wrapper(self, widget):
-        asyncio.create_task(self.load_csv(widget))
 
     def initialize_dataframe(self):
         if os.path.exists(self.csv_path):
+            # Read CSV with first row as headers
             self.df = pd.read_csv(self.csv_path)
         else:
-            self.df = pd.DataFrame(columns=self.headers)
+            self.df = pd.DataFrame(columns=self.expected_headers)
+
+        # Check if headers match expected headers
+        if set(self.df.columns) != set(self.expected_headers):
+            self.open_column_mapping_window()
+        else:
+            self.finalize_dataframe()
+
+    def open_column_mapping_window(self):
+        mapping_window = ColumnMappingWindow(self.df.columns, self.expected_headers, self.on_mapping_complete)
+        mapping_window.show()
+
+    def on_mapping_complete(self, mapping):
+        # Create a new dataframe with mapped columns
+        new_df = pd.DataFrame()
+        for new_col, old_col in mapping.items():
+            if old_col != "None":
+                new_df[new_col] = self.df[old_col]
+            else:
+                new_df[new_col] = np.nan
         
-        if list(self.df.columns) != self.headers:
-            self.df.columns = self.headers
+        # Update the dataframe
+        self.df = new_df
         
-        self.current_units = {header: self.unitdict[unittype][0] for header, unittype in zip(self.headers, self.unittypes)}
+        self.finalize_dataframe()
+
+    def finalize_dataframe(self):
+        # Set up current units
+        self.current_units = {header: self.unitdict[unittype][0] for header, unittype in zip(self.expected_headers, self.unittypes)}
+        
+        # Reset index after all operations
+        self.df = self.df.reset_index(drop=True)
+        
+        # Create the content after finalizing the dataframe
+        self.create_content()
 
     def create_content(self):
         main_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
-        
+        self.data_box = toga.Box(style=Pack(direction=COLUMN))
         # Create a box for all content (headers, units, and data)
         self.all_content_box = toga.Box(style=Pack(direction=COLUMN, padding=5))
         
@@ -49,7 +75,7 @@ class CustomEditorWindow(toga.Window):
         
         # Header row
         header_row = toga.Box(style=Pack(direction=ROW))
-        for header in self.headers:
+        for header in self.expected_headers:
             header_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
             header_label = toga.Label(
                 header, 
@@ -61,7 +87,7 @@ class CustomEditorWindow(toga.Window):
         
         # Unit selection row
         unit_row = toga.Box(style=Pack(direction=ROW))
-        for header, unittype in zip(self.headers, self.unittypes):
+        for header, unittype in zip(self.expected_headers, self.unittypes):
             unit_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
             current_unit = toga.Selection(
                 items=self.unitdict[unittype],
@@ -92,15 +118,15 @@ class CustomEditorWindow(toga.Window):
         row_buttons.add(remove_row_button)
         button_area.add(row_buttons)
         
-        # Load CSV and Clear Data buttons
+        # Copy to Clipboard and Paste Data buttons
         data_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
-        load_csv_button = toga.Button('Load CSV', on_press=self.load_csv_wrapper, style=Pack(flex=1))
-        paste_data_button = toga.Button('Paste data', on_press=self.load_from_clipboard, style=Pack(flex=1))
-        data_buttons.add(load_csv_button)
+        copy_clipboard_button = toga.Button('Copy to Clipboard', on_press=self.copy_to_clipboard, style=Pack(flex=1))
+        paste_data_button = toga.Button('Paste from Clipboard', on_press=self.load_from_clipboard, style=Pack(flex=1))
+        data_buttons.add(copy_clipboard_button)
         data_buttons.add(paste_data_button)
         button_area.add(data_buttons)
         
-        # Save and Cancel buttons
+        # Save and Clear buttons
         action_buttons = toga.Box(style=Pack(direction=ROW, padding=5))
         save_button = toga.Button('Save', on_press=self.save, style=Pack(flex=1))
         clear_button = toga.Button('Clear', on_press=self.clear_data, style=Pack(flex=1))
@@ -138,7 +164,7 @@ class CustomEditorWindow(toga.Window):
 
     def create_data_row(self, row, column_width):
         data_row = toga.Box(style=Pack(direction=ROW))
-        for header in self.headers:
+        for header in self.expected_headers:
             data_box = toga.Box(style=Pack(direction=COLUMN, width=column_width, padding=2))
             input_box = toga.TextInput(
                 value=str(row[header]), 
@@ -149,7 +175,7 @@ class CustomEditorWindow(toga.Window):
         return data_row
         
     def add_row(self, widget):
-        new_row = {header: '' for header in self.headers}
+        new_row = {header: '' for header in self.expected_headers}
         self.df = pd.concat([self.df, pd.DataFrame([new_row])], ignore_index=True)
         
         # Create and add only the new row
@@ -167,51 +193,39 @@ class CustomEditorWindow(toga.Window):
     def on_current_unit_change(self, widget, header):
         self.current_units[header] = widget.value
 
-    async def load_csv(self, widget):
+    def copy_to_clipboard(self, widget):
         try:
-            file_path = await self.open_file_dialog(
-                title="Select CSV file",
-                multiselect=False,
-                file_types=['csv']
-            )
-            if file_path:
-                new_df = pd.read_csv(file_path)
-                self.process_loaded_data(new_df, "CSV")
-                await self.info_dialog("Success", "CSV file loaded successfully.")
-            else:
-                print("File selection was canceled.")
+            self.df.to_clipboard(index=False)
+            self.main_window.info_dialog("Success", "Data copied to clipboard successfully.")
         except Exception as e:
-            await self.error_dialog("Error", f"Failed to load CSV: {str(e)}")
+            self.main_window.error_dialog("Error", f"Failed to copy data to clipboard: {str(e)}")
             print(f"Error details: {str(e)}")
+
             
         
     def clear_data(self, widget):
         os.remove(self.csv_path) if os.path.exists(self.csv_path) else None
-        self.on_close_future.set_result(None)
         self.close()
-    
-    def load_from_clipboard(self, widget):
-        asyncio.create_task(self.load_clipboard_async(widget))
 
-    async def load_clipboard_async(self, widget):
+    def load_from_clipboard(self, widget):
         try:
             new_df = pd.read_clipboard(sep='\s+')
             self.process_loaded_data(new_df, "Clipboard")
-            await self.info_dialog("Success", "Data loaded from clipboard successfully.")
+            self.info_dialog("Success", "Data loaded from clipboard successfully.")
         except Exception as e:
-            await self.error_dialog("Error", f"Failed to load data from clipboard: {str(e)}")
+            self.error_dialog("Error", f"Failed to load data from clipboard: {str(e)}")
             print(f"Error details: {str(e)}")
     
     def process_loaded_data(self, new_df, source):
         print(f"Processing {source} data...")
         print(f"{source} columns: {list(new_df.columns)}")
-        print(f"Expected headers: {self.headers}")
+        print(f"Expected headers: {self.expected_headers}")
 
         # Create a new dataframe with the expected columns
-        processed_df = pd.DataFrame(columns=self.headers)
+        processed_df = pd.DataFrame(columns=self.expected_headers)
 
         # Copy data from new_df to processed_df column by column
-        for i, header in enumerate(self.headers):
+        for i, header in enumerate(self.expected_headers):
             if i < len(new_df.columns):
                 processed_df[header] = new_df.iloc[:, i]
             else:
@@ -219,8 +233,8 @@ class CustomEditorWindow(toga.Window):
                 print(f"Added missing column: {header}")
 
         # If new_df has more columns than expected, print a warning
-        if len(new_df.columns) > len(self.headers):
-            print(f"Warning: {source} has {len(new_df.columns) - len(self.headers)} extra columns that were not loaded.")
+        if len(new_df.columns) > len(self.expected_headers):
+            print(f"Warning: {source} has {len(new_df.columns) - len(self.expected_headers)} extra columns that were not loaded.")
 
         # Update the dataframe and display
         self.df = processed_df
@@ -238,14 +252,14 @@ class CustomEditorWindow(toga.Window):
         self.df.replace("nan", np.nan, inplace=True)
         self.df.replace('', np.nan, inplace=True)
         # Perform unit conversion
-        for header, current_unit, target_unit in zip(self.headers, self.current_units.values(), self.target_units):
+        for header, current_unit, target_unit in zip(self.expected_headers, self.current_units.values(), self.target_units):
             if current_unit != target_unit:
                 try:
                     self.df[header] = self.df[header].apply(lambda x, ureg=self.ureg: ureg.Quantity(float(x), current_unit).to(target_unit).magnitude)
                 except:
                     self.df[header] = np.nan
         # Cast columns to required datatypes
-        for header, dtype in zip(self.headers, self.datatypes):
+        for header, dtype in zip(self.expected_headers, self.datatypes):
             try:
                 self.df[header] = self.df[header].astype(dtype)
             except:
@@ -255,7 +269,7 @@ class CustomEditorWindow(toga.Window):
         self.df.dropna(how='all', inplace=True)
         
          # Remove duplicates in the first column, keeping the first occurrence
-        first_column = self.headers[0]
+        first_column = self.expected_headers[0]
         self.df.drop_duplicates(subset=[first_column], keep='first', inplace=True)
         
         # Drop rows where the first column is NaN
@@ -270,16 +284,43 @@ class CustomEditorWindow(toga.Window):
         if not self.df.empty:
             self.df.to_csv(self.csv_path, index=False)
         
-        self.on_close_future.set_result(None)
         self.close()
 
     def cancel(self, widget):
-        self.on_close_future.set_result(None)
         self.close()
 
-async def custom_edit(app, csv_path, headers, unittypes, unitdict, target_units, datatypes, ureg=pint.UnitRegistry()):
-    on_close_future = asyncio.Future()
+class ColumnMappingWindow(toga.Window):
+    def __init__(self, current_headers, expected_headers, on_complete_callback):
+        super().__init__(title="Map Columns")
+        self.current_headers = ["None"] + list(current_headers)
+        self.expected_headers = expected_headers
+        self.on_complete_callback = on_complete_callback
+        self.mapping = {}
+        self.create_content()
 
+    def create_content(self):
+        main_box = toga.Box(style=Pack(direction=COLUMN, padding=10))
+        
+        for expected_header in self.expected_headers:
+            row = toga.Box(style=Pack(direction=ROW, padding=5))
+            label = toga.Label(expected_header, style=Pack(flex=1))
+            dropdown = toga.Selection(items=self.current_headers, style=Pack(flex=1))
+            row.add(label)
+            row.add(dropdown)
+            main_box.add(row)
+            self.mapping[expected_header] = dropdown
+
+        button = toga.Button("Confirm Mapping", on_press=self.confirm_mapping)
+        main_box.add(button)
+
+        self.content = main_box
+
+    def confirm_mapping(self, widget):
+        mapping = {expected: dropdown.value for expected, dropdown in self.mapping.items()}
+        self.on_complete_callback(mapping)
+        self.close()
+
+def custom_edit(app, csv_path, headers, unittypes, unitdict, target_units, datatypes, ureg=pint.UnitRegistry()):
     editor_window = CustomEditorWindow(
         id='data_editor',
         title='Data Editor',
@@ -289,11 +330,7 @@ async def custom_edit(app, csv_path, headers, unittypes, unitdict, target_units,
         unitdict=unitdict,
         target_units=target_units,
         datatypes=datatypes,
-        ureg=ureg,
-        on_close_future=on_close_future
+        ureg=ureg
     )
     app.windows.add(editor_window)
     editor_window.show()
-
-    await on_close_future
-    # No return value, as we're overwriting the CSV in place
