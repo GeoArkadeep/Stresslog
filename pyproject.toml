@@ -2,7 +2,7 @@
 [tool.briefcase]
 project_name = "Stresslog"
 bundle = "in.rocklab"
-version = "1.1.2"
+version = "1.1.3"
 url = "https://rocklab.in/Stresslog"
 license = "AGPL-3.0"
 author = "Arkadeep Ghosh"
@@ -26,6 +26,9 @@ sources = [
     "src/Stresslog/editor.py",
     "src/Stresslog/failure_criteria.py",
     "src/Stresslog/hydraulics.py",
+    "src/Stresslog/geomechanics.py",
+    "src/Stresslog/obgppshmin.py",
+    "src/Stresslog/unit_converter.py",
     "src/Stresslog/plotly-2.34.0.min.js",
 ]
 installer_icon = "src/Stresslog/resources/Stresslog"
