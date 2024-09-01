@@ -20,7 +20,11 @@ class CustomEditorWindow(toga.Window):
         self.ureg = ureg
         self.current_selections = {}
         self.data_box = None
-        
+
+    
+    def show(self):
+        super().show()
+        # Now that the window is shown, we can initialize the dataframe
         self.initialize_dataframe()
 
     def initialize_dataframe(self):
