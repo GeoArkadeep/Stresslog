@@ -69,7 +69,7 @@ def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, wdf, glwd):
     return integrho, integrhopsift, ObgTppg
 
 def get_PPgrad_Zhang_gcc(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot=1):
-    if b==c:
+    if b>=c:
         numerator = ObgTgcc - ((ObgTgcc-pn)*((math.log((mudline-matrick))-(math.log(dalm-matrick)))/(c*tvdbgl)))
     else:
         numerator = ObgTgcc - ((ObgTgcc - pn) / (b * tvdbgl)) * ((((b - c) / c) * (math.log((mudline - matrick) / (deltmu0 - matrick)))) + (math.log((mudline - matrick) / (dalm - matrick))))
