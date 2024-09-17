@@ -89,10 +89,10 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
             styles = json.load(file)
     except:
         styles = {
-            'lresnormal': {"color": "red","linewidth": 1.5,"style": ":","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
+            'lresnormal': {"color": "red","linewidth": 1.5,"style": "-","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
             'lresdeep': {"color": "black","linewidth": 0.5,"style": "-","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
             'Dexp': {"color": "brown","linewidth": 0.5,"style": "-","track": 1,"left": 0,"right": 2,"type": "linear","unit": ""},
-            'dexnormal': {"color": "brown","linewidth": 1.5,"style": ":","track": 1,"left": 0,"right": 2,"type": "linear","unit": ""},
+            'dexnormal': {"color": "brown","linewidth": 1.5,"style": "-","track": 1,"left": 0,"right": 2,"type": "linear","unit": ""},
             'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
             'dtNormal': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
             'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
@@ -106,8 +106,8 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
             'hydropsi': {"color": "aqua", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
             'pppsi': {"color": "red", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
             'mudpsi': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-            'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": ':', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-            'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": ':', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": '-', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
             'slal': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
             'shorsud': {"color": "red", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
             'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},

@@ -28,7 +28,7 @@ import http.server
 import socketserver
 
 from manage_preferences import show_preferences_window
-from editor import custom_edit
+from webedit import custom_edit
 
 from geomechanics import plotPPzhang
 
@@ -161,11 +161,10 @@ class MyApp(toga.App):
 
     def run_custom_ucs(self):
         #global UCSs
+        print(output_ucs)
         custom_edit(
             self, 
-            output_ucs, 
-            ["MD", "UCS"], ["Depth", "Strength"], 
-            unitdict,["Metres","MPa"],[float,float],ureg
+            ["MD", "UCS"], ["m","MPa"],output_ucs
         )
         #print(UCSs)
         
@@ -178,9 +177,7 @@ class MyApp(toga.App):
             "None": [""]}
         custom_edit(
             self, 
-            output_forms, 
-            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["Depth","None","None","None", "Depth","Depth","None","Depth","Depth","None","None","None","None"], 
-            formunitdict,["Metres","","","","Metres","Metres","","Metres","Metres","","","","","","","","","",""],[float,int,str,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float,float],ureg
+            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["m","","","","m","m","","m","m","","","","","","","","","",""],output_forms
         )
         #print(forms)
         
@@ -1877,7 +1874,7 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
         styles = {
             'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
             'dtNormal': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
-            'lresnormal': {"color": "red", "linewidth": 1.5, "style": ':', "track": 1, "left": -2, "right": 2, "type": 'linear', "unit": "ohm.m"},
+            'lresnormal': {"color": "red", "linewidth": 1.5, "style": '-', "track": 1, "left": -2, "right": 2, "type": 'linear', "unit": "ohm.m"},
             'lresdeep': {"color": "red", "linewidth": 1.5, "style": '-', "track": 1, "left": -2, "right": 2, "type": 'linear', "unit": "ohm.m"},
             'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
             'fg': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},
@@ -1890,8 +1887,8 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
             'hydropsi': {"color": "aqua", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
             'pppsi': {"color": "red", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
             'mudpsi': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-            'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": ':', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
-            'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": ':', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'sgHMpsiL': {"color": "lime", "linewidth": 0.25, "style": '-', "track": 3, "left":minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
+            'sgHMpsiU': {"color": "orange", "linewidth": 0.25, "style": '-', "track": 3, "left": minpressure, "right": maxchartpressure, "type": 'linear', "unit": "psi"},
             'slal': {"color": "blue", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
             'shorsud': {"color": "red", "linewidth": 1.5, "style": '-', "track": 4, "left": 0, "right": 100, "type": 'linear', "unit": "MPa"},
             'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},
