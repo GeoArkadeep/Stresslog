@@ -177,7 +177,7 @@ class MyApp(toga.App):
             "None": [""]}
         custom_edit(
             self, 
-            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["m","","","","m","m","","m","m","","","","","","","","","",""],output_forms
+            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["m",""," ","","m","m","","m","m","","","","","","","","","",""],output_forms
         )
         #print(forms)
         
@@ -605,6 +605,7 @@ class MyApp(toga.App):
 
         # Add the image display to the right pane box
         my_image = toga.Image("BG2.png")
+        #self.start_server2()
         self.bg_img_html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1260,7 +1261,7 @@ class MyApp(toga.App):
         return
     
     async def onplotfinish(self):
-        self.start_server2()
+        #self.start_server2()
         self.page3_btn1.enabled = True
         self.page3_btn2.enabled = True
         self.page3_btn3.enabled = True
@@ -1648,7 +1649,7 @@ class MyApp(toga.App):
         print("model_fin: ",model)
         
         self.progress.start()
-        self.stop_server()
+        #self.stop_server()
         loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
             await loop.run_in_executor(
@@ -2168,6 +2169,8 @@ def main():
 
 if __name__ == "__main__":
     app = MyApp("Stresslog", "in.rocklab.stresslog")
+    app.stop_server()
     app.start_server2()
     app.main_loop()
+
 

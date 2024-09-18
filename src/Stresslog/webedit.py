@@ -9,6 +9,7 @@ import numpy as np
 import pint
 from pint import UnitRegistry
 from http.server import SimpleHTTPRequestHandler, HTTPServer
+import re
 
 class CSVEditorHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, expected_headers=None, expected_units=None, filename=None, editor_window=None, **kwargs):
@@ -60,45 +61,24 @@ class CSVEditorHandler(SimpleHTTPRequestHandler):
             ureg = UnitRegistry()
             
             # Convert units using pint
-            converted_data = []
             for i, header in enumerate(df.columns):
                 target_unit = self.expected_units[i]
 
-                if target_unit == "":
-                    clean_column = df[header].str.replace(r'[^\d.]+', '', regex=True)
-                    converted_data.append(clean_column)
+                if target_unit == " ":
+                    # For string columns, do nothing
                     continue
-                
-                extracted_values = df[header].str.extract(r'(?P<value>[\d.]+)\s*(?P<unit>[a-zA-Z]*)')
-                extracted_values.dropna(inplace=True)
+                else:
+                    # For numeric columns, attempt to convert units
+                    df[header] = df[header].apply(lambda x: self.convert_value(x, target_unit, ureg))
 
-                converted_column = []
-                for _, row in extracted_values.iterrows():
-                    try:
-                        if not row['unit']:
-                            converted_value = float(row['value'])
-                        else:
-                            original_value = float(row['value']) * ureg(row['unit'])
-                            converted_value = original_value.to(target_unit).magnitude
-                        converted_column.append(converted_value)
-                    except Exception as e:
-                        print(f"Error converting {row['value']} {row['unit']} to {target_unit}: {e}")
-                        converted_column.append(None)
-
-                converted_data.append(converted_column)
-            
-            converted_df = pd.DataFrame(converted_data).T
-            converted_df.columns = df.columns
             try:
-                converted_df.to_csv(self.filename, index=False)
+                df.to_csv(self.filename, index=False)
                 self.send_response(200)
             except Exception as e:
                 print(f"Error saving data: {e}")
                 self.send_response(500)
             self.end_headers()
-            
-            self.editor_window.close()
-        
+
         elif self.path == '/clear':
             try:
                 if os.path.exists(self.filename):
@@ -108,7 +88,25 @@ class CSVEditorHandler(SimpleHTTPRequestHandler):
                 print(f"Error clearing data: {e}")
                 self.send_response(500)
             self.end_headers()
-            self.editor_window.close()
+
+    def convert_value(self, value, target_unit, ureg):
+        try:
+            # Try to extract numeric value and unit
+            match = re.match(r'([-+]?[0-9]*\.?[0-9]+)\s*([a-zA-Z]*)', str(value))
+            if match:
+                num, unit = match.groups()
+                if unit:
+                    original_value = float(num) * ureg(unit)
+                    return f"{original_value.to(target_unit).magnitude:.6f}"
+                else:
+                    # If no unit provided, assume it's already in the target unit
+                    return f"{float(num):.6f}"
+            else:
+                # If no match, return the original value
+                return value
+        except Exception as e:
+            print(f"Error converting {value} to {target_unit}: {e}")
+            return value  # Return original value if conversion fails
 
 class CSVEditorWindow(toga.Window):
     def __init__(self, id, title, expected_headers, expected_units, filename):
@@ -119,8 +117,8 @@ class CSVEditorWindow(toga.Window):
         self.webview = toga.WebView(style=Pack(flex=1))
         self.content = self.webview
         self.size = (800, 600)
-        self.server_thread = None
-        self.server = None
+        self.server3_thread = None
+        self.server3 = None
 
     def start_server(self):
         def run_server():
@@ -130,21 +128,26 @@ class CSVEditorWindow(toga.Window):
                                                                filename=self.filename,
                                                                editor_window=self,
                                                                **kwargs)
-            self.server = HTTPServer(('', 0), handler)
-            _, self.port = self.server.server_address
+            self.server3 = HTTPServer(('', 0), handler)
+            _, self.port = self.server3.server_address
             print(f'Starting server on port {self.port}...')
-            self.server.serve_forever()
+            self.server3.serve_forever()
 
-        self.server_thread = threading.Thread(target=run_server, daemon=True)
-        self.server_thread.start()
+        self.server3_thread = threading.Thread(target=run_server, daemon=True)
+        self.server3_thread.start()
 
     def show(self):
         self.start_server()
         # Wait for the server to start
         while not hasattr(self, 'port'):
             pass
+        #self.webview.set_content(content=template, root_url=f'http://localhost:{self.port}')
         self.webview.url = f'http://localhost:{self.port}/csv-editor'
+        #self.webview.evaluate_javascript('<script>')
         super().show()
+    
+    def closeeditor(self):
+        self.close()
 
 
 
@@ -165,6 +168,8 @@ template = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="HandheldFriendly" content="true">
     <title>CSV Mapping and Editor with Units</title>
     <style>
         body { 
@@ -202,7 +207,10 @@ template = '''
             padding: 8px; 
             text-align: left; 
         }
-        th { background-color: #f2f2f2; }
+        th { 
+            background-color: #f2f2f2; 
+            text-align: center;
+        }
         input[type="text"] { 
             width: 100%; 
             box-sizing: border-box; 
@@ -216,13 +224,17 @@ template = '''
             padding: 10px;
             text-align: center;
         }
-        #unitContainer {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
         .unit-input { 
-            width: 100px; 
+            width: 100%; 
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .unit-row th {
+            padding: 4px;
+            background-color: #e6e6e6;
+        }
+        .spacer {
+            height: 60px; /* Adjust based on the height of your button container */
         }
     </style>
 </head>
@@ -241,9 +253,10 @@ template = '''
     <!-- Spreadsheet Section -->
     <div id="spreadsheetSection">
         <h2>Data Editor</h2>
-        <div id="unitContainer"></div>
         <div id="tableContainer"></div>
     </div>
+    
+    <div class="spacer"></div>
 
     <div class="button-container">
         <button onclick="addRow()">Add Row</button>
@@ -341,7 +354,7 @@ template = '''
             }
             console.log('Mapping:', mapping);
 
-            // Apply mapping to data if csvData is not empty, otherwise use initialCSVData
+            // Apply mapping to data
             if (csvData.length > 0) {
                 mappedData = csvData.slice(1).map(row => {
                     return expectedHeaders.map(header => {
@@ -349,42 +362,42 @@ template = '''
                         return index !== -1 ? row[index] : '';
                     });
                 });
-            } else {
+            } else if (initialCSVData.length > 0) {
                 mappedData = initialCSVData.slice(1);
+            } else {
+                // If no data is available, create an empty row
+                mappedData = [new Array(expectedHeaders.length).fill('')];
             }
 
             // Show spreadsheet section and render table
             document.getElementById('spreadsheetSection').style.display = 'block';
-            renderUnitInputs();
             renderTable();
         }
 
-        // Unit Input Functions
-        function renderUnitInputs() {
-            const container = document.getElementById('unitContainer');
-            container.innerHTML = expectedHeaders.map((header, index) => `
-                <div>
-                    <label>${header} Unit:</label>
+        function renderTable() {
+            const container = document.getElementById('tableContainer');
+            let html = '<table>';
+            
+            // Units row
+            html += '<tr class="unit-row">';
+            expectedHeaders.forEach((header, index) => {
+                html += `<th>
                     <input type="text" class="unit-input" id="unit-${index}" 
                            value="${currentUnits[index]}" 
                            ${defaultUnits[index] === "" ? 'disabled' : ''}
                            oninput="updateUnit(${index}, this.value)">
-                </div>
-            `).join('');
-        }
+                </th>`;
+            });
+            html += '</tr>';
 
-        function updateUnit(index, value) {
-            currentUnits[index] = value;
-        }
-
-        // Spreadsheet Functions
-        function renderTable() {
-            const container = document.getElementById('tableContainer');
-            let html = '<table><tr>';
+            // Header row
+            html += '<tr>';
             expectedHeaders.forEach(header => {
                 html += `<th>${header}</th>`;
             });
             html += '</tr>';
+
+            // Data rows
             mappedData.forEach((row, rowIndex) => {
                 html += '<tr>';
                 expectedHeaders.forEach((header, colIndex) => {
@@ -394,6 +407,10 @@ template = '''
             });
             html += '</table>';
             container.innerHTML = html;
+        }
+
+        function updateUnit(index, value) {
+            currentUnits[index] = value;
         }
 
         function updateData(row, col, value) {
