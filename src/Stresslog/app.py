@@ -1261,7 +1261,7 @@ class MyApp(toga.App):
         return
     
     async def onplotfinish(self):
-        #self.start_server2()
+        self.start_server2()
         self.page3_btn1.enabled = True
         self.page3_btn2.enabled = True
         self.page3_btn3.enabled = True
@@ -1649,7 +1649,7 @@ class MyApp(toga.App):
         print("model_fin: ",model)
         
         self.progress.start()
-        #self.stop_server()
+        self.stop_server()
         loop = asyncio.get_running_loop()
         with concurrent.futures.ThreadPoolExecutor() as pool:
             await loop.run_in_executor(
