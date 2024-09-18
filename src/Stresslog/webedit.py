@@ -243,8 +243,6 @@ template = '''
     
     <!-- Mapping Section -->
     <div id="mappingSection">
-        <input type="file" id="csvFile" accept=".csv" />
-        <button onclick="loadCSV()">Load CSV</button>
         <div id="csvInfo"></div>
         <div id="mappingContainer"></div>
         <button onclick="confirmMapping()" id="confirmButton" style="display: none;">Confirm Mapping</button>
@@ -311,12 +309,12 @@ template = '''
 
         function displayCSVInfo() {
             const infoDiv = document.getElementById('csvInfo');
-            infoDiv.innerHTML = `
-                <p>CSV loaded successfully:</p>
-                <p>Number of columns: ${currentHeaders.length - 1}</p>
-                <p>Number of rows: ${csvData.length}</p>
-                <p>Headers: ${currentHeaders.slice(1).join(', ')}</p>
-            `;
+            infoDiv.innerHTML = ``;
+                //<p>CSV loaded successfully:</p>
+                //<p>Number of columns: ${currentHeaders.length - 1}</p>
+                //<p>Number of rows: ${csvData.length}</p>
+                //<p>Headers: ${currentHeaders.slice(1).join(', ')}</p>
+            //`;
         }
 
         function populateMapping() {
