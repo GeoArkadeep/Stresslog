@@ -25,6 +25,7 @@ import json
 import csv
 
 import http.server
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import socketserver
 
 from manage_preferences import show_preferences_window
@@ -1804,7 +1805,7 @@ class MyApp(toga.App):
                 super().end_headers()
 
         # Create the server
-        self.server2 = socketserver.TCPServer(('localhost', 8010), Handler)
+        self.server2 = ThreadingHTTPServer(('localhost', 8010), Handler)
 
         # Start the server in a separate thread
         self.server2_thread = threading.Thread(target=self.server2.serve_forever)
