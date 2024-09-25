@@ -33,6 +33,42 @@ from webedit import custom_edit
 
 from geomechanics import plotPPzhang
 
+#Logging
+import sys
+import logging
+from pathlib import Path
+
+# Set up logging
+log_file = Path.home() / "Stresslog_log.txt"
+if log_file.exists():
+    try:
+        os.remove(log_file)
+        print(f"Previous log file deleted: {log_file}")
+    except Exception as e:
+        print(f"Error deleting previous log file: {e}")
+
+logging.basicConfig(filename=str(log_file), level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Create a logger for all console output
+console_logger = logging.getLogger('Console')
+
+# Redirect stdout and stderr
+class StreamToLogger:
+    def __init__(self, logger, log_level):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ''
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.log_level, line.rstrip())
+
+    def flush(self):
+        pass
+
+sys.stdout = StreamToLogger(console_logger, logging.INFO)
+sys.stderr = StreamToLogger(console_logger, logging.ERROR)
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
