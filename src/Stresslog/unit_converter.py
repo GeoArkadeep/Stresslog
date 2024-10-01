@@ -115,3 +115,46 @@ converted_mudweight_2 = convert_mudweight(mudweight_values_2, input_unit_2)
 print(f"\nInput mudweight values: {mudweight_values_2} {input_unit_2}")
 print(f"Converted mudweight values: {converted_mudweight_2} SG")
 """
+
+def convert_flowrate(values, input_unit, target_unit='gallon/minute'):
+    ureg = UnitRegistry()
+    
+    # Define custom unit aliases if needed
+    ureg.define('GPM = gallon/minute')
+    ureg.define('LPM = liter/minute')
+    
+    # Create a Quantity object with the input values and units
+    q = ureg.Quantity(values, input_unit)
+    
+    # Convert to the target unit
+    result = q.to(target_unit)
+    
+    return result.magnitude
+"""
+# Example usage
+flowrates_lpm = [100, 200, 300]  # Example values
+flowrates_gpm = convert_flowrate(flowrates_lpm, 'LPM')
+print(flowrates_gpm)
+"""
+
+
+def convert_torque(values, input_unit, target_unit='g_0 *foot*pound'):
+    ureg = UnitRegistry()
+    
+    # Define custom unit aliases if needed
+    ureg.define('FTLB = g_0 *foot*pound')
+    ureg.define('NM = newton*meter')
+    ureg.define('KJ = kilojoule')
+    
+    # Create a Quantity object with the input values and units
+    q = ureg.Quantity(values, input_unit)
+    
+    # Convert to the target unit
+    result = q.to(target_unit)
+    
+    return result.magnitude
+
+#Example usage
+torque_KJ = [100, 200, 300]  # Example values in KJ
+torque_ftlbs = convert_torque(torque_KJ, 'KJ')
+print(torque_ftlbs)

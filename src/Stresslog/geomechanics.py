@@ -871,38 +871,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print(motorids)
     #motorids = np.full(len(md),"BH_UltraX_std")
     Mrpm = calculate_motor_rpms(torque, flow,motorids, motordbpath)
-    plt.plot(Mrpm,md)
-    plt.plot(rpm,md)
-    plt.plot(rpm+Mrpm,md)
-    plt.savefig("rpms.png")
-    plt.close()
+
     rpm = rpm+Mrpm
     
-    fig, ax1 = plt.subplots(figsize=(10, 6))
-
-    # Plot torque on the primary x-axis
-    color1 = 'tab:blue'
-    ax1.set_xlabel('Torque', color=color1)
-    ax1.plot(torque, md, color=color1)
-    ax1.tick_params(axis='x', labelcolor=color1)
-
-    # Create a secondary x-axis for flow
-    ax2 = ax1.twiny()
-    color2 = 'tab:orange'
-    ax2.set_xlabel('Flow', color=color2)
-    ax2.plot(flow, md, color=color2)
-    ax2.tick_params(axis='x', labelcolor=color2)
-
-    # Set y-axis label
-    ax1.set_ylabel('MD')
-
-    # Add a title
-    plt.title('Torque and Flow vs MD')
-
-    # Adjust the layout and save the figure
-    plt.tight_layout()
-    plt.savefig('torquetest.png')
-    plt.close()
     try:
         nu2 = getNu(well, nu, aliaspath)
     except:
