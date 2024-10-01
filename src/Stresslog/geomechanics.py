@@ -22,6 +22,111 @@ ug = ['gcc','sg','ppg','psi/foot']
 ul = ['metres','feet']
 ut = ['degC','degF','degR','degK']
 
+def polynomial(x, *coeffs):
+    return sum(c * x**i for i, c in enumerate(coeffs))
+
+def interpolate_curves(coeffs_list, flow_rate, flow_rates):
+    # Check if coeffs_list is a scalar or 1D list
+    if not isinstance(coeffs_list[0], (list, tuple, np.ndarray)):
+        coeffs_list = [coeffs_list]
+    
+    # Number of coefficients
+    num_coeffs = len(coeffs_list[0])
+    
+    # Create an interpolation function for each coefficient
+    interpolated_coeffs = []
+    for i in range(num_coeffs):
+        # Extract the i-th coefficient from each set of coefficients
+        coeffs = [coeffs[i] for coeffs in coeffs_list]
+        
+        # Create an interpolation function
+        interpolator = interp1d(flow_rates, coeffs, kind='linear', fill_value='extrapolate')
+        
+        # Interpolate the i-th coefficient for the given flow rate
+        interpolated_coeffs.append(interpolator(flow_rate))
+    
+    return interpolated_coeffs
+
+def calculate_curve(coeffs, x_values):
+    return polynomial(np.array(x_values).astype(float), *coeffs)
+
+def interpolate_values(flow_rate, coeffs_list, flow_rates, x_values):
+    interpolated_coeffs = interpolate_curves(coeffs_list, float(flow_rate), flow_rates)
+    return calculate_curve(interpolated_coeffs, np.array(x_values, dtype=float))
+
+def get_interpolated_value(x, flow_rate, coeffs_list, flow_rates):
+    print(f"x: {x}")
+    print(f"flow_rate: {flow_rate}")
+    print(f"coeffs_list type: {type(coeffs_list)}")
+    print(f"coeffs_list: {coeffs_list}")
+    print(f"flow_rates: {flow_rates}")
+    
+    interpolated = interpolate_curves(coeffs_list, flow_rate, flow_rates)
+    print(f"interpolated: {interpolated}")
+    
+    return calculate_curve(interpolated, x)
+
+
+
+from scipy.interpolate import interp1d
+
+def calculate_motor_rpms(torque_array, flow_array, motor_id_array, dbpath):
+    try:
+        with open(dbpath, 'r') as f:
+            json_data = json.load(f)
+        
+        rpm_array = np.zeros_like(torque_array)
+        
+        for i, (torque, flow, motor_id) in enumerate(zip(torque_array, flow_array, motor_id_array)):
+            try:
+                motor_data = json_data[motor_id]
+                
+                # Convert coeffs_list from strings to floats
+                coeffs_list = [[float(coeff) for coeff in coeffs] for coeffs in motor_data["coeffs_list"]]
+                
+                # Convert flow_list from strings to floats
+                flow_list = [float(flow) for flow in motor_data["flow_list"]]
+                
+                # Convert em from string to float
+                em = float(motor_data["em"])
+                
+                # Convert torque to differential pressure
+                diff_psi = em * torque
+                
+                # Create interpolation functions for each coefficient
+                interp_funcs = []
+                for j in range(len(coeffs_list[0])):
+                    coeffs = [coeffs[j] for coeffs in coeffs_list]
+                    interp_funcs.append(interp1d(flow_list, coeffs, kind='linear', fill_value='extrapolate'))
+                
+                # Calculate RPM for this motor
+                interpolated_coeffs = [func(flow) for func in interp_funcs]
+                rpm_array[i] = polynomial(diff_psi, *interpolated_coeffs)
+            except:
+                pass
+        
+        return np.round(rpm_array, 2)
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return np.zeros(len(torque_array))
+    
+def assign_motor_ids(md, motor_list):
+    # Convert motor_list to a structured array, handling the case where the first column might be a string
+    dtype = [('id', 'U20'), ('threshold', float)]
+    motor_array = np.array([(str(m[0]), float(m[1])) for m in motor_list], dtype=dtype)
+    
+    # Sort the array by threshold
+    motor_array.sort(order='threshold')
+    
+    # Initialize all ids with the first motor id
+    motorids = np.full_like(md, motor_array['id'][0], dtype='U20')
+    
+    # Assign motor ids based on thresholds
+    for i in range(1, len(motor_array)):
+        motorids[md >= motor_array['threshold'][i-1]] = motor_array['id'][i]
+    
+    return motorids
+
 def getNu(well, nun, aliaspath):
     import math
     alias = read_aliases_from_file(aliaspath)
@@ -557,11 +662,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     Additionally, it saves the output as files in CSV and LAS formats.
     """
     program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
+    numodel = [0.35,0.26,0.23,0.25] #nu2[i] = numodel[lithotype[i]]
     
     output_dir = os.path.join(user_home, "Stresslog_Plots")
     output_dir1 = os.path.join(user_home, "Stresslog_Data")
     input_dir = os.path.join(user_home, "Stresslog_Models")
-    
+    motor_dir = os.path.join(user_home, "Mud_Motor")
     # Create the output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(output_dir1, exist_ok=True)
@@ -585,6 +691,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     unitpath = os.path.join(input_dir, "units.txt")
     stylespath = os.path.join(input_dir, "styles.txt")
     pstylespath = os.path.join(input_dir, "pstyles.txt")
+    motordbpath = os.path.join(motor_dir, "motor_db.json")
 
     #from downsampler import downsample_well_average
     #well = downsample_well_average(well, factor=window)
@@ -657,17 +764,21 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     bht_point = []
     casing_dia = []
     bit_dia = []
+    motor_list = []
     while i<len(detail):
         mud_weight.append([detail[i][0],detail[i][1]])
         bht_point.append([detail[i][-1],detail[i][1]])
         casing_dia.append([detail[i][3],detail[i][1]])
         bit_dia.append([detail[i][2],detail[i][1]])
+        motor_list.append([detail[i][4],detail[i][1]])
         i+=1    
     print(mud_weight)
     print("Hole size array:")
     bit_dia[-1][1] = final_depth
     print(bit_dia)
-    
+    print("Mud Motor array:")
+    motor_list[-1][1] = final_depth
+    print(motor_list)
     first = [mud_weight[0][0],0]
     last = [mud_weight[-1][0],final_depth]
     top_bht =[15,0]
@@ -702,7 +813,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     rdeep = well.data[alias['resdeep'][0]]
     
     md = well.data['MD'].values
-    from unit_converter import convert_rop, convert_wob, convert_ecd
+    from unit_converter import convert_rop, convert_wob, convert_ecd, convert_torque, convert_flowrate
     try:
         rop = convert_rop(well.data[alias['ROP'][0]].values,well.data[alias['ROP'][0]].units)
         print("ROP units as specified:")
@@ -730,7 +841,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print("ECD units as specified:")
         print(well.data[alias['ECD'][0]].units)
     except:
-        ecd = np.full(len(md), np.nan)    
+        ecd = np.full(len(md), 0)    
     
     try:
         bit = well.data[alias['BIT'][0]]
@@ -740,7 +851,58 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         bit_dia = np.array(bit_dia)
         indices = np.clip(np.searchsorted(bit_dia[:, 1], md, side='right'), 0, len(bit_dia) - 1)
         bit = np.take(bit_dia[:, 0], indices)
-        
+    
+    try:
+        flow = convert_flowrate(well.data[alias['FLOWRATE'][0]].values,well.data[alias['FLOWRATE'][0]].units)
+        print("Flowrate units as specified:")
+        print(well.data[alias['FLOWRATE'][0]].units)
+        flow = np.where((flow < 0) | (flow > 2000), np.nan, flow)
+    except:
+        flow = np.full(len(md), np.nan)
+    
+    try:
+        torque = convert_torque(well.data[alias['TORQUE'][0]].values,well.data[alias['TORQUE'][0]].units)
+        print("Torque units as specified:")
+        print(well.data[alias['TORQUE'][0]].units)
+    except:
+        torque = np.full(len(md), np.nan)
+    
+    motorids = assign_motor_ids(md, motor_list)
+    print(motorids)
+    #motorids = np.full(len(md),"BH_UltraX_std")
+    Mrpm = calculate_motor_rpms(torque, flow,motorids, motordbpath)
+    plt.plot(Mrpm,md)
+    plt.plot(rpm,md)
+    plt.plot(rpm+Mrpm,md)
+    plt.savefig("rpms.png")
+    plt.close()
+    rpm = rpm+Mrpm
+    
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    # Plot torque on the primary x-axis
+    color1 = 'tab:blue'
+    ax1.set_xlabel('Torque', color=color1)
+    ax1.plot(torque, md, color=color1)
+    ax1.tick_params(axis='x', labelcolor=color1)
+
+    # Create a secondary x-axis for flow
+    ax2 = ax1.twiny()
+    color2 = 'tab:orange'
+    ax2.set_xlabel('Flow', color=color2)
+    ax2.plot(flow, md, color=color2)
+    ax2.tick_params(axis='x', labelcolor=color2)
+
+    # Set y-axis label
+    ax1.set_ylabel('MD')
+
+    # Add a title
+    plt.title('Torque and Flow vs MD')
+
+    # Adjust the layout and save the figure
+    plt.tight_layout()
+    plt.savefig('torquetest.png')
+    plt.close()
     try:
         nu2 = getNu(well, nu, aliaspath)
     except:
@@ -1100,8 +1262,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     except:
                         pass
                 else:
-                    numodel = int(lithotype[i]) + 16
-                    nu2[i] = float(model[numodel])
+                    nu2[i] = float(numodel[int(lithotype[i]-1)])
             else:
                 lithotype[i] = int(lithot[k][1])
                 try:

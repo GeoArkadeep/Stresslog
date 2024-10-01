@@ -39,7 +39,7 @@ import logging
 from pathlib import Path
 
 # Set up logging
-log_file = Path.home() / "Stresslog_log.txt"
+log_file = Path.home() / "Documents" / "Stresslog_Data" / "Stresslog_log.txt"
 if log_file.exists():
     try:
         os.remove(log_file)
@@ -67,8 +67,9 @@ class StreamToLogger:
     def flush(self):
         pass
 
-sys.stdout = StreamToLogger(console_logger, logging.INFO)
-sys.stderr = StreamToLogger(console_logger, logging.ERROR)
+#sys.stdout = StreamToLogger(console_logger, logging.INFO)
+#sys.stderr = StreamToLogger(console_logger, logging.ERROR)
+
 
 user_home = os.path.expanduser("~/Documents")
 app_data = os.getenv("APPDATA")
@@ -91,6 +92,8 @@ output_fileAll = os.path.join(output_dir, "PlotAll.png")
 output_file2 = os.path.join(output_dir1, "output.csv")
 output_forms = os.path.join(output_dir1, "tempForms.csv")
 output_ucs = os.path.join(output_dir1, "tempUCS.csv")
+output_lithology = os.path.join(output_dir1, "tempLitho.csv")
+output_imagelog = os.path.join(output_dir1, "tempImage.csv")
 output_file3 = os.path.join(output_dir1, "output.las")
 modelpath = os.path.join(input_dir, "model.csv")
 aliaspath = os.path.join(input_dir, "alias.txt")
@@ -201,7 +204,7 @@ class MyApp(toga.App):
         print(output_ucs)
         custom_edit(
             self, 
-            ["MD", "UCS"], ["m","MPa"],output_ucs
+            ["MD", "UCS"], ["m","MPa"],output_ucs,8020
         )
         #print(UCSs)
         
@@ -214,9 +217,31 @@ class MyApp(toga.App):
             "None": [""]}
         custom_edit(
             self, 
-            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["m",""," ","","m","m","","m","m","","","","","","","","","",""],output_forms
+            ["Top TVD", "Number", "Formation Name", "GR Cut", "Struc.Top", "Struc.Bottom", "CentroidRatio", "OWC", "GOC", "Coeff.Vol.Therm.Exp.","SHMax Azim.", "SVDip", "SVDipAzim","Tectonic Factor","InterpretedSH/Sh","Biot","Dt_NCT","Res_NCT","DXP_NCT"], ["m",""," ","","m","m","","m","m","","","","","","","","","",""],output_forms,8030
         )
         #print(forms)
+    def custom_edit_imagelog(self, widget):
+        self.run_custom_imagelog()
+
+    def run_custom_imagelog(self):
+        #global UCSs
+        print(output_imagelog)
+        custom_edit(
+            self, 
+            ["Top MD", "Observation"], ["m",""],output_imagelog,8040
+        )
+        #print(UCSs)
+    def custom_edit_lithology(self, widget):
+        self.run_custom_lithology()
+
+    def run_custom_lithology(self):
+        #global UCSs
+        print(output_lithology)
+        custom_edit(
+            self, 
+            ["Top MD", "Lithology Type","Interpreted Nu","Interpreted Mu","Interpreted UCS"], ["m","","","",""],output_lithology,8050
+        )
+        #print(UCSs)
         
     def startup(self):
         PREFERENCES = toga.Command(
@@ -284,25 +309,51 @@ class MyApp(toga.App):
         )
         # Add the command to the app commands
         self.commands.add(load_lith)
+        load_image = toga.Command(
+            self.open_flags,
+            text='Load Interpreted Imagelog Observations',
+            #shortcut=toga.Key.MOD_1 + 'l',
+            tooltip = "Interpreted Imagelog Observations in RockLab format",
+            group=toga.Group.FILE,
+            #section=0
+        )
+        # Add the command to the app commands
+        self.commands.add(load_image)
 
         # Explicitly set it as the preferences command
         #self.set_preferences(PREFERENCES)
         
-        custom_edit_ucs = toga.Command(
+        custom_edit_UCS = toga.Command(
             self.custom_edit_ucs,
             text='Edit UCS data',
             shortcut=toga.Key.MOD_1 + 'u',
             group=toga.Group.EDIT
         )
-        self.commands.add(custom_edit_ucs)
+        self.commands.add(custom_edit_UCS)
         
-        custom_edit_forms = toga.Command(
+        custom_edit_FORMS = toga.Command(
             self.custom_edit_forms,
             text='Edit Formation data',
             shortcut=toga.Key.MOD_1 + 'f',
             group=toga.Group.EDIT
         )
-        self.commands.add(custom_edit_forms)
+        self.commands.add(custom_edit_FORMS)
+        
+        custom_edit_FLAGS = toga.Command(
+            self.custom_edit_imagelog,
+            text='Edit Imagelog Observations',
+            shortcut=toga.Key.MOD_1 + 'i',
+            group=toga.Group.EDIT
+        )
+        self.commands.add(custom_edit_FLAGS)
+        
+        custom_edit_LITHO = toga.Command(
+            self.custom_edit_lithology,
+            text='Edit Lithology data',
+            #shortcut=toga.Key.MOD_1 + 'f',
+            group=toga.Group.EDIT
+        )
+        self.commands.add(custom_edit_LITHO)
 
         
         self.page1 = toga.Box(style=Pack(direction=COLUMN, flex=1))
@@ -642,7 +693,7 @@ class MyApp(toga.App):
 
         # Add the image display to the right pane box
         my_image = toga.Image("BG2.png")
-        #self.start_server2()
+        self.start_server2()
         self.bg_img_html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -904,7 +955,7 @@ class MyApp(toga.App):
                 mw = (float(mw_entry.value)*ureg(ug[unitchoice[2]])).to('gcc').magnitude
                 od = float(od_entry.value)
                 bd = float(bd_entry.value)
-                iv = float(iv_entry.value)
+                iv = iv_entry.value
                 sec_bht = (float(bht_entry.value)*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(bht_entry.value) !=0 else 0
             except ValueError:
                 print("Invalid input. Skipping this row.")
@@ -1064,7 +1115,9 @@ class MyApp(toga.App):
         if lithopath is not None:               
             h2 = readLithoFromAscii(lithopath)
             print("Loaded litho file:", lithopath)
-            print(h2)           
+            print(h2)
+            h2.to_csv(output_lithology)
+            self.run_custom_lithology()
             
         else:
             print("No litho file loaded")
@@ -1088,7 +1141,8 @@ class MyApp(toga.App):
             h4 = readFlagFromAscii(flagpath)
             print("Loaded flag file:", flagpath)
             print(h4)           
-            
+            h4.to_csv(output_imagelog)
+            self.run_custom_imagelog()
         else:
             print("No flag file loaded")
 
@@ -1284,11 +1338,15 @@ class MyApp(toga.App):
         print("thread spawn")
         try:
             result = self.plotPPzhang_wrapper(*args, **kwargs)
+            asyncio.run_coroutine_threadsafe(self.onplotfinish(), loop)
         except Exception as e:
-            self.main_window.error_dialog('Error:', str(e))
-            er = traceback.format_exc
-            print(f"Error in thread: {e}")
-        asyncio.run_coroutine_threadsafe(self.onplotfinish(), loop)
+            error_message = str(e)
+            traceback_str = traceback.format_exc()
+            print(f"Error in thread: {error_message}")
+            print(f"Traceback: {traceback_str}")
+            asyncio.run_coroutine_threadsafe(self.show_error_dialog(error_message), loop)
+            asyncio.run_coroutine_threadsafe(self.onplotfuckup(traceback_str), loop)
+            
         print("Thread despawn")
         return
     
@@ -1297,8 +1355,12 @@ class MyApp(toga.App):
         thread.start()
         return
     
-    async def onplotfinish(self):
-        self.start_server2()
+    async def show_error_dialog(self, error_message):
+        # This method should be called on the main thread
+        self.main_window.error_dialog('Error:', error_message)
+        
+    async def onplotfuckup(self,error_message):
+        #self.start_server2()
         self.page3_btn1.enabled = True
         self.page3_btn2.enabled = True
         self.page3_btn3.enabled = True
@@ -1309,6 +1371,91 @@ class MyApp(toga.App):
             self.bg4.image = toga.Image(output_fileAll)
         else:
             self.page3_btn5.enabled = False
+        self.start_server2()
+        self.img_html = f"""
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+            text-align: center;
+            padding: 50px;
+        }}
+        .error-box {{
+            border: 1px solid #ffffff;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+        }}
+        h1 {{
+            color: #000000;
+        }}
+        p {{
+            margin: 10px 0;
+        }}
+        .try-again {{
+            color: #155724;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }}
+        a {{
+            color: #007bff;
+            text-decoration: none;
+        }}
+        a:hover {{
+            text-decoration: underline;
+        }}
+        .file-path {{
+            font-weight: bold;
+            color: #d9534f;
+        }}
+    </style>
+</head>
+<body>
+    <div class="error-box">
+        <h1>Wow, that did not go as planned!</h1>
+        <p>{error_message}</p>
+        <h1>Please check all input and try again.</h1>
+        <div class="try-again">
+            If the traceback above did not help you understand what went wrong, 
+            please email RockLab support at 
+            <a href="mailto:support@rocklab.in?subject=Issue with Stresslog&body=Please attach the log file from the path below:">support@rocklab.in</a> 
+            and include the log file found at the following location:
+            <br><br>
+            <span class="file-path">{log_file}</span>
+        </div>
+    </div>
+</body>
+</html>
+
+"""
+        self.webview1.set_content(content=self.img_html, root_url="http://localhost:8010/")
+        print("Wrapper done")
+        return
+    
+    async def onplotfinish(self):
+        #self.start_server2()
+        self.page3_btn1.enabled = True
+        self.page3_btn2.enabled = True
+        self.page3_btn3.enabled = True
+        self.page3_btn4.enabled = True
+        self.progress.stop()
+        if float(model[16]) > 0:
+            self.page3_btn5.enabled = True
+            self.bg4.image = toga.Image(output_fileAll)
+        else:
+            self.page3_btn5.enabled = False
+        self.start_server2()
         self.img_html = """
 <!DOCTYPE html>
 <html lang="en">
@@ -1631,118 +1778,125 @@ class MyApp(toga.App):
         global UCSs
         global forms
         try:
-            with open(unitpath, 'r') as f:
-                reader = csv.reader(f)
-                unitchoice = next(reader)
-                unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
-        except:
-            unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
-        
-        try:
-            UCSs = pd.read_csv(output_ucs)
-        except:
-            UCSs = None
-        try:
-            forms = pd.read_csv(output_forms)
-        except:
-            forms = None
+            try:
+                with open(unitpath, 'r') as f:
+                    reader = csv.reader(f)
+                    unitchoice = next(reader)
+                    unitchoice = [int(x) for x in unitchoice]  # Convert strings to integers
+            except:
+                unitchoice = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
             
-        self.progress.text = "Status: Calculating, Standby"
-        self.getwelldev()
-        data = pd.read_csv(modelpath, index_col=False)
-        data_into_list = data.values.tolist()
-        print(data_into_list)
-        model = data_into_list[0]
-        tail = model[-4:]
-        tv = [textbox.value for textbox in self.textboxes]
-        #self.bg3.image = toga.Image('BG1.png')
-        self.bg4.image = toga.Image('BG1.png')
-        model = tv + tail
-        print(model)
-        with open(modelpath, 'w') as file:
-            file.write(modelheader + '\n')
-            for item in model:
-                file.write(str(item) + ",")
-        print("Great Success!! :D")
-        
-        self.page3_btn1.enabled = False
-        self.page3_btn2.enabled = False
-        self.page3_btn3.enabled = False
-        self.page3_btn4.enabled = False
-        self.page3_btn5.enabled = False
-        
-        global mwvalues
-        global flowgradvals
-        global fracgradvals
-        global flowpsivals
-        global fracpsivals
-        
-        mwvalues = self.get_depth_mw_data_values()
-        fracgradvals = self.get_frac_grad_data_values()[0]
-        flowgradvals = self.get_flow_grad_data_values()[0]
-        fracpsivals = self.get_frac_grad_data_values()[1]
-        flowpsivals = self.get_flow_grad_data_values()[1]
-        
-        print("model_fin: ",model)
-        
-        self.progress.start()
-        self.stop_server()
-        loop = asyncio.get_running_loop()
-        with concurrent.futures.ThreadPoolExecutor() as pool:
-            await loop.run_in_executor(
-                pool, 
-                self.start_plotPPzhang_thread, 
-                loop, wella,{
-                    'rhoappg': float(model[0]),
-                    'a': float(model[1]),
-                    'nu': float(model[2]),
-                    'tecb': float(model[3]),
-                    'lamb': float(model[4]),
-                    'dtml': float(model[5]), 
-                    'dtmt': float(model[6]),
-                    'ul_exp': float(model[7]),
-                    'ul_depth': float(model[8]),
-                    'res0': (float(model[9])),
-                    'be': (float(model[10])),
-                    'ne': (float(model[11])),
-                    'dex0':(float(model[12])),
-                    'de':(float(model[13])),
-                    'nde':(float(model[14])),
-                    'underbalancereject': float(model[15]),
-                    'doi': (float(model[16])*ureg(ul[unitchoice[0]])).to('metre').magnitude, 
-                    'offset': float(model[17]), 
-                    'strike': float(model[18]), 
-                    'dip': float(model[19]),
-                    'sfs': float(model[20]),
-                    'water': float(model[21]),
-                    'mudtemp': (float(model[22])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(model[16]) !=0 else 0,
-                    'window': int(float(model[23])),
-                    'zulu': (float(model[24])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
-                    'tango': (float(model[25])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
-                    'lala': -1.0, 
-                    'lalb': 1.0, 
-                    'lalm': 5, 
-                    'lale': 0.5, 
-                    'lall': 5, 
-                    'horsuda': 0.77, 
-                    'horsude': 2.93,
-                    'unitchoice': unitchoice,
-                    'ureg': ureg,
-                    'mwvalues': mwvalues,
-                    'flowgradvals': flowgradvals,
-                    'fracgradvals': fracgradvals,
-                    'flowpsivals': flowpsivals,
-                    'fracpsivals': fracpsivals,
-                    'attrib': attrib,
-                    'flags': flags,
-                    'UCSs': UCSs,
-                    'forms': forms,
-                    "lithos": lithos,
-                    "user_home": user_home
-                }          
-            )
-        print(model[3])
-        print("Calculation complete")        
+            try:
+                UCSs = pd.read_csv(output_ucs)
+            except:
+                UCSs = None
+            try:
+                forms = pd.read_csv(output_forms)
+            except:
+                forms = None
+                
+            self.progress.text = "Status: Calculating, Standby"
+            self.getwelldev()
+            data = pd.read_csv(modelpath, index_col=False)
+            data_into_list = data.values.tolist()
+            print(data_into_list)
+            model = data_into_list[0]
+            tail = model[-4:]
+            tv = [textbox.value for textbox in self.textboxes]
+            #self.bg3.image = toga.Image('BG1.png')
+            self.bg4.image = toga.Image('BG1.png')
+            model = tv + tail
+            print(model)
+            with open(modelpath, 'w') as file:
+                file.write(modelheader + '\n')
+                for item in model:
+                    file.write(str(item) + ",")
+            print("Great Success!! :D")
+            
+            self.page3_btn1.enabled = False
+            self.page3_btn2.enabled = False
+            self.page3_btn3.enabled = False
+            self.page3_btn4.enabled = False
+            self.page3_btn5.enabled = False
+            
+            global mwvalues
+            global flowgradvals
+            global fracgradvals
+            global flowpsivals
+            global fracpsivals
+            
+            mwvalues = self.get_depth_mw_data_values()
+            fracgradvals = self.get_frac_grad_data_values()[0]
+            flowgradvals = self.get_flow_grad_data_values()[0]
+            fracpsivals = self.get_frac_grad_data_values()[1]
+            flowpsivals = self.get_flow_grad_data_values()[1]
+            
+            print("model_fin: ",model)
+            
+            self.progress.start()
+            self.stop_server()
+            loop = asyncio.get_running_loop()            
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                await loop.run_in_executor(
+                    pool, 
+                    self.start_plotPPzhang_thread, 
+                    loop, wella,{
+                        'rhoappg': float(model[0]),
+                        'a': float(model[1]),
+                        'nu': float(model[2]),
+                        'tecb': float(model[3]),
+                        'lamb': float(model[4]),
+                        'dtml': float(model[5]), 
+                        'dtmt': float(model[6]),
+                        'ul_exp': float(model[7]),
+                        'ul_depth': float(model[8]),
+                        'res0': (float(model[9])),
+                        'be': (float(model[10])),
+                        'ne': (float(model[11])),
+                        'dex0':(float(model[12])),
+                        'de':(float(model[13])),
+                        'nde':(float(model[14])),
+                        'underbalancereject': float(model[15]),
+                        'doi': (float(model[16])*ureg(ul[unitchoice[0]])).to('metre').magnitude, 
+                        'offset': float(model[17]), 
+                        'strike': float(model[18]), 
+                        'dip': float(model[19]),
+                        'sfs': float(model[20]),
+                        'water': float(model[21]),
+                        'mudtemp': (float(model[22])*ureg(ut[unitchoice[4]])).to('degC').magnitude if float(model[16]) !=0 else 0,
+                        'window': int(float(model[23])),
+                        'zulu': (float(model[24])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
+                        'tango': (float(model[25])*ureg(ul[unitchoice[0]])).to('metre').magnitude,
+                        'lala': -1.0, 
+                        'lalb': 1.0, 
+                        'lalm': 5, 
+                        'lale': 0.5, 
+                        'lall': 5, 
+                        'horsuda': 0.77, 
+                        'horsude': 2.93,
+                        'unitchoice': unitchoice,
+                        'ureg': ureg,
+                        'mwvalues': mwvalues,
+                        'flowgradvals': flowgradvals,
+                        'fracgradvals': fracgradvals,
+                        'flowpsivals': flowpsivals,
+                        'fracpsivals': fracpsivals,
+                        'attrib': attrib,
+                        'flags': flags,
+                        'UCSs': UCSs,
+                        'forms': forms,
+                        "lithos": lithos,
+                        "user_home": user_home
+                    }          
+                )
+            print(model[3])
+            print("Calculation complete")
+        except Exception as e:
+            error_message = str(e)
+            traceback_str = traceback.format_exc()
+            print(f"Error in get_textbox_values: {error_message}")
+            self.main_window.error_dialog('Error:', error_message)
+            await self.onplotfuckup(traceback_str)  # Ensure cleanup happens even if there's an error
     
     
     def wellisvertical(self,widget):
@@ -1822,7 +1976,7 @@ class MyApp(toga.App):
                 # Construct the full path for the local and output directories
                 local_path = os.path.join(local_dir, self.path.lstrip('/'))
                 output_path = os.path.join(output_dir, self.path.lstrip('/'))
-
+                print(output_path)
                 if os.path.exists(local_path) and os.path.isfile(local_path):
                     # Serve from the local directory if file exists
                     self.directory = local_dir
@@ -1845,7 +1999,7 @@ class MyApp(toga.App):
 
         # Start the server in a separate thread
         self.server2_thread = threading.Thread(target=self.server2.serve_forever)
-        self.server2_thread.daemon = True  # This ensures the server thread exits when the main thread does
+        #self.server2_thread.daemon = True  # This ensures the server thread exits when the main thread does
         self.server2_thread.start()
         print("server 2 started, serving files from both local and:", output_dir)
    
@@ -2209,5 +2363,3 @@ if __name__ == "__main__":
     app.stop_server()
     app.start_server2()
     app.main_loop()
-
-
