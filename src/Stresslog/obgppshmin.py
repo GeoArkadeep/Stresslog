@@ -69,14 +69,12 @@ def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, wdf, glwd):
     return integrho, integrhopsift, ObgTppg
 
 def get_PPgrad_Zhang_gcc(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot=1):
-    if b==c:
+    if b>=c:
         numerator = ObgTgcc - ((ObgTgcc-pn)*((math.log((mudline-matrick))-(math.log(dalm-matrick)))/(c*tvdbgl)))
     else:
         numerator = ObgTgcc - ((ObgTgcc - pn) / (b * tvdbgl)) * ((((b - c) / c) * (math.log((mudline - matrick) / (deltmu0 - matrick)))) + (math.log((mudline - matrick) / (dalm - matrick))))
     
     return numerator / biot
-
-
 
 def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot=1):
     # Ensure all inputs are numpy arrays
@@ -91,18 +89,23 @@ def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltm
     dalm = np.asarray(dalm)
     biot = np.asarray(biot)
 
-    # Broadcast scalar values to match the shape of the largest array
-    max_shape = max(arr.shape for arr in [ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot])
+    # Broadcast arrays to a common shape
     ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot = np.broadcast_arrays(
         ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot
     )
 
-    numerator = ObgTgcc - ((ObgTgcc - pn) / (b * tvdbgl)) * (
-        (((b - c) / c) * (np.log((mudline - matrick) / (deltmu0 - matrick)))) +
-        (np.log((mudline - matrick) / (dalm - matrick)))
+    # Apply the condition element-wise
+    numerator = np.where(
+        b >= c,
+        ObgTgcc - ((ObgTgcc - pn) * (np.log((mudline - matrick)) - np.log(dalm - matrick)) / (c * tvdbgl)),
+        ObgTgcc - ((ObgTgcc - pn) / (b * tvdbgl)) * (
+            (((b - c) / c) * np.log((mudline - matrick) / (deltmu0 - matrick))) +
+            np.log((mudline - matrick) / (dalm - matrick))
+        )
     )
-    
+
     return numerator / biot
+
 
 def get_PPgrad_Eaton_gcc(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1):
     numerator = ObgTgcc - ((ObgTgcc - pn)*((resdeep/(res0*np.exp(be*tvdbgl)))**ne))
