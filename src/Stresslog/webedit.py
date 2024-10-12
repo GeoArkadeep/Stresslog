@@ -1,128 +1,169 @@
 import toga
 from toga.style import Pack
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from toga.style.pack import COLUMN, ROW
 import threading
 import json
 import os
 import pandas as pd
 import numpy as np
+import pint
+from pint import UnitRegistry
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import re
+
+class CSVEditorHandler(BaseHTTPRequestHandler):
+    def __init__(self, *args, expected_headers=None, expected_units=None, filename=None, editor_window=None, **kwargs):
+        self.expected_headers = expected_headers or ["MD", "INC", "AZM"]
+        self.expected_units = expected_units or ["m", "deg", ""]
+        self.filename = filename or 'saved_data.csv'
+        self.editor_window = editor_window
+        super().__init__(*args, **kwargs)
+
+    def do_GET(self):
+        if self.path == '/csv-editor':
+            # Load or create the CSV file
+            if os.path.exists(self.filename):
+                df = pd.read_csv(self.filename)
+            else:
+                df = pd.DataFrame(columns=self.expected_headers)
+                df.to_csv(self.filename, index=False)
+
+            # Convert DataFrame to list of lists and handle NaN values
+            csv_data = [df.columns.tolist()] + df.replace({np.nan: None}).values.tolist()
+
+            # Replace placeholders with actual data
+            filled_html = template.replace('{{ expectedHeaders }}', json.dumps(self.expected_headers))
+            filled_html = filled_html.replace('{{ defaultUnits }}', json.dumps(self.expected_units))
+            filled_html = filled_html.replace('{{ initialCSVData }}', json.dumps(csv_data))
+
+            # Send response
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(filled_html.encode('utf-8'))
+        else:
+            # Serve static files for other requests
+            #super().do_GET()
+            pass
+
+    def do_POST(self):
+        if self.path == '/save':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+
+            # Parse the JSON data
+            data = json.loads(post_data.decode('utf-8'))
+            mapped_data = data['data']
+
+            # Convert to a pandas DataFrame
+            df = pd.DataFrame(mapped_data, columns=self.expected_headers)
+
+            # Set up pint's unit registry
+            ureg = UnitRegistry()
+            
+            # Convert units using pint
+            for i, header in enumerate(df.columns):
+                target_unit = self.expected_units[i]
+
+                if target_unit == " ":
+                    # For string columns, do nothing
+                    continue
+                else:
+                    # For numeric columns, attempt to convert units
+                    df[header] = df[header].apply(lambda x: self.convert_value(x, target_unit, ureg))
+
+            try:
+                df.to_csv(self.filename, index=False)
+                self.send_response(200)
+            except Exception as e:
+                print(f"Error saving data: {e}")
+                self.send_response(500)
+            self.end_headers()
+
+        elif self.path == '/clear':
+            try:
+                if os.path.exists(self.filename):
+                    os.remove(self.filename)
+                self.send_response(200)
+            except Exception as e:
+                print(f"Error clearing data: {e}")
+                self.send_response(500)
+            self.end_headers()
+
+    def convert_value(self, value, target_unit, ureg):
+        try:
+            # Try to extract numeric value and unit
+            match = re.match(r'([-+]?[0-9]*\.?[0-9]+)\s*([a-zA-Z]*)', str(value))
+            if match:
+                num, unit = match.groups()
+                if unit:
+                    original_value = float(num) * ureg(unit)
+                    return f"{original_value.to(target_unit).magnitude:.6f}"
+                else:
+                    # If no unit provided, assume it's already in the target unit
+                    return f"{float(num):.6f}"
+            else:
+                # If no match, return the original value
+                return value
+        except Exception as e:
+            print(f"Error converting {value} to {target_unit}: {e}")
+            return value  # Return original value if conversion fails
+
+class CSVEditorWindow(toga.Window):
+    def __init__(self, id, title, expected_headers, expected_units, filename,port):
+        super().__init__(id=id, title=title)
+        self.expected_headers = expected_headers
+        self.expected_units = expected_units
+        self.filename = filename
+        self.webview = toga.WebView(style=Pack(flex=1))
+        self.content = self.webview
+        self.size = (800, 600)
+        self.server3_thread = None
+        self.server3 = None
+        self.port = port
+
+    def start_server(self):
+        def run_server():
+            handler = lambda *args, **kwargs: CSVEditorHandler(*args, 
+                                                               expected_headers=self.expected_headers, 
+                                                               expected_units=self.expected_units, 
+                                                               filename=self.filename,
+                                                               editor_window=self,
+                                                               **kwargs)
+            self.server3 = HTTPServer(('localhost', self.port), handler)
+            #_, self.port = self.server3.server_address
+            print(f'Starting server on port {self.port}...')
+            self.server3.serve_forever()
+
+        self.server3_thread = threading.Thread(target=run_server)
+        self.server3_thread.start()
+
+    def show(self):
+        self.start_server()
+        # Wait for the server to start
+        #while not hasattr(self, 'port'):
+        #    pass
+        #self.webview.set_content(content=template, root_url=f'http://localhost:{self.port}')
+        self.webview.url = f'http://localhost:{self.port}/csv-editor'
+        #self.webview.evaluate_javascript('<script>')
+        super().show()
+    
+    def closeeditor(self):
+        self.close()
+
+
 
 def custom_edit(app, expected_headers, expected_units, filename, port):
-    webview = toga.WebView(style=Pack(flex=1))
-    start_server(webview, expected_headers, expected_units, filename, port)
-    webview.url = f'http://localhost:{port}/csv-editor'
-    window = toga.Window(id='csv_editor', title='CSV Editor', size=(800, 600))
-    window.content = webview
-    app.windows.add(window)
-    window.show()
-
-def start_server(webview, expected_headers, expected_units, filename, port):
-    def run_server():
-        handler = lambda *args, **kwargs: create_csv_editor_handler(args, expected_headers, expected_units, filename, **kwargs)
-        server = HTTPServer(('localhost', port), handler)
-        print(f'Starting server on port {port}...')
-        server.serve_forever()
-
-    server_thread = threading.Thread(target=run_server)
-    server_thread.start()
-
-def create_csv_editor_handler(args, expected_headers, expected_units, filename):
-    class CSVEditorHandler(BaseHTTPRequestHandler):
-        def do_GET(self):
-            if self.path == '/csv-editor':
-                print("bitchin")
-                # Load or create the CSV file
-                if os.path.exists(filename):
-                    df = pd.read_csv(filename)
-                else:
-                    df = pd.DataFrame(columns=expected_headers)
-                    df.to_csv(filename, index=False)
-
-                # Convert DataFrame to list of lists and handle NaN values
-                csv_data = [df.columns.tolist()] + df.replace({np.nan: None}).values.tolist()
-                print(csv_data)
-
-                # Replace placeholders with actual data
-                filled_html = template.replace('{{ expectedHeaders }}', json.dumps(expected_headers))
-                filled_html = filled_html.replace('{{ defaultUnits }}', json.dumps(expected_units))
-                filled_html = filled_html.replace('{{ initialCSVData }}', json.dumps(csv_data))
-
-                # Send response
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
-                self.wfile.write(filled_html.encode('utf-8'))
-            else:
-                # Serve static files for other requests
-                self.send_response(404)
-                self.end_headers()
-
-        def do_POST(self):
-            if self.path == '/save':
-                content_length = int(self.headers['Content-Length'])
-                post_data = self.rfile.read(content_length)
-
-                # Parse the JSON data
-                data = json.loads(post_data.decode('utf-8'))
-                mapped_data = data['data']
-
-                # Convert to a pandas DataFrame
-                df = pd.DataFrame(mapped_data, columns=self.expected_headers)
-
-                # Set up pint's unit registry
-                ureg = UnitRegistry()
-                
-                # Convert units using pint
-                for i, header in enumerate(df.columns):
-                    target_unit = self.expected_units[i]
-
-                    if target_unit == " ":
-                        # For string columns, do nothing
-                        continue
-                    else:
-                        # For numeric columns, attempt to convert units
-                        df[header] = df[header].apply(lambda x: convert_value(x, target_unit, ureg))
-
-                try:
-                    df.to_csv(self.filename, index=False)
-                    self.send_response(200)
-                except Exception as e:
-                    print(f"Error saving data: {e}")
-                    self.send_response(500)
-                self.end_headers()
-
-            elif self.path == '/clear':
-                try:
-                    if os.path.exists(self.filename):
-                        os.remove(self.filename)
-                    self.send_response(200)
-                except Exception as e:
-                    print(f"Error clearing data: {e}")
-                    self.send_response(500)
-                self.end_headers()
-
-    return CSVEditorHandler
-
-def convert_value(value, target_unit, ureg):
-    try:
-        # Try to extract numeric value and unit
-        match = re.match(r'([-+]?[0-9]*\.?[0-9]+)\s*([a-zA-Z]*)', str(value))
-        if match:
-            num, unit = match.groups()
-            if unit:
-                original_value = float(num) * ureg(unit)
-                return f"{original_value.to(target_unit).magnitude:.6f}"
-            else:
-                # If no unit provided, assume it's already in the target unit
-                return f"{float(num):.6f}"
-        else:
-            # If no match, return the original value
-            return value
-    except Exception as e:
-        print(f"Error converting {value} to {target_unit}: {e}")
-        return value  # Return original value if conversion fails
-
-
+    editor_window = CSVEditorWindow(
+        id='csv_editor',
+        title='CSV Editor',
+        expected_headers=expected_headers,
+        expected_units=expected_units,
+        filename=filename,
+        port=port
+    )
+    app.windows.add(editor_window)
+    editor_window.show()
 
 template = '''
 <!DOCTYPE html>
