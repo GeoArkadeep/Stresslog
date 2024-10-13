@@ -116,7 +116,6 @@ def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         return "Optimization failed to converge. Using initial estimates."
     
 def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
-    from PlotVec import showvec
     alpha = np.radians(alpha)
     beta = np.radians(beta)
     gamma = np.radians(gamma)
