@@ -106,6 +106,49 @@ pstylespath = os.path.join(input_dir, "pstyles.txt")
 os.remove(output_forms) if os.path.exists(output_forms) else None
 os.remove(output_ucs) if os.path.exists(output_ucs) else None
 
+import requests
+import shutil
+
+# Define the URL to download the file if not found locally
+url = "https://cdn.plot.ly/plotly-2.34.0.min.js"
+
+# Define the destination path for the file
+os.makedirs(output_dir, exist_ok=True)  # Ensure output_dir exists
+output_file_js = os.path.join(output_dir, "plotly-2.34.0.min.js")
+
+
+def find_file_recursively(start_dir, filename):
+    """Recursively search for the file in all subdirectories of start_dir."""
+    for root, _, files in os.walk(start_dir):
+        if filename in files:
+            return os.path.join(root, filename)
+    return None
+
+
+# Step 1: Check if the file already exists in the target directory
+if not os.path.exists(output_file_js):
+    # Step 2: Try downloading the file
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error for HTTP issues
+        with open(output_file_js, 'wb') as f:
+            f.write(response.content)
+        print(f"Downloaded plotly-2.34.0.min.js from {url} to {output_dir}")
+    except requests.exceptions.RequestException:
+        print("Failed to download the file. Searching locally...")
+
+        # Step 3: Search for the file in the current directory and subdirectories
+        local_path = find_file_recursively(os.getcwd(), "plotly-2.34.0.min.js")
+
+        if local_path:
+            # Copy the found file to the target directory
+            shutil.copy(local_path, output_file_js)
+            print(f"Copied plotly-2.34.0.min.js from {local_path} to {output_dir}")
+        else:
+            print("plotly-2.34.0.min.js not found locally. Operation failed.")
+else:
+    print(f"plotly-2.34.0.min.js already exists in {output_dir}")
+
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
         super().__init__(image=toga.Image(image_path), *args, **kwargs)
