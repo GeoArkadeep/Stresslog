@@ -46,9 +46,9 @@ input_dir = os.path.join(user_home, "Stresslog_Models")
 output_dir1 = os.path.join(user_home, "Stresslog_Data")
 os.makedirs(output_dir1, exist_ok=True)  # Ensure output_dir exists
 # Set up logging
-#log_file = os.path.join(output_dir1, "Stresslog_log.txt")
-log_file = Path.home() / "Documents" / "Stresslog_Data" / "Stresslog_log.txt"
-if log_file.exists():
+log_file = os.path.join(output_dir1, "Stresslog_log.txt")
+#log_file = Path.home() / "Documents" / "Stresslog_Data" / "Stresslog_log.txt"
+if os.path.isfile(log_file):
     try:
         os.remove(log_file)
         print(f"Previous log file deleted: {log_file}")
