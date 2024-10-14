@@ -39,6 +39,10 @@ import sys
 import logging
 from pathlib import Path
 
+user_home = os.path.expanduser("~/Documents")
+app_data = os.getenv("APPDATA")
+output_dir = os.path.join(user_home, "Stresslog_Plots")
+input_dir = os.path.join(user_home, "Stresslog_Models")
 output_dir1 = os.path.join(user_home, "Stresslog_Data")
 os.makedirs(output_dir1, exist_ok=True)  # Ensure output_dir exists
 # Set up logging
@@ -75,11 +79,6 @@ sys.stdout = StreamToLogger(console_logger, logging.INFO)
 sys.stderr = StreamToLogger(console_logger, logging.ERROR)
 
 
-user_home = os.path.expanduser("~/Documents")
-app_data = os.getenv("APPDATA")
-output_dir = os.path.join(user_home, "Stresslog_Plots")
-
-input_dir = os.path.join(user_home, "Stresslog_Models")
 # Create the output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(output_dir1, exist_ok=True)
