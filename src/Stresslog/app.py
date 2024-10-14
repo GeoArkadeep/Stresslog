@@ -109,13 +109,14 @@ os.remove(output_ucs) if os.path.exists(output_ucs) else None
 import requests
 import shutil
 
-# Define the URL to download the file if not found locally
-url = "https://cdn.plot.ly/plotly-2.34.0.min.js"
-
-# Define the destination path for the file
 os.makedirs(output_dir, exist_ok=True)  # Ensure output_dir exists
-output_file_js = os.path.join(output_dir, "plotly-2.34.0.min.js")
 
+# Define URLs and filenames to download or search for
+files_to_check = [
+    {"filename": "plotly-2.34.0.min.js", "url": "https://cdn.plot.ly/plotly-2.34.0.min.js"},
+    {"filename": "BG1.png", "url": None},  # No URL, so we only search locally
+    {"filename": "BG2.png", "url": None}
+]
 
 def find_file_recursively(start_dir, filename):
     """Recursively search for the file in all subdirectories of start_dir."""
@@ -124,30 +125,38 @@ def find_file_recursively(start_dir, filename):
             return os.path.join(root, filename)
     return None
 
+def ensure_file(filename, url=None):
+    """Ensure the file exists in the output directory, otherwise search/download."""
+    output_file = os.path.join(output_dir, filename)
 
-# Step 1: Check if the file already exists in the target directory
-if not os.path.exists(output_file_js):
-    # Step 2: Try downloading the file
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Raise an error for HTTP issues
-        with open(output_file_js, 'wb') as f:
-            f.write(response.content)
-        print(f"Downloaded plotly-2.34.0.min.js from {url} to {output_dir}")
-    except requests.exceptions.RequestException:
-        print("Failed to download the file. Searching locally...")
+    if os.path.exists(output_file):
+        print(f"{filename} already exists in {output_dir}")
+        return
 
-        # Step 3: Search for the file in the current directory and subdirectories
-        local_path = find_file_recursively(os.getcwd(), "plotly-2.34.0.min.js")
+    if url:  # Try downloading the file if a URL is provided
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an error for HTTP issues
+            with open(output_file, 'wb') as f:
+                f.write(response.content)
+            print(f"Downloaded {filename} from {url} to {output_dir}")
+            return
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to download {filename}: {e}")
 
-        if local_path:
-            # Copy the found file to the target directory
-            shutil.copy(local_path, output_file_js)
-            print(f"Copied plotly-2.34.0.min.js from {local_path} to {output_dir}")
-        else:
-            print("plotly-2.34.0.min.js not found locally. Operation failed.")
-else:
-    print(f"plotly-2.34.0.min.js already exists in {output_dir}")
+    # Search locally if the file was not downloaded
+    print(f"Searching for {filename} locally...")
+    local_path = find_file_recursively(os.getcwd(), filename)
+
+    if local_path:
+        shutil.copy(local_path, output_file)
+        print(f"Copied {filename} from {local_path} to {output_dir}")
+    else:
+        print(f"{filename} not found locally. Operation failed.")
+
+# Ensure all files are available
+for file_info in files_to_check:
+    ensure_file(file_info["filename"], file_info["url"])
 
 class BackgroundImageView(toga.ImageView):
     def __init__(self, image_path, *args, **kwargs):
@@ -743,30 +752,45 @@ class MyApp(toga.App):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Dynamic Background</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevents scrolling */
+            overflow: hidden; /* Prevent scrolling */
             height: 100vh; /* Full viewport height */
             width: 100vw; /* Full viewport width */
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #0000; /* Optional: Background color for better visibility */
+            background-color: transparent; /* Transparent background */
+        }
+
+        .container {
+            position: relative;
+            height: 100%; 
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: transparent; /* Optional for visibility */
         }
 
         img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain; /* Keeps aspect ratio and fits within available space */
+            width: 100%; /* Take full width */
+            height: auto; /* Maintain aspect ratio */
+            max-height: 100%; /* Ensure it doesn't overflow vertically */
+            object-fit: cover; /* Crop vertically if needed */
+            object-position: center; /* Center the image vertically */
         }
     </style>
 </head>
 <body>
-    <img src="http://localhost:8010/BG2.png" alt="Dynamic Image">
+    <div class="container">
+        <img src="http://localhost:8010/BG2.png" alt="Dynamic Image">
+    </div>
+    
     <script>
         // Prevent zooming with keyboard shortcuts
         window.addEventListener('keydown', function (event) {
@@ -794,7 +818,6 @@ class MyApp(toga.App):
     </script>
 </body>
 </html>
-
 """
         print("starting webview background")
         self.webview1 = toga.WebView(style=Pack(flex=1))
