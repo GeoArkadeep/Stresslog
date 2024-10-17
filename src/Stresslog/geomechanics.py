@@ -194,10 +194,10 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
             styles = json.load(file)
     except:
         styles = {
-            'lresnormal': {"color": "red","linewidth": 1.5,"style": "-","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
+            'lresnormal': {"color": "red","linewidth": 1.5,"style": "--","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
             'lresdeep': {"color": "black","linewidth": 0.5,"style": "-","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
             'Dexp': {"color": "brown","linewidth": 0.5,"style": "-","track": 1,"left": 0,"right": 2,"type": "linear","unit": ""},
-            'dexnormal': {"color": "brown","linewidth": 1.5,"style": "-","track": 1,"left": 0,"right": 2,"type": "linear","unit": ""},
+            'dexnormal': {"color": "brown","linewidth": 1.5,"style": "-.","track": 1,"left": 0,"right": 2,"type": "linear","unit": ""},
             'dalm': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
             'dtNormal': {"color": "green", "linewidth": 1.5, "style": '-', "track": 1, "left": 300, "right": 50, "type": 'linear', "unit": "us/ft"},
             'mudweight': {"color": "brown", "linewidth": 1.5, "style": '-', "track": 2, "left": 0, "right": 3, "type": 'linear', "unit": "gcc"},

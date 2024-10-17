@@ -108,91 +108,40 @@ pstylespath = os.path.join(input_dir, "pstyles.txt")
 os.remove(output_forms) if os.path.exists(output_forms) else None
 os.remove(output_ucs) if os.path.exists(output_ucs) else None
 
-import requests
 import shutil
-import platform
+import requests
 
-os.makedirs(output_dir, exist_ok=True)  # Ensure output_dir exists
-
-# Define URLs and filenames to download or search for
-files_to_check = [
-    {"filename": "plotly-2.34.0.min.js", "url": "https://cdn.plot.ly/plotly-2.34.0.min.js"},
-    {"filename": "BG1.png", "url": "https://github.com/GeoArkadeep/Stresslog/raw/master/src/Stresslog/BG1.png"},
-    {"filename": "BG2.png", "url": "https://github.com/GeoArkadeep/Stresslog/raw/master/src/Stresslog/BG2.png"}
-]
-
-# OS-specific paths to search for files
-platform_paths = {
-    "Darwin": [  # macOS
-        "/Applications/Stresslog.app/Contents/Resources/app"
-    ],
-    "Linux": [
-        "/opt/stresslog",
-        "/usr/local/stresslog"
-    ],
-    "Windows": [
-        r"C:\Program Files\Stresslog",
-        r"C:\Stresslog"
-    ]
+base_dir = os.path.dirname(os.path.abspath(__file__))
+print(base_dir)
+files_to_check = {
+   "plotly-2.34.0.min.js": "https://cdn.plot.ly/plotly-2.34.0.min.js",
+   "BG1.png": "https://github.com/GeoArkadeep/Stresslog/raw/master/src/Stresslog/BG1.png",
+   "BG2.png": "https://github.com/GeoArkadeep/Stresslog/raw/master/src/Stresslog/BG2.png"
 }
 
-def get_platform_paths():
-    """Get the appropriate search paths based on the current platform."""
-    os_name = platform.system()
-    return platform_paths.get(os_name, [])
+def find_file(filename):
+   for root, _, files in os.walk(base_dir):
+       if filename in files:
+           return os.path.join(root, filename)
+   return None
 
-def find_file_recursively(start_dirs, filename, max_depth=2):
-    """Search for a file in multiple start directories up to max_depth levels."""
-    for start_dir in start_dirs:
-        print(f"Scanning in: {start_dir}")
-
-        for root, _, files in os.walk(start_dir):
-            depth = root.count(os.sep) - start_dir.count(os.sep)
-
-            # Print the contents of the current directory for debugging
-            print(f"Contents of {root}: {files}")
-
-            if depth > max_depth:
-                continue
-
-            if filename in files:
-                return os.path.join(root, filename)
-    return None
-
-def ensure_file(filename, url=None):
-    """Ensure the file exists locally or download it."""
-    output_file = os.path.join(output_dir, filename)
-
-    if os.path.exists(output_file):
-        print(f"{filename} already exists in {output_dir}")
-        return
-
-    if url:
-        try:
-            response = requests.get(url)
-            response.raise_for_status()  # Raise an error for HTTP issues
-            with open(output_file, 'wb') as f:
-                f.write(response.content)
-            print(f"Downloaded {filename} from {url} to {output_dir}")
-            return
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to download {filename}: {e}")
-
-    print(f"Searching for {filename} locally...")
-    local_path = find_file_recursively(get_platform_paths(), filename, max_depth=2)
-
-    if local_path:
-        shutil.copy(local_path, output_file)
-        print(f"Copied {filename} from {local_path} to {output_dir}")
-    else:
-        print(f"{filename} not found locally. Operation failed.")
-
-# Print the current working directory
-print(f"Current Working Directory: {os.getcwd()}")
-
-# Ensure all files are available
-for file_info in files_to_check:
-    ensure_file(file_info["filename"], file_info["url"])
+for filename, url in files_to_check.items():
+   output_file = os.path.join(output_dir, filename)
+   if os.path.exists(output_file):
+       continue
+   local_file = find_file(filename)
+   if local_file:
+       shutil.copy(local_file, output_file)
+       print(f"Copied {filename} to {output_dir}")
+   else:
+       try:
+           response = requests.get(url)
+           response.raise_for_status()
+           with open(output_file, 'wb') as f:
+               f.write(response.content)
+           print(f"Downloaded {filename}")
+       except requests.exceptions.RequestException as e:
+           print(f"Failed to download {filename}: {e}")
 
 
 class BackgroundImageView(toga.ImageView):
