@@ -22,6 +22,35 @@ ug = ['gcc','sg','ppg','psi/foot']
 ul = ['metres','feet']
 ut = ['degC','degF','degR','degK']
 
+path_dict = {}
+
+# First define the base directories
+path_dict['output_dir'] = os.path.join(user_home, "Stresslog_Plots")
+path_dict['output_dir1'] = os.path.join(user_home, "Stresslog_Data")
+path_dict['input_dir'] = os.path.join(user_home, "Stresslog_Models")
+path_dict['motor_dir'] = os.path.join(user_home, "Mud_Motor")
+
+# Then use them to define the file paths
+path_dict.update({
+    'plot_figure': os.path.join(path_dict['output_dir'], "PlotFigure.png"),
+    'plot_stability': os.path.join(path_dict['output_dir'], "PlotStability.png"),
+    'plot_polygon': os.path.join(path_dict['output_dir'], "PlotPolygon.png"),
+    'plot_vec': os.path.join(path_dict['output_dir'], "PlotVec.png"),
+    'plot_bhi': os.path.join(path_dict['output_dir'], "PlotBHI.png"),
+    'plot_hoop': os.path.join(path_dict['output_dir'], "PlotHoop.png"),
+    'plot_frac': os.path.join(path_dict['output_dir'], "PlotFrac.png"),
+    'plot_all': os.path.join(path_dict['output_dir'], "PlotAll.png"),
+    'output_csv': os.path.join(path_dict['output_dir1'], "output.csv"),
+    'output_forms': os.path.join(path_dict['output_dir1'], "tempForms.csv"),
+    'output_ucs': os.path.join(path_dict['output_dir1'], "tempUCS.csv"),
+    'output_las': os.path.join(path_dict['output_dir1'], "output.las"),
+    'model_path': os.path.join(path_dict['input_dir'], "model.csv"),
+    'alias_path': os.path.join(path_dict['input_dir'], "alias.txt"),
+    'unit_path': os.path.join(path_dict['input_dir'], "units.txt"),
+    'styles_path': os.path.join(path_dict['input_dir'], "styles.txt"),
+    'pstyles_path': os.path.join(path_dict['input_dir'], "pstyles.txt"),
+    'motor_db_path': os.path.join(path_dict['motor_dir'], "motor_db.json")
+})
 def polynomial(x, *coeffs):
     return sum(c * x**i for i, c in enumerate(coeffs))
 
@@ -185,13 +214,14 @@ def read_aliases_from_file(file_path):
 
 
 def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strength_units, gradient_units, ureg, file_path):
-    
+    print("Reading Styles file from ",file_path)
     def convert_value(value, from_unit, to_unit, ureg=ureg):
         return (value * ureg(from_unit.lower())).to(to_unit.lower()).magnitude
 
     try:
         with open(file_path, 'r') as file:
             styles = json.load(file)
+
     except:
         styles = {
             'lresnormal': {"color": "red","linewidth": 1.5,"style": "--","track": 1,"left": -3,"right": 1,"type": "linear","unit": "ohm.m"},
@@ -218,7 +248,6 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units, strengt
             'GR': {"color": "green", "linewidth": 0.25, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI", "fill":'none', "fill_between": {"reference": "GR_CUTOFF", "colors": ["green", "yellow"], "colorlog":"obgcc","cutoffs":[1.8,2.67,2.75],"cmap":'Set1_r'}},
             'GR_CUTOFF': {"color": "black", "linewidth": 0, "style": '-', "track": 0, "left": 0, "right": 150, "type": 'linear', "unit": "gAPI"}
         }
-
     # Update tracks based on input units
     for key, value in styles.items():
         if value['track'] == 2:  # Gradient track
@@ -536,9 +565,11 @@ def weighted_average_downsampler(curve, window_size=21, window_type='v_shape'):
 
     return resampled_curve
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=None, ureg=pint.UnitRegistry(autoconvert_offset_to_baseunit = True), mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=None, ureg=pint.UnitRegistry(autoconvert_offset_to_baseunit = True), mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,0,0,0,0]):
 #def plotPPzhang(well, unitchoice, finaldepth, mwvalues, flowgradvals, fracgradvals, flowpsivals, fracpsivals, attrib):
     """
+    Copyright Arkadeep Ghosh 2023-2024
+    
     Calculates and plots geomechanical parameters for the entire well. These include
     i) Overburden pressure and gradient
     ii) Pore pressure and gradient
@@ -661,37 +692,36 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     - PlotAll.png: Combined plot.
     Additionally, it saves the output as files in CSV and LAS formats.
     """
-    program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
+    #program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
     numodel = [0.35,0.26,0.23,0.25] #nu2[i] = numodel[lithotype[i]]
     
-    output_dir = os.path.join(user_home, "Stresslog_Plots")
-    output_dir1 = os.path.join(user_home, "Stresslog_Data")
-    input_dir = os.path.join(user_home, "Stresslog_Models")
-    motor_dir = os.path.join(user_home, "Mud_Motor")
-    # Create the output directory if it doesn't exist
+    output_dir = paths['output_dir']
+    output_dir1 = paths['output_dir1']
+    input_dir = paths['input_dir']
+    motor_dir = paths['motor_dir']
+
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(output_dir1, exist_ok=True)
     os.makedirs(input_dir, exist_ok=True)
 
-
-    output_file = os.path.join(output_dir, "PlotFigure.png")
-    output_fileS = os.path.join(output_dir, "PlotStability.png")
-    output_fileSP = os.path.join(output_dir, "PlotPolygon.png")
-    output_fileVec = os.path.join(output_dir, "PlotVec.png")
-    output_fileBHI = os.path.join(output_dir, "PlotBHI.png")
-    output_fileHoop = os.path.join(output_dir, "PlotHoop.png")
-    output_fileFrac = os.path.join(output_dir, "PlotFrac.png")
-    output_fileAll = os.path.join(output_dir, "PlotAll.png")
-    output_file2 = os.path.join(output_dir1, "output.csv")
-    output_forms = os.path.join(output_dir1, "tempForms.csv")
-    output_ucs = os.path.join(output_dir1, "tempUCS.csv")
-    output_file3 = os.path.join(output_dir1, "output.las")
-    modelpath = os.path.join(input_dir, "model.csv")
-    aliaspath = os.path.join(input_dir, "alias.txt")
-    unitpath = os.path.join(input_dir, "units.txt")
-    stylespath = os.path.join(input_dir, "styles.txt")
-    pstylespath = os.path.join(input_dir, "pstyles.txt")
-    motordbpath = os.path.join(motor_dir, "motor_db.json")
+    output_file = paths['plot_figure']
+    output_fileS = paths['plot_stability']
+    output_fileSP = paths['plot_polygon']
+    output_fileVec = paths['plot_vec']
+    output_fileBHI = paths['plot_bhi']
+    output_fileHoop = paths['plot_hoop']
+    output_fileFrac = paths['plot_frac']
+    output_fileAll = paths['plot_all']
+    output_file2 = paths['output_csv']
+    output_forms = paths['output_forms']
+    output_ucs = paths['output_ucs']
+    output_file3 = paths['output_las']
+    modelpath = paths['model_path']
+    aliaspath = paths['alias_path']
+    unitpath = paths['unit_path']
+    stylespath = paths['styles_path']
+    pstylespath = paths['pstyles_path']
+    motordbpath = paths['motor_db_path']
 
     #from downsampler import downsample_well_average
     #well = downsample_well_average(well, factor=window)

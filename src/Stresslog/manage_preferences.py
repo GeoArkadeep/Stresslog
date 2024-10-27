@@ -2,6 +2,7 @@ import toga
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 import csv
+import json
 
 class PreferencesWindow(toga.Window):
     def __init__(self, title, csv1_path, csv2_path, csv3_path, dropdown_options, unitpath):
@@ -72,10 +73,12 @@ class PreferencesWindow(toga.Window):
         # Save contents back to CSV files
         with open(self.csv1_path, 'w') as f:
             f.write(self.csv1_input.value)
-        with open(self.csv2_path, 'w') as f:
-            f.write(self.csv2_input.value)
-        with open(self.csv3_path, 'w') as f:
-            f.write(self.csv3_input.value)
+        with open(self.csv2_path, 'w') as file:
+            print(self.csv2_input.value)
+            json.dump(json.loads(self.csv2_input.value.replace('\u201c', '"').replace('\u201d', '"')), file, indent=4)
+        with open(self.csv3_path, 'w') as file:
+            print(self.csv3_input.value)
+            json.dump(json.loads(self.csv3_input.value.replace('\u201c', '"').replace('\u201d', '"')), file, indent=4)
         
         # Save unit choices
         unitchoice = []
