@@ -2027,8 +2027,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         doiX = doiactual[0]
         print("Depth of interest :",doiA," with index of ",doiX)
         devdoi = well.location.deviation[doiX]
-        incdoi = devdoi[2]
-        azmdoi = devdoi[1]
+        incdoi = devdoi[1]
+        azmdoi = devdoi[2]
         print("Inclination is :",incdoi," towards azimuth of ",azmdoi)
         sigmaVmpa = obgpsi[doiX]/145.038
         sigmahminmpa = spsifp[doiX]/145.038
@@ -2123,8 +2123,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
             sigmas = [osx,osy,osz]
             devdoi = well.location.deviation[i]
-            incdoi = devdoi[2]
-            azmdoi = devdoi[1]
+            incdoi = devdoi[1]
+            azmdoi = devdoi[2]
             """
             if sigmas[2]>sigmas[0]:
                 alpha = 0
@@ -2168,8 +2168,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         sigmas = [osx,osy,osz]
         devdoi = well.location.deviation[i]
-        incdoi = devdoi[2]
-        azmdoi = devdoi[1]
+        incdoi = devdoi[1]
+        azmdoi = devdoi[2]
         cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
         fr = np.array(fr)
         angles = np.array(angles)
@@ -2207,8 +2207,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         sigmas = [osx,osy,osz]
         devdoi = well.location.deviation[i]
-        incdoi = devdoi[2]
-        azmdoi = devdoi[1]
+        incdoi = devdoi[1]
+        azmdoi = devdoi[2]
         getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
         
     def drawSand(doi):
@@ -2227,8 +2227,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         #sigmas = [osx,osy,osz]
         devdoi = well.location.deviation[i]
-        incdoi = devdoi[2]
-        azmdoi = devdoi[1]
+        incdoi = devdoi[1]
+        azmdoi = devdoi[2]
         Sl = getAlignedStress(osx,osy,osz,alphas[i],betas[i],gammas[i],azmdoi,incdoi)
         sigmamax = max(Sl[0][0],Sl[1][1])
         sigmamin = min(Sl[0][0],Sl[1][1])
