@@ -101,6 +101,7 @@ def plotfrac(data,path):
     plt.ylim(-180, 180)
     plt.title("Fracture Morphology")
     plt.savefig(path)
+    plt.close()
     print(yj)
     yj[(maxangle-10)%360:(maxangle+15)%360]=np.nan
     yj[(maxangle+170)%360:(maxangle+195)%360]=np.nan

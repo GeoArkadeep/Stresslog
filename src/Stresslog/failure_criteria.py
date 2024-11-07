@@ -233,3 +233,4 @@ def plot_sanding(path, sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1):
     plt.legend()
     plt.grid(False)
     plt.savefig(path)
+    plt.close()

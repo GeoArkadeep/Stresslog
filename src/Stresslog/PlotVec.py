@@ -85,5 +85,7 @@ def showvec(x, y, z, m,lx,ly,lz,path):
     plotVectors(x, y, z, m,lx,ly,lz).show()
     return
 def savevec(x, y, z, m,lx,ly,lz,path):
-    plotVectors(x, y, z, m,lx,ly,lz).savefig(path, dpi=600)
+    plt = plotVectors(x, y, z, m,lx,ly,lz)
+    plt.savefig(path, dpi=600)
+    plt.close()
     return

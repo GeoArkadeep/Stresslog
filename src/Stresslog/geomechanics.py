@@ -2088,7 +2088,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         on,oe,od = np.linalg.eigh(sten)[1]
         savevec(on,oe,od,2,sn,se,sd,output_fileVec)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alphas[doiX],betas[doiX],gammas[doiX],0,nu2[doiX],incdoi,azmdoi,bt[doiX],ym[doiX],delTempC[doiX])
+        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alphas[doiX],betas[doiX],gammas[doiX],0,nu2[doiX],azmdoi,incdoi,bt[doiX],ym[doiX],delTempC[doiX])
         
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
@@ -2364,13 +2364,16 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     Sby = interpolate_nan(SbFF[:,1,1])
     Sbx = interpolate_nan(SbFF[:,0,0])
     hoopmin = interpolate_nan(hoopmin)
+    tensilestrength = -(horsud/10.0)
+    headroom = hoopmin-tensilestrength
     hoopmax = interpolate_nan(hoopmax)
     Sbminmpa = np.minimum(Sby,Sbx)
     Sbmaxmpa = np.maximum(Sby,Sbx)
     Sbmingcc = ((Sbminmpa*145.038)/tvdf)/0.4335275040012
     Sbmaxgcc = ((Sbmaxmpa*145.038)/tvdf)/0.4335275040012
-    tensilefracgcc = (((hoopmax)*145.038)/tvdf)/0.4335275040012
-    tensilefracpsi = (hoopmax)*145.038
+    #tensilefracgcc = (((hoopmax)*145.038)/tvdf)/0.4335275040012
+    tensilefracpsi = ((mudpsi/145.038)+headroom)*145.038#(hoopmax)*145.038
+    tensilefracgcc = (tensilefracpsi/tvdf)/0.4335275040012 #maybe use a better approximation for the gradient calculation depth indices?
     
     plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
     plt.plot(interpolate_nan(SbFF[:,1,1]),tvd, label='aligned sy')
@@ -2382,6 +2385,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt.plot(hoopmax,tvd, alpha=0.5, label='hoopmax')
     plt.plot(interpolate_nan(inca),tvd, alpha=0.5, label='inclination')
     plt.plot(-horsud/10,tvd, alpha=0.5, label='tensile strength')
+    plt.plot(tensilefracpsi/145.038,tvd, label='fracgrad')
     plt.plot(np.zeros(len(tvd)),tvd, alpha=0.1)
     plt.gca().invert_yaxis()
     plt.legend()

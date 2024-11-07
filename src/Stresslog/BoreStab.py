@@ -277,7 +277,7 @@ def getOrit(s1,s2,s3,alpha,beta,gamma):
     orit = np.linalg.eigh(Sg)[1]
     return(orit)
 
-def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,ym=0,delT=0):
+def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,ym=0,delT=0): #Converts farfield stress tensor to at-wall stress, at a single point on the wall of an inclined borehole
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     #print(Ss)
 
@@ -581,6 +581,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
         #plt2.xlim((0,0.67827))
         #plt2.ylim((1,151))
         plt2.savefig(path)
+        plt2.close()
     return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle
 
 def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0):
