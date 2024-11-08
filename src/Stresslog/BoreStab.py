@@ -718,3 +718,59 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     
     plt2.savefig(path,dpi=600)
     plt2.clf()
+
+
+def critical_bhp_calculator(bhp, pp, sigmaT, nu, ucs, Sb, theta):
+    """
+    Calculate the difference between the minimum principal stress (Stmin) and the tensile strength (tensilestrength).
+    
+    Parameters:
+    bhp (float): Borehole pressure
+    pp (float): Pore pressure
+    ym (float): Young's modulus
+    bt (float): Biot coefficient
+    delT (float): Temperature change
+    nu (float): Poisson's ratio
+    ucs (float): Uniaxial compressive strength
+    Sb (numpy.ndarray): In-situ stress tensor
+    
+    Returns:
+    float: Difference between minimum principal stress (Stmin) and tensile strength (tensilestrength)
+    """
+    
+    deltaP = bhp - pp
+    #sigmaT = (ym * bt * delT) / (1 - nu)
+    tensilestrength = -(ucs / 10)
+    
+
+    Szz = Sb[2][2] - ((2 * nu) * (Sb[0][0] - Sb[1][1]) * (2 * math.cos(2 * theta))) - (4 * nu * Sb[0][1] * math.sin(2 * theta))
+    Stt = Sb[0][0] + Sb[1][1] - (2 * (Sb[0][0] - Sb[1][1]) * math.cos(2 * theta)) - (4 * Sb[0][1] * math.sin(2 * theta)) - deltaP - sigmaT
+    Ttz = 2 * ((Sb[1][2] * math.cos(theta)) - (Sb[0][2] * math.sin(theta)))
+    
+    STMax = 0.5 * (Szz + Stt + ((Szz - Stt) ** 2 + 4 * (Ttz ** 2)) ** 0.5)
+    Stmin = 0.5 * (Szz + Stt - ((Szz - Stt) ** 2 + 4 * (Ttz ** 2)) ** 0.5)
+        
+    return abs(Stmin - tensilestrength)
+
+def get_bhp_critical(Sb, pp, ucs, theta, nu=0.25, sigmaT=0 ):
+    """
+    Find the critical borehole pressure (critical_bhp) by minimizing the difference between the minimum principal stress (Stmin) and the tensile strength (tensilestrength).
+    
+    Parameters:
+    pp (float): Pore pressure
+    ym (float): Young's modulus
+    bt (float): Biot coefficient
+    delT (float): Temperature change
+    nu (float): Poisson's ratio
+    ucs (float): Uniaxial compressive strength
+    Sb (numpy.ndarray): In-situ stress tensor
+    
+    Returns:
+    float: Critical borehole pressure (critical_bhp)
+    """
+    res = minimize(critical_bhp_calculator, x0=pp, args=(pp, sigmaT, nu, ucs, Sb, theta), method='Nelder-Mead')    
+    if not res.success:
+        return np.nan
+    
+    critical_bhp = res.x[0]
+    return critical_bhp

@@ -725,6 +725,16 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
 
     #from downsampler import downsample_well_average
     #well = downsample_well_average(well, factor=window)
+    devdata = well.location.deviation
+    incdata = devdata[:, 1]
+    azmdata = devdata[:, 2]
+    
+    md = well.data['MD'].values
+    inclinationi = Curve(incdata, mnemonic='INCL',units='degrees', index=md, null=0)
+    well.data['INC'] =  inclinationi
+    azimuthu = Curve(azmdata, mnemonic='AZIM',units='degrees', index=md, null=0)
+    well.data['AZM'] =  azimuthu
+    
     
     for curve_name, curve in well.data.items():
         print(f"Curve: {curve_name}")
@@ -735,6 +745,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         #curve = curve.to_basis(step=0.15*window)
         well.data[curve_name] = curve
     
+    incdata = well.data['INC'].values
+    azmdata = well.data['AZM'].values
+    md = well.data['MD'].values
+    devdata = np.column_stack((md, incdata, azmdata))
+
     #ureg.define('ppg = 0.051948 psi/foot')
     #ureg.define('sg = 0.4335 psi/foot = gcc')
     #ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
@@ -2026,7 +2041,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         doiA = doiactual[1]
         doiX = doiactual[0]
         print("Depth of interest :",doiA," with index of ",doiX)
-        devdoi = well.location.deviation[doiX]
+        devdoi = devdata[doiX]
         incdoi = devdoi[1]
         azmdoi = devdoi[2]
         print("Inclination is :",incdoi," towards azimuth of ",azmdoi)
@@ -2122,7 +2137,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
             osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
             sigmas = [osx,osy,osz]
-            devdoi = well.location.deviation[i]
+            devdoi = devdata[i]
             incdoi = devdoi[1]
             azmdoi = devdoi[2]
             """
@@ -2167,7 +2182,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         sigmas = [osx,osy,osz]
-        devdoi = well.location.deviation[i]
+        devdoi = devdata[i]
         incdoi = devdoi[1]
         azmdoi = devdoi[2]
         cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
@@ -2206,7 +2221,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         sigmas = [osx,osy,osz]
-        devdoi = well.location.deviation[i]
+        devdoi = devdata[i]
         incdoi = devdoi[1]
         azmdoi = devdoi[2]
         getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
@@ -2226,7 +2241,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         osx,osy,osz = get_optimal(sigmas[0],sigmas[1],sigmas[2],alphas[i],betas[i],gammas[i])
         #sigmas = [osx,osy,osz]
-        devdoi = well.location.deviation[i]
+        devdoi = devdata[i]
         incdoi = devdoi[1]
         azmdoi = devdoi[2]
         Sl = getAlignedStress(osx,osy,osz,alphas[i],betas[i],gammas[i],azmdoi,incdoi)
@@ -2293,10 +2308,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     lademax = np.full(len(tvd),np.nan)
     lademin = np.full(len(tvd),np.nan)
     inca = np.full(len(tvd),np.nan)
+    trufracmpa = np.full(len(tvd),np.nan)
     from failure_criteria import mod_lad_cmw, mogi
     print("calculating aligned far field stresses")
     print("Total depth-points to be calculated: ",len(tvd))
-    
+    from BoreStab import get_bhp_critical
     skip = 21 if 2.0 <= window < 21 else window
     
     for i in range(0,len(tvd),skip):
@@ -2320,7 +2336,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             deltaP = bhpmpa-ppmpa
             sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         try:
-            devdoi = well.location.deviation[i]
+            devdoi = devdata[i]
             incdoi = devdoi[1]
             inca[i] = incdoi
             azmdoi = devdoi[2]
@@ -2351,8 +2367,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             hoopmax[i] = np.nanmax(STMax) #Maximum principal stress resolved on borehole wall, in MPA
             hoopmin[i] = np.nanmin(Stmin) #Minimum principal stress on borehole wall, not necessarily perpendicular to hole axis, in MPA
             lademax[i] = np.nanmax(ladempa)
+            minthetarad = np.radians(np.nanargmin(Stmin))
             #print(lademax[i])
             lademin[i] = np.nanmin(ladempa)
+            trufracmpa[i] = get_bhp_critical(Sb[i], ppmpa, horsud[i], minthetarad, nu2[i],sigmaT)
+            if trufracmpa[i]<=ppmpa: #Self-hydrofrac, unreal
+                trufracmpa[i]=np.nan
             #ladempa = mod_lad_cmw(SbFF[i][0][0],SbFF[i][1][1],SbFF[i][2][2],SbFF[i][0][1],SbFF[i][0][2],SbFF[i][1][2],j,phi[i],lal[i],psipp[i]/145.038)
         except:
             Sb[i] = np.full((3,3),np.nan)
@@ -2361,18 +2381,18 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             hoopmin[i] = np.nan
             lademax[i] = np.nan
             lademin[i] = np.nan
+            trufracmpa[i] = np.nan
     Sby = interpolate_nan(SbFF[:,1,1])
     Sbx = interpolate_nan(SbFF[:,0,0])
     hoopmin = interpolate_nan(hoopmin)
-    tensilestrength = -(horsud/10.0)
-    headroom = hoopmin-tensilestrength
+    trufracmpa = interpolate_nan(trufracmpa)
     hoopmax = interpolate_nan(hoopmax)
     Sbminmpa = np.minimum(Sby,Sbx)
     Sbmaxmpa = np.maximum(Sby,Sbx)
     Sbmingcc = ((Sbminmpa*145.038)/tvdf)/0.4335275040012
     Sbmaxgcc = ((Sbmaxmpa*145.038)/tvdf)/0.4335275040012
     #tensilefracgcc = (((hoopmax)*145.038)/tvdf)/0.4335275040012
-    tensilefracpsi = ((mudpsi/145.038)+headroom)*145.038#(hoopmax)*145.038
+    tensilefracpsi = trufracmpa*145.038#(hoopmax)*145.038
     tensilefracgcc = (tensilefracpsi/tvdf)/0.4335275040012 #maybe use a better approximation for the gradient calculation depth indices?
     
     plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
@@ -2386,6 +2406,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt.plot(interpolate_nan(inca),tvd, alpha=0.5, label='inclination')
     plt.plot(-horsud/10,tvd, alpha=0.5, label='tensile strength')
     plt.plot(tensilefracpsi/145.038,tvd, label='fracgrad')
+    plt.plot(trufracmpa,tvd, label='trufracgrad')
     plt.plot(np.zeros(len(tvd)),tvd, alpha=0.1)
     plt.gca().invert_yaxis()
     plt.legend()
