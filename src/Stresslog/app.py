@@ -44,6 +44,8 @@ app_data = os.getenv("APPDATA")
 output_dir = os.path.join(user_home, "Stresslog_Plots")
 input_dir = os.path.join(user_home, "Stresslog_Models")
 output_dir1 = os.path.join(user_home, "Stresslog_Data")
+#motor_dir = os.path.join(user_home, "Mud_Motor")
+
 os.makedirs(output_dir1, exist_ok=True)  # Ensure output_dir exists
 # Set up logging
 log_file = os.path.join(output_dir1, "Stresslog_log.txt")
@@ -83,6 +85,7 @@ sys.stderr = StreamToLogger(console_logger, logging.ERROR)
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(output_dir1, exist_ok=True)
 os.makedirs(input_dir, exist_ok=True)
+#os.makedirs(motor_dir, exist_ok=True)
 
 output_file = os.path.join(output_dir, "PlotFigure.png")
 output_fileS = os.path.join(output_dir, "PlotStability.png")
@@ -103,7 +106,38 @@ aliaspath = os.path.join(input_dir, "alias.txt")
 unitpath = os.path.join(input_dir, "units.txt")
 stylespath = os.path.join(input_dir, "styles.txt")
 pstylespath = os.path.join(input_dir, "pstyles.txt")
+#motor_db_path = os.path.join(motor_dir, "motor_db.json")
+algopath = os.path.join(input_dir, "settings.txt")
 
+path_dict = {}
+
+# First define the base directories
+path_dict['output_dir'] = os.path.join(user_home, "Stresslog_Plots")
+path_dict['output_dir1'] = os.path.join(user_home, "Stresslog_Data")
+path_dict['input_dir'] = os.path.join(user_home, "Stresslog_Models")
+path_dict['motor_dir'] = os.path.join(user_home, "Mud_Motor")
+
+# Then use them to define the file paths
+path_dict.update({
+    'plot_figure': os.path.join(path_dict['output_dir'], "PlotFigure.png"),
+    'plot_stability': os.path.join(path_dict['output_dir'], "PlotStability.png"),
+    'plot_polygon': os.path.join(path_dict['output_dir'], "PlotPolygon.png"),
+    'plot_vec': os.path.join(path_dict['output_dir'], "PlotVec.png"),
+    'plot_bhi': os.path.join(path_dict['output_dir'], "PlotBHI.png"),
+    'plot_hoop': os.path.join(path_dict['output_dir'], "PlotHoop.png"),
+    'plot_frac': os.path.join(path_dict['output_dir'], "PlotFrac.png"),
+    'plot_all': os.path.join(path_dict['output_dir'], "PlotAll.png"),
+    'output_csv': os.path.join(path_dict['output_dir1'], "output.csv"),
+    'output_forms': os.path.join(path_dict['output_dir1'], "tempForms.csv"),
+    'output_ucs': os.path.join(path_dict['output_dir1'], "tempUCS.csv"),
+    'output_las': os.path.join(path_dict['output_dir1'], "output.las"),
+    'model_path': os.path.join(path_dict['input_dir'], "model.csv"),
+    'alias_path': os.path.join(path_dict['input_dir'], "alias.txt"),
+    'unit_path': os.path.join(path_dict['input_dir'], "units.txt"),
+    'styles_path': os.path.join(path_dict['input_dir'], "styles.txt"),
+    'pstyles_path': os.path.join(path_dict['input_dir'], "pstyles.txt"),
+    'motor_db_path': os.path.join(path_dict['motor_dir'], "motor_db.json")
+})
 
 os.remove(output_forms) if os.path.exists(output_forms) else None
 os.remove(output_ucs) if os.path.exists(output_ucs) else None
@@ -178,6 +212,16 @@ depth_track = None
 finaldepth = None
 attrib = [1,0,0,0,0,0,0,0]
 
+prog_opts = [300, 0, 0, 0, 0]  # Default values
+
+try:
+    with open(algopath, 'r') as file:
+        data = file.read().strip()  # Read the file and remove any trailing newline
+        prog_opts = [int(float(num)) for num in data.split(',')]
+except Exception:
+    with open(algopath, 'w') as file:  # Open in write mode to overwrite with default values
+        file.write(','.join(map(str, prog_opts)))
+
 ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit = True)
 ureg.define('ppg = 0.051948 psi/foot')
 ureg.define('sg = 0.4335 psi/foot = gcc = SG = GCC')
@@ -234,7 +278,7 @@ class MyApp(toga.App):
         # This method sets up the preferences command
         self._preferences = command
     def preferences(self, widget):
-        show_preferences_window(self, aliaspath, stylespath, pstylespath, unitdict, unitpath)
+        show_preferences_window(self, aliaspath, stylespath, pstylespath, unitdict, unitpath, algopath)
     def custom_edit_ucs(self, widget):
         self.run_custom_ucs()
 
@@ -1383,7 +1427,9 @@ class MyApp(toga.App):
             kwargs['UCSs'],
             kwargs['forms'],
             kwargs['lithos'],
-            kwargs['user_home']
+            kwargs['user_home'],
+            kwargs['paths'],
+            kwargs['program_option']
             
         )
     
@@ -1884,6 +1930,11 @@ class MyApp(toga.App):
             fracpsivals = self.get_frac_grad_data_values()[1]
             flowpsivals = self.get_flow_grad_data_values()[1]
             
+            with open(algopath, 'r') as file:
+                data = file.read().strip()  # Read the file and remove any trailing newline
+                prog_opts = [int(float(num)) for num in data.split(',')]  # Split by commas and convert to integers
+
+            
             print("model_fin: ",model)
             
             self.progress.start()
@@ -1939,7 +1990,9 @@ class MyApp(toga.App):
                         'UCSs': UCSs,
                         'forms': forms,
                         "lithos": lithos,
-                        "user_home": user_home
+                        "user_home": user_home,
+                        "paths": path_dict,
+                        "program_option": prog_opts
                     }          
                 )
             print(model[3])

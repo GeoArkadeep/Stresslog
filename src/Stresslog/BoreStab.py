@@ -725,7 +725,7 @@ def critical_bhp_calculator(bhp, pp, sigmaT, nu, ucs, Sb, theta):
     Calculate the difference between the minimum principal stress (Stmin) and the tensile strength (tensilestrength).
     
     Parameters:
-    bhp (float): Borehole pressure
+    bhp (float): Bottomhole pressure
     pp (float): Pore pressure
     ym (float): Young's modulus
     bt (float): Biot coefficient
