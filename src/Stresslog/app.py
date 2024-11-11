@@ -1076,7 +1076,7 @@ class MyApp(toga.App):
             print(deva)
             start_depth = wella.df().index[0]
             final_depth = wella.df().index[-1]
-            spacing = ((wella.df().index.values[9]-wella.df().index.values[0])/9)
+            spacing = get_step_from_curves(wella.data) #((wella.df().index.values[-1]-wella.df().index.values[0])/len(wella.df().index.values[0]))
             print("Sample interval is :",spacing)
             padlength = int(start_depth/spacing)
             print(padlength)
@@ -1101,7 +1101,7 @@ class MyApp(toga.App):
         else:
             start_depth = wella.df().index[0]
             final_depth = wella.df().index[-1]
-            spacing = ((wella.df().index.values[9]-wella.df().index.values[0])/9)
+            spacing = get_step_from_curves(wella.data)#((wella.df().index.values[-1]-wella.df().index.values[0])/len(wella.df().index.values[0]))
             print("Sample interval is :",spacing)
             padlength = int(start_depth/spacing)
             print(padlength)
@@ -1136,7 +1136,7 @@ class MyApp(toga.App):
         wella.data['MD'] =  MD
         TVDM = curve.Curve(tvdg, mnemonic='TVDM',units='m', index = md)
         wella.data['TVDM'] =  TVDM
-        wella.unify_basis(keys=None, alias=None, basis=md)
+        wella.unify_basis(keys=None, alias=None, step=spacing)
         
         #self.bg3.image = toga.Image('BG1.png')
         #smoothass.plotPPzhang(wella)
@@ -2005,58 +2005,7 @@ class MyApp(toga.App):
             await self.onplotfuckup(traceback_str)  # Ensure cleanup happens even if there's an error
     
     
-    def wellisvertical(self,widget):
-        global depth_track, finaldepth
-        # Print the updated self.output list to the console
-        print("Blah")
-        depth_track = wella.df().index.values
-        print(depth_track)
-        print(len(depth_track))
-        
-        start_depth = wella.df().index[0]
-        final_depth = wella.df().index[-1]
-        spacing = ((wella.df().index.values[9]-wella.df().index.values[0])/9)
-        print("Sample interval is :",spacing)
-        padlength = int(start_depth/spacing)
-        print(padlength)
-        padval = np.zeros(padlength)
-        i = 1
-        while(i<padlength):
-            padval[-i] = start_depth-(spacing*i)
-            i+=1
-        print("pad depths: ",padval)
-        print("pad length is :",padlength,", Total length is :",padlength+len(depth_track))
-        
-        md = depth_track
-        md2 =  np.append(padval,md)
-        print("new track length is :",len(md2))
-        #md[0] = 0
-        #md[0:padlength-1] = padval[0:padlength-1]
-        inc = np.zeros(len(depth_track)+padlength)
-        azm = np.zeros(len(depth_track)+padlength)
-        dz = [md2,inc,azm]
-        dz = np.transpose(dz)
-        dz = pd.DataFrame(dz)
-        #dz = dz.dropna()
-        print(dz)
-        finaldepth = dz.to_numpy()[-1][0]
-        print("Final depth is ",finaldepth)
-        wella.location.add_deviation(dz, wella.location.td)
-        tvdg = wella.location.tvd
-        md3 = wella.location.md
-        from welly import curve
-        MD = curve.Curve(md3, mnemonic='MD',units='m', index = md3)
-        wella.data['MD'] =  MD
-        TVDM = curve.Curve(tvdg, mnemonic='TVDM',units='m', index = md3)
-        wella.data['TVDM'] =  TVDM
-        
-        wella.unify_basis(keys=None, alias=None, basis=md3)
-        #plotPPzhang(wella,self)
-
-        print("Great Success!! :D")
-        image_path = 'PlotFigure.png'
-        #self.bg3.image = toga.Image(output_file)
-        #print(self.output)
+    def wellisvertical(self,widget):        
         self.main_window.content = self.page2
         #self.bg3.refresh()
         
@@ -2136,6 +2085,28 @@ class MyApp(toga.App):
             print("server2 stopped and thread joined")
 
 
+def get_step_from_curves(well_data):
+    # Extract all step values from the curves
+    steps = [curve.step for curve in well_data.values()]
+    
+    # Create a dictionary to count occurrences of each step value
+    step_counts = {}
+    for step in steps:
+        if step in step_counts:
+            step_counts[step] += 1
+        else:
+            step_counts[step] = 1
+    
+    # Print all unique step values and their counts
+    if len(step_counts) > 1:
+        print("\nFound multiple step values:")
+        for step, count in step_counts.items():
+            print(f"Step {step}: {count} curves")
+    
+    # Get the modal (most common) step value
+    modal_step = max(step_counts, key=step_counts.get)
+    
+    return round(modal_step,4)
 
 def readDevFromAsciiHeader(devpath, delim = r'[ ,	]'):
     dev=pd.read_csv(devpath, sep=delim)

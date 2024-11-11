@@ -731,9 +731,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     md = well.data['MD'].values
     inclinationi = Curve(incdata, mnemonic='INCL',units='degrees', index=md, null=0)
-    well.data['INC'] =  inclinationi
+    well.data['INCL'] =  inclinationi
     azimuthu = Curve(azmdata, mnemonic='AZIM',units='degrees', index=md, null=0)
-    well.data['AZM'] =  azimuthu
+    well.data['AZIM'] =  azimuthu
     
     
     for curve_name, curve in well.data.items():
@@ -745,8 +745,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         #curve = curve.to_basis(step=0.15*window)
         well.data[curve_name] = curve
     
-    incdata = well.data['INC'].values
-    azmdata = well.data['AZM'].values
+    incdata = well.data['INCL'].values
+    azmdata = well.data['AZIM'].values
     md = well.data['MD'].values
     devdata = np.column_stack((md, incdata, azmdata))
 
@@ -2316,26 +2316,16 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     from BoreStab import get_bhp_critical
     skip = 21 if 2.0 <= window < 21 else window
     
-    for i in range(0,len(tvd),skip):
+    for i in range(0,len(tvd),1):
         #print(i)
-        if window>=2.0 and window<21:
-            sigmaVmpa = np.nanmean(obgpsi[i-int(window/2):i+int(window/2)])/145.038
-            sigmahminmpa = np.nanmean(psifg[i-int(window/2):i+int(window/2)])/145.038
-            sigmaHMaxmpa = np.nanmean(sgHMpsi[i-int(window/2):i+int(window/2)])/145.038
-            ppmpa = np.nanmean(psipp[i-int(window/2):i+int(window/2)])/145.038
-            bhpmpa = np.nanmean(mudpsi[i-int(window/2):i+int(window/2)])/145.038
-            ucsmpa = np.nanmean(horsud[i-int(window/2):i+int(window/2)])
-            deltaP = bhpmpa-ppmpa
-            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
-        else:
-            sigmaVmpa = np.nanmean(obgpsi[i])/145.038
-            sigmahminmpa = np.nanmean(psifg[i])/145.038
-            sigmaHMaxmpa = np.nanmean(sgHMpsi[i])/145.038
-            ppmpa = np.nanmean(psipp[i])/145.038
-            bhpmpa = np.nanmean(mudpsi[i])/145.038
-            ucsmpa = np.nanmean(horsud[i])
-            deltaP = bhpmpa-ppmpa
-            sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
+        sigmaVmpa = np.nanmean(obgpsi[i])/145.038
+        sigmahminmpa = np.nanmean(psifg[i])/145.038
+        sigmaHMaxmpa = np.nanmean(sgHMpsi[i])/145.038
+        ppmpa = np.nanmean(psipp[i])/145.038
+        bhpmpa = np.nanmean(mudpsi[i])/145.038
+        ucsmpa = np.nanmean(horsud[i])
+        deltaP = bhpmpa-ppmpa
+        sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
         try:
             devdoi = devdata[i]
             incdoi = devdoi[1]
