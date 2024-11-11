@@ -730,6 +730,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     azmdata = devdata[:, 2]
     
     md = well.data['MD'].values
+    
+    incdata, azmdata = (np.resize(data, len(md)) if len(data) < len(md) else data[:len(md)] for data in (incdata, azmdata))
+    print(f"{'Extended' if len(incdata) < len(md) else 'Truncated'} by {abs(len(md) - len(incdata))} points.")
+
+    
     inclinationi = Curve(incdata, mnemonic='INCL',units='degrees', index=md, null=0)
     well.data['INCL'] =  inclinationi
     azimuthu = Curve(azmdata, mnemonic='AZIM',units='degrees', index=md, null=0)
@@ -1668,14 +1673,20 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],mudline,matrick,deltmu0,dalm[i],biot[i])
                     gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],ne,tvdbgl[i],res0,resdeep[i],biot[i])
-                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    try:
+                        Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    except:
+                        Dexp[i] = np.nan
                     gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], nde, tvdbgl[i], dex0, Dexp[i], biot[i]) 
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
                     gccDexp[i] = np.nan
                     #gccZhang2[i] = np.nan
-                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    try:
+                        Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    except:
+                        Dexp[i] = np.nan
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
                 if gccEaton[i]<underbalancereject:
@@ -1724,13 +1735,19 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
                     gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],mudline,matrick,deltmu0,dalm[i],biot[i])
                     gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],ne,tvdbgl[i],res0,resdeep[i],biot[i])
-                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    try:
+                        Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    except:
+                        Dexp[i] = np.nan
                     gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], nde, tvdbgl[i], dex0, Dexp[i], biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
                     gccZhang2[i] = np.nan
-                    Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    try:
+                        Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
+                    except:
+                        Dexp[i] = np.nan
                 if gccZhang[i]<underbalancereject: #underbalance reject
                     gccZhang[i]=underbalancereject
                 if gccEaton[i]<underbalancereject:
