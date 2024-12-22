@@ -11,10 +11,10 @@ setuptools.setup(
     author="Arkadeep Ghosh",
     author_email="arkadeep_ghosh@rocklab.in",
     license="AGPL-3.0",
-    #project_urls={
-    #    "Documentation":"https://www.rocklab.in/stresslog_docs/"
-    #    "Source":"https://github.com/GeoArkadeep/Stresslog"
-    #},
+    project_urls={
+        "Documentation":"https://www.rocklab.in/stresslog_docs/",
+        "Source":"https://github.com/GeoArkadeep/Stresslog"
+    },
     classifiers=[
         "Development Status :: 7-Release",
         "Intended Audience :: Engineers,Developers",
@@ -23,7 +23,7 @@ setuptools.setup(
         "Topic :: Utilities",
     ],
     python_requires=">=3.10,<3.12",
-    install_requires=["pandas>=2.0","numpy","scipy","welly","pint","matplotlib"],
+    install_requires=["pandas>=2.0","numpy","scipy","welly","pint","matplotlib", "plotly"],
     packages=setuptools.find_packages(),
     include_package_data=True,    
 )
