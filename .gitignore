@@ -5,6 +5,7 @@ __pycache__/
 build/*
 logs/*
 dist/*
+VENVTOGA/*
 *.log
 
 # OSX useful to ignore
