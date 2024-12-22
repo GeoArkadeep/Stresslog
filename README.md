@@ -2,7 +2,7 @@
 ![BG1](https://github.com/GeoArkadeep/WellMasterGeoMech/assets/160126374/27efa304-817d-4520-a5f5-65e63e679c15)
 # Stresslog
 
-A *libre* application to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary semi-realtime stress prediction (for example if the wellsite geologist fetches and updates the las from MWD/LWD provider every single or so).
+A package to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary realtime stress prediction.
 
 ## Features
 
@@ -34,21 +34,12 @@ A *libre* application to calculate and plot pore pressure and other geomechanica
 
 ## Installation
 
-You can download the setup file from the release section, and install it like any normal program.
 
-Or, you can compile from source. To compile from source, you need toga and briefcase packages in your python environment.
 ````
-pip install toga
-pip install briefcase
+pip install stresslog
 ````
-Once these are installed, you can build using the briefcase commands from the folder containing the pyproject.toml file
-````
-briefcase create
-briefcase build
-briefcase package
-````
+Consult the documentation for more help.
 
-For more help, consult the BeeWare documentation.
 
 ## Acknowledgements
 

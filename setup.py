@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="stresslog",
-    version="1.2.1",
+    version="1.3.2",
     description="Library for stress calculations from well logs",
     long_description=pathlib.Path("README.md").read_text(),
     long_description_content_type="text/markdown",
@@ -16,11 +16,12 @@ setuptools.setup(
         "Source":"https://github.com/GeoArkadeep/Stresslog"
     },
     classifiers=[
-        "Development Status :: 7-Release",
-        "Intended Audience :: Engineers,Developers",
+        "Development Status :: 6 - Mature",
+        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        "Topic :: Utilities",
+        "Topic :: Scientific/Engineering",
     ],
     python_requires=">=3.10,<3.12",
     install_requires=["pandas>=2.0","numpy","scipy","welly","pint","matplotlib", "plotly"],
