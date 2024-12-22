@@ -5,7 +5,6 @@ __pycache__/
 build/*
 logs/*
 dist/*
-VENVTOGA/*
 *.log
 
 # OSX useful to ignore
@@ -39,6 +38,7 @@ Temporary Items
 .Python
 env/
 .venv/
+VENVTOGA/
 build/
 develop-eggs/
 dist/

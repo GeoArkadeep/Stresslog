@@ -1,3 +1,10 @@
+"""
+Copyright (c) 2024-2025 ROCK LAB PRIVATE LIMITED
+This file is part of "Stresslog" project and is released under the 
+GNU Affero General Public License v3.0 (AGPL-3.0)
+See the GNU Affero General Public License for more details: <https://www.gnu.org/licenses/agpl-3.0.html>
+"""
+
 import numpy as np
 
 def mod_lad_cmw(sxx,syy,szz,txy,tyz,tzx,theta,phi,cohesion,pp):#Stress tensor rotated to borehole frame of reference
@@ -122,76 +129,8 @@ def willson_sanding_cwf(sigmamax,sigmamin,pp,ucs,nu,biot=1):
 
 import matplotlib.pyplot as plt
 
-def plot_willson_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, nu, biot):
-    pparray = np.linspace(pp+50, 0, num=1000)
-    cwfarray = willson_sanding_cwf(max(sigmamax,sigma_axial), min(sigmamax,sigma_axial), pparray, ucs, nu, biot)
-    cwfarray2 = willson_sanding_cwf(max(sigmamin,sigma_axial), min(sigmamin,sigma_axial), pparray, ucs, nu, biot)
-    cwf_at_pp = willson_sanding_cwf(sigmamax, sigmamin, pp, ucs, nu, biot)
-    # Limit cwfarray to be below or equal to pparray
-    cwfarray = np.minimum(cwfarray, pparray)
-    cwfarray2 = np.minimum(cwfarray2, pparray)
-    
-    plt.figure(figsize=(6, 6))
-    
-    # Plot the diagonal line
-    plt.plot(pparray, pparray, 'k-', label=None)
-    
-    # Plot the cwfarray line
-    plt.plot(pparray, cwfarray, 'k:', label='CWF Perf oriented @ SHmin')
-    # Plot the cwfarray line
-    plt.plot(pparray, cwfarray2, 'k--', label='CWF Perf oriented @ SHMax')
-    plt.plot(pp, pp, 'b.', markersize=10, label='Initial PP')
-    # Shade the area below the diagonal
-    plt.fill_between(pparray, 0, pparray, alpha=0.3, color='green')
-    
-    # Shade the area below cwfarray (but above 0)
-    plt.fill_between(pparray, 0, cwfarray, where=(cwfarray > 0), alpha=0.5, color='orange')
-    plt.fill_between(pparray, 0, cwfarray2, where=(cwfarray > 0), alpha=0.5, color='red')
-    
-    
-    plt.xlabel('Pore Pressure')
-    plt.ylabel('Flowing Bottom Hole Pressure')
-    plt.title('Sanding Analysis')
-    plt.legend()
-    plt.grid(False)
-    plt.show()
 
-def plot_zhang_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot):
-    pparray = np.linspace(pp+50, 0, num=1000)
-    cwfarray = zhang_sanding_cwf(max(sigmamax,sigma_axial), min(sigmamax,sigma_axial), pparray, ucs, k0, nu, biot)
-    cwfarray2 = zhang_sanding_cwf(max(sigmamin,sigma_axial), min(sigmamin,sigma_axial), pparray, ucs, k0, nu, biot)
-    cwf_at_pp = zhang_sanding_cwf(sigmamax, sigmamin, pp, ucs, k0, nu, biot)
-    # Limit cwfarray to be below or equal to pparray
-    cwfarray = np.minimum(cwfarray, pparray)
-    cwfarray2 = np.minimum(cwfarray2, pparray)
-    
-    plt.figure(figsize=(6, 6))
-    
-    # Plot the diagonal line
-    plt.plot(pparray, pparray, 'k-', label=None)
-    
-    # Plot the cwfarray line
-    plt.plot(pparray, cwfarray, 'k:', label='CWF Perf oriented @ SHmin')
-    # Plot the cwfarray line
-    plt.plot(pparray, cwfarray2, 'k--', label='CWF Perf oriented @ SHMax')
-    plt.plot(pp, pp,'b.', markersize=10, label='Initial PP')
-    # Shade the area below the diagonal
-    plt.fill_between(pparray, 0, pparray, alpha=0.3, color='green')
-    
-    # Shade the area below cwfarray (but above 0)
-    plt.fill_between(pparray, 0, cwfarray, where=(cwfarray > 0), alpha=1, color='orange')
-    plt.fill_between(pparray, 0, cwfarray2, where=(cwfarray > 0), alpha=1, color='red')
-    
-    
-    plt.xlabel('Initial Reservoir Pressure')
-    plt.ylabel('Flowing Bottom Hole Pressure')
-    plt.title('Sanding Analysis')
-    plt.legend()
-    plt.grid(False)
-    plt.show()
-
-
-def plot_sanding(path, sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1):
+def plot_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1, path=None):
     pparray = np.linspace(pp+50, 0, num=1000)
     ppx = np.linspace(pp, 0, num=100)
     ppy = np.full(len(ppx),pp)
@@ -232,5 +171,8 @@ def plot_sanding(path, sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1):
     plt.ylim(0,pp+50)
     plt.legend()
     plt.grid(False)
-    plt.savefig(path)
-    plt.close()
+    if path is not None:
+        plt.savefig(path)
+        plt.close()
+    else:
+        return plt

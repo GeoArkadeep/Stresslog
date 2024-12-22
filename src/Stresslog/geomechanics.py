@@ -1,3 +1,10 @@
+"""
+Copyright (c) 2024-2025 ROCK LAB PRIVATE LIMITED
+This file is part of "Stresslog" project and is released under the 
+GNU Affero General Public License v3.0 (AGPL-3.0)
+See the GNU Affero General Public License for more details: <https://www.gnu.org/licenses/agpl-3.0.html>
+"""
+
 import pint
 import os
 import numpy as np
@@ -11,6 +18,7 @@ import json
 from welly import Curve
 from welly import Well
 from collections import defaultdict
+import io
 
 
 user_home = os.path.expanduser("~/Documents")
@@ -21,6 +29,16 @@ us = ['MPa','psi','Ksc','Bar','Atm']
 ug = ['gcc','sg','ppg','psi/foot']
 ul = ['metres','feet']
 ut = ['degC','degF','degR','degK']
+
+uregdef = pint.UnitRegistry(autoconvert_offset_to_baseunit = True)
+uregdef.define('ppg = 0.051948 psi/foot')
+uregdef.define('sg = 0.4335 psi/foot = gcc = SG = GCC')
+uregdef.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
+uregdef.define('HR = hour')
+uregdef.define('M = meter')
+uregdef.define('mpa = MPa = Mpa')
+
+unitchoicedef = [0,0,0,0,0] #Depth, pressure,gradient, strength, temperature
 
 path_dict = {}
 
@@ -51,6 +69,41 @@ path_dict.update({
     'pstyles_path': os.path.join(path_dict['input_dir'], "pstyles.txt"),
     'motor_db_path': os.path.join(path_dict['motor_dir'], "motor_db.json")
 })
+
+
+from io import StringIO
+
+def plot_to_svg(matplot) -> str:
+    """
+    Saves the last plot made using ``matplotlib.pyplot`` to a SVG string.
+    
+    Returns:
+        The corresponding SVG string.
+    """
+    s = StringIO()
+    matplot.savefig(s, format="svg")
+    matplot.close()  # https://stackoverflow.com/a/18718162/14851404
+    return s.getvalue()
+
+from io import BytesIO
+import base64
+
+def plot_to_base64_png(matplot,dpi=300) -> str:
+    """
+    Saves the last plot made using ``matplotlib.pyplot`` to a base64-encoded PNG string.
+    
+    Returns:
+        The corresponding base64 PNG string.
+    """
+    buf = BytesIO()
+    matplot.savefig(buf, format="png")  # High DPI for better quality
+    buf.seek(0)  # Rewind the buffer to the beginning
+    png_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+    matplot.close()  # Free the resources associated with the plot
+    return png_base64
+
+
 def polynomial(x, *coeffs):
     return sum(c * x**i for i, c in enumerate(coeffs))
 
@@ -156,21 +209,21 @@ def assign_motor_ids(md, motor_list):
     
     return motorids
 
-def getNu(well, nun, aliaspath):
+def getNu(well, nun, alias):
     import math
-    alias = read_aliases_from_file(aliaspath)
+    #alias = read_aliases_from_file(aliaspath)
     header = well._get_curve_mnemonics()
     #print(header)
     alias['gr'] = [elem for elem in header if elem in set(alias['gr'])]
     alias['sonic'] = [elem for elem in header if elem in set(alias['sonic'])]
-    alias['ssonic'] = [elem for elem in header if elem in set(alias['ssonic'])]
+    alias['shearsonic'] = [elem for elem in header if elem in set(alias['shearsonic'])]
     alias['resdeep'] = [elem for elem in header if elem in set(alias['resdeep'])]
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
     alias['neutron'] = [elem for elem in header if elem in set(alias['neutron'])]
     
     vp = 1/well.data[alias['sonic'][0]].values
-    vs = 1/well.data[alias['ssonic'][0]].values
+    vs = 1/well.data[alias['shearsonic'][0]].values
     vpvs = vp/vs
     nu = ((vpvs**2)-2)/((2*(vpvs**2))-2)
     nu = [x if not math.isnan(x) else nun for x in nu]
@@ -191,7 +244,7 @@ def read_aliases_from_file(file_path):
     except:
         aliases = {
             'sonic': ['none', 'DTC', 'DT24', 'DTCO', 'DT', 'AC', 'AAC', 'DTHM'],
-            'ssonic': ['none', 'DTSM'],
+            'shearsonic': ['none', 'DTSM'],
             'gr': ['none', 'GR', 'GRD', 'CGR', 'GRR', 'GRCFM'],
             'resdeep': ['none', 'HDRS', 'LLD', 'M2RX', 'MLR4C', 'RD', 'RT90', 'RLA1', 'RDEP', 'RLLD', 'RILD', 'ILD', 'RT_HRLT', 'RACELM'],
             'resshal': ['none', 'LLS', 'HMRS', 'M2R1', 'RS', 'RFOC', 'ILM', 'RSFL', 'RMED', 'RACEHM'],
@@ -203,8 +256,8 @@ def read_aliases_from_file(file_path):
             'WOB': ['none','WOBAVG'],
             'ECD': ['none','ACTECDM'],
             'BIT': ['none','BIT'],
-            'TORQUE': ['none','TORQUE'],
-            'FLOWRATE': ['none','FLOWRATE'],
+            'TORQUE': ['none','TORQUE','TORQUEAVG'],
+            'FLOWRATE': ['none','FLOWRATE','FLOWIN'],
 
         }
         # Convert aliases dictionary to JSON string and write to the file
@@ -347,133 +400,6 @@ def interpolate_nan(array_like):
     return array
 
 
-def datasets_to_las(path, datasets, custom_units={}, **kwargs):
-    """
-    Write datasets to a LAS file on disk.
-
-    Args:
-        path (Str): Path to write LAS file to
-        datasets (Dict['<name>': pd.DataFrame]): Dictionary maps a
-            dataset name (e.g. 'Curves') or 'Header' to a pd.DataFrame.
-        curve_units (Dict[str, str], optional): Dictionary mapping curve names to their units.
-            If a curve's unit is not specified, it defaults to an empty string.
-    Returns:
-        Nothing, only writes in-memory object to disk as .las
-    """
-    from functools import reduce
-    import warnings
-    from datetime import datetime
-    from io import StringIO
-    from urllib import error, request
-
-    import lasio
-    import numpy as np
-    import pandas as pd
-    from lasio import HeaderItem, CurveItem, SectionItems
-    from pandas._config.config import OptionError
-
-    from welly.curve import Curve
-    from welly import utils
-    from welly.fields import curve_sections, other_sections, header_sections
-    from welly.utils import get_columns_decimal_formatter, get_step_from_array
-    from welly.fields import las_fields as LAS_FIELDS
-    # ensure path is working on every dev set-up
-    path = utils.to_filename(path)
-
-    # instantiate new LASFile to parse data & header to
-    las = laua.LASFile()
-
-    # set header df as variable to later retrieve curve meta data from
-    header = datasets['Header']
-    
-    extracted_units = {}
-    if not header.empty:
-        curve_header = header[header['section'] == 'Curves']
-        for _, row in curve_header.iterrows():
-            if row['unit']:  # Ensure there is a unit specified
-                extracted_units[row['original_mnemonic']] = row['unit']
-
-    # Combine extracted units with custom units, custom units take precedence
-    all_units = {**extracted_units, **custom_units}
-    
-    column_fmt = {}
-    for curve in las.curves:
-        column_fmt[curve.mnemonic] = "%10.5f"
-    
-    # unpack datasets
-    for dataset_name, df in datasets.items():
-
-        # dataset is the header
-        if dataset_name == 'Header':
-            # parse header pd.DataFrame to LASFile
-            for section_name in set(df.section.values):
-                # get header section df
-                df_section = df[df.section == section_name]
-
-                if section_name == 'Curves':
-                    # curves header items are handled in curve data loop
-                    pass
-
-                elif section_name == 'Version':
-                    if len(df_section[df_section.original_mnemonic == 'VERS']) > 0:
-                        las.version.VERS = df_section[df_section.original_mnemonic == 'VERS']['value'].values[0]
-                    if len(df_section[df_section.original_mnemonic == 'WRAP']) > 0:
-                        las.version.WRAP = df_section[df_section.original_mnemonic == 'WRAP']['value'].values[0]
-                    if len(df_section[df_section.original_mnemonic == 'DLM']) > 0:
-                        las.version.DLM = df_section[df_section.original_mnemonic == 'DLM']['value'].values[0]
-
-                elif section_name == 'Well':
-                    las.sections["Well"] = SectionItems(
-                        [HeaderItem(r.original_mnemonic,
-                                    r.unit,
-                                    r.value,
-                                    r.descr) for i, r in df_section.iterrows()])
-
-                elif section_name == 'Parameter':
-                    las.sections["Parameter"] = SectionItems(
-                        [HeaderItem(r.original_mnemonic,
-                                    r.unit,
-                                    r.value,
-                                    r.descr) for i, r in df_section.iterrows()])
-
-                elif section_name == 'Other':
-                    las.sections["Other"] = df_section['descr'].iloc[0]
-
-                else:
-                    m = f"LAS Section was not recognized: '{section_name}'"
-                    warnings.warn(m, stacklevel=2)
-
-        # dataset contains curve data
-        if dataset_name in curve_sections:
-            header_curves = header[header.section == dataset_name]
-            for column_name in df.columns:
-                curve_data = df[column_name]
-                curve_unit = all_units.get(column_name, '')  # Use combined units
-                # Assuming header information for each curve is not available
-                las.append_curve(mnemonic=column_name,
-                                 data=curve_data,
-                                 unit=curve_unit,
-                                 descr='',
-                                 value='')
-
-
-    # numeric null value representation from the header (e.g. # -9999)
-    try:
-        null_value = header[header.original_mnemonic == 'NULL'].value.iloc[0]
-    except IndexError:
-        null_value = -999.25
-    las.null_value = null_value
-
-    # las.write defaults to %.5 decimal points. We want to retain the
-    # number of decimals. We first construct a column formatter based
-    # on the max number of decimal points found in each curve.
-    if 'column_fmt' not in kwargs:
-        kwargs['column_fmt'] = column_fmt
-
-    # write file to disk
-    with open(path, mode='w') as f:
-        las.write(f, **kwargs)
-
 from scipy.signal import medfilt
 def median_filter_downsampler(curve, window_size=21):
     if window_size==1:
@@ -565,10 +491,9 @@ def weighted_average_downsampler(curve, window_size=21, window_type='v_shape'):
 
     return resampled_curve
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.4, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=None, ureg=pint.UnitRegistry(autoconvert_offset_to_baseunit = True), mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0]):
-#def plotPPzhang(well, unitchoice, finaldepth, mwvalues, flowgradvals, fracgradvals, flowpsivals, fracpsivals, attrib):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None):
     """
-    Copyright Arkadeep Ghosh 2023-2024
+    Copyright Arkadeep Ghosh 2023-2025
     
     Calculates and plots geomechanical parameters for the entire well. These include
     i) Overburden pressure and gradient
@@ -692,6 +617,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     - PlotAll.png: Combined plot.
     Additionally, it saves the output as files in CSV and LAS formats.
     """
+    print("Starting Geomech Calculation...")
     #program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
     numodel = [0.35,0.26,0.23,0.25] #nu2[i] = numodel[lithotype[i]]
     
@@ -700,9 +626,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     input_dir = paths['input_dir']
     motor_dir = paths['motor_dir']
 
-    os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(output_dir1, exist_ok=True)
-    os.makedirs(input_dir, exist_ok=True)
+    if writeFile:
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(output_dir1, exist_ok=True)
+        os.makedirs(input_dir, exist_ok=True)
 
     output_file = paths['plot_figure']
     output_fileS = paths['plot_stability']
@@ -722,18 +649,21 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     stylespath = paths['styles_path']
     pstylespath = paths['pstyles_path']
     motordbpath = paths['motor_db_path']
+    
+    rv1 = rv2 = rv3 = rv4 = rv5 = None
 
     #from downsampler import downsample_well_average
     #well = downsample_well_average(well, factor=window)
     devdata = well.location.deviation
+    print("DEVDATA :",devdata)
     incdata = devdata[:, 1]
     azmdata = devdata[:, 2]
-    
+
     md = well.data['MD'].values
     
     incdata, azmdata = (np.resize(data, len(md)) if len(data) < len(md) else data[:len(md)] for data in (incdata, azmdata))
     print(f"{'Extended' if len(incdata) < len(md) else 'Truncated'} by {abs(len(md) - len(incdata))} points.")
-
+    
     
     inclinationi = Curve(incdata, mnemonic='INCL',units='degrees', index=md, null=0)
     well.data['INCL'] =  inclinationi
@@ -760,9 +690,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #ureg.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
     finaldepth = well.df().index[-1]
     #global unitchoice
-    alias = read_aliases_from_file(aliaspath)
+    if aliasdict is None:
+        alias = read_aliases_from_file(aliaspath)
+    else:
+        alias = aliasdict
     
-    #print(alias)
+    print(alias)
     print(well.uwi,well.name)
     #print(well.location.location)
     start_depth = well.df().index[0]
@@ -773,7 +706,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #well.location.plot_3d()
     #well.location.plot_plan()
     
-    from BoreStab import getEuler
+    from .BoreStab import getEuler
     
     if strike != 0 or dip != 0:
         tilt, tiltgamma = getEuler(offset,strike,dip)
@@ -786,7 +719,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print(header)
     alias['gr'] = [elem for elem in header if elem in set(alias['gr'])]
     alias['sonic'] = [elem for elem in header if elem in set(alias['sonic'])]
-    alias['ssonic'] = [elem for elem in header if elem in set(alias['ssonic'])]
+    alias['shearsonic'] = [elem for elem in header if elem in set(alias['shearsonic'])]
     alias['resdeep'] = [elem for elem in header if elem in set(alias['resdeep'])]
     alias['resshal'] = [elem for elem in header if elem in set(alias['resshal'])]
     alias['density'] = [elem for elem in header if elem in set(alias['density'])]
@@ -849,21 +782,31 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     if program_option[1]==0:
         if alias['sonic'][0] == 'none':
             print("No p-sonic velocity log found, no pore pressure calculable")
-            return
+            if writeFile:
+                return None,None
+            return None, None, None, None, None
     if program_option[1]==1:
         if alias['resdeep'][0] == 'none':
             print("No deep resistivity log found, no pore pressure calculable")
-            return
+            if writeFile:
+                return None,None
+            return None, None, None, None, None
     vp = 0
     vs = 0
     vpvs = 0
     nu2 = []
     
-    dt = well.data[alias['sonic'][0]]
-    rdeep = well.data[alias['resdeep'][0]]
-    
+     
     md = well.data['MD'].values
-    from unit_converter import convert_rop, convert_wob, convert_ecd, convert_torque, convert_flowrate
+    try:
+        dt = well.data[alias['sonic'][0]]
+    except:
+        dt = Curve(np.full(len(md),np.nan), mnemonic='DTCO',units='uspf', index=md, null=-999.25)
+    try:
+        rdeep = well.data[alias['resdeep'][0]]
+    except:
+        rdeep = Curve(np.full(len(md),np.nan), mnemonic='ILD',units='ohm.m', index=md, null=-999.25)
+    from .unit_converter import convert_rop, convert_wob, convert_ecd, convert_torque, convert_flowrate
     try:
         rop = convert_rop(well.data[alias['ROP'][0]].values,well.data[alias['ROP'][0]].units)
         print("ROP units as specified:")
@@ -925,7 +868,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     rpm = rpm+Mrpm
     
     try:
-        nu2 = getNu(well, nu, aliaspath)
+        nu2 = getNu(well, nu, alias)
     except:
         nu2 = [nu] * (len(md))
     
@@ -996,8 +939,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     dfa = well.df()
     dfa = dfa.dropna()
     print(dfa)
-    dt = well.data[alias['sonic'][0]]
-    zden = dfa[alias['density'][0]]
+
     header = well._get_curve_mnemonics()
     #header += 'MD'
     csvdf = pd.DataFrame(array, columns=header)
@@ -1370,22 +1312,24 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     plt.clf()"""
     #plt.plot(formtvd,tvd)
     if forms is not None:
-        try:
-            plt.plot(structop, tvd, label="Structural Tops", linestyle=':')
-            plt.plot(strucbot, tvd, label="Structural Bottoms", linestyle=':')
-            plt.plot(Owc, tvd, label="OWC", linestyle='-')
-            plt.plot(Goc, tvd, label="GOC", linestyle='-')
-            plt.plot(btvd, tvd, label="Log Bottom", linestyle='-')
-            plt.plot(ttvd, tvd, label="Log Top", linestyle='-')
+        if writeFile:
+            try:
+                plt.plot(structop, tvd, label="Structural Tops", linestyle=':')
+                plt.plot(strucbot, tvd, label="Structural Bottoms", linestyle=':')
+                plt.plot(Owc, tvd, label="OWC", linestyle='-')
+                plt.plot(Goc, tvd, label="GOC", linestyle='-')
+                plt.plot(btvd, tvd, label="Log Bottom", linestyle='-')
+                plt.plot(ttvd, tvd, label="Log Top", linestyle='-')
+                
+                plt.gca().invert_yaxis()
+                plt.title(well.name + well.uwi + " Structure Diagram ")
+                plt.legend(loc='upper right')
+                #plt.show()
             
-            plt.gca().invert_yaxis()
-            plt.title(well.name + well.uwi + " Structure Diagram ")
-            plt.legend(loc='upper right')
-            #plt.show()
-            plt.savefig(os.path.join(output_dir, "Structure.png"))
-            plt.close()
-        except:
-            pass
+                plt.savefig(os.path.join(output_dir, "Structure.png"))
+                plt.close()
+            except:
+                pass
     
     lradiff = np.full(len(md),np.nan)
     
@@ -1437,17 +1381,16 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         print("Ground Level is ",glf,"feet above MSL")
     if glwd<0:
         print("Seafloor is ",wdf,"feet below MSL")
-        print(wdfi)
         
     ##print(attrib[1])
     
-    rhoppg = np.zeros(len(tvdf))
-    rhogcc = np.zeros(len(tvdf))
-    ObgTppg = np.zeros(len(tvdf))
-    hydrostatic = np.zeros(len(tvd))
-    mudhydrostatic = np.zeros(len(tvd))
-    lithostatic = np.zeros(len(tvd))
-    i = 1
+    rhoppg = np.full(len(tvdf),np.nan)
+    rhogcc = np.full(len(tvdf),np.nan)
+    ObgTppg = np.full(len(tvdf),np.nan)
+    hydrostatic = np.full(len(tvd),np.nan)
+    mudhydrostatic = np.full(len(tvd),np.nan)
+    lithostatic = np.full(len(tvd),np.nan)
+    i = 0
     #while(i<len(tvdf-1)):
     #   rhoppg[i] = rhoappg +(((tvdf[i]-agf-wdf)/3125)**a) #amoco formula for density
     #    i+=1
@@ -1494,8 +1437,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     mudppf = 0.4335275040012*mudhydrostatic
     lithostatic =  (2.6*9.80665/6.89476) * tvd
     gradient = lithostatic/(tvdf)*1.48816
-    rhoppg[0] = rhoappg
-    rhogcc[0] = rhoappg*0.11982642731
+    rhoppg[np.nanargmin(abs(tvdbgl))] = rhoappg
+    if np.nanargmin(abs(tvdbgl))>0:
+        rhoppg[0:np.nanargmin(abs(tvdbgl))] = np.nan
+    rhogcc[np.nanargmin(abs(tvdbgl))] = rhoappg*0.11982642731
+    if np.nanargmin(abs(tvdbgl))>0:
+        rhogcc[0:np.nanargmin(abs(tvdbgl))] = np.nan
     try:
         rhogcc = [rhogcc[i] if math.isnan(zden2[i]) else zden2[i] for i in range(len(zden2))]
     except:
@@ -1508,31 +1455,32 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     integrhopsift = np.zeros(len(tvd))
     i=1
     maxwaterppg = wdf*8.34540426515252*water
-    while(i<len(tvdf-1)):
-        if glwd<0:
-            if(tvdbgl[i]>0):
-                if(tvdmsl[i]>0):
-                    #integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
-                    integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
-                    integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
-                    ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[i]))*(tvdbglf[i])))/tvdmslf[i])
-            else:
-                if(tvdmsl[i]>0):
+    while(i<len(tvd-1)):
+        if glwd<0.0: #Offshore
+            if(tvdbgl[i]>=0.0): #Below seabed
+                #if(tvdmsl[i]>0):
+                #integrho[i] = integrho[i-1]+(rhogcc[i-1]*dtvd[i-1])
+                integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
+                integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
+                ObgTppg[i] =((maxwaterppg + ((np.mean(rhoppg[i]))*(tvdbglf[i])))/tvdmslf[i])
+            else:            #Above seabed
+                if(tvdmsl[i]>=0.0): #In seawater column
                     integrho[i] = integrho[i-1]+(water*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
                     integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
                     ObgTppg[i] =(8.34540426515252*water)
         else:
-            if (tvdbgl[i]>0):
+            if (tvdbgl[i]>=0.0): #Onshore
                 integrho[i] = integrho[i-1]+(rhogcc[i]*9806.65*(tvdbgl[i]-tvdbgl[i-1])) #in pascals
                 integrhopsift[i] = (integrho[i]*0.000145038)/tvdf[i]
-                ObgTppg[i] =((np.mean(rhoppg[i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
-                #ObgTppg[i] =rhoppg[i] #Flat Top Obg Gradient
+                #ObgTppg[i] =((np.mean(rhoppg[i]))*(tvdbglf[i]))/tvdf[i] #Curved Top Obg Gradient
+                ObgTppg[i] = rhoppg[i] #Flat Top Obg Gradient
         i+=1
-     
+    if glwd>=0.0:
+        ObgTppg = rhoppg
     #ObgTppg = integrhopsift*19.25
     ObgTgcc = 0.11982642731*ObgTppg
     ObgTppf = 0.4335275040012*ObgTgcc
-    ObgTgcc[0] = 0.01
+    #ObgTgcc[0] = 0.01
     print("Obg: ",ObgTgcc)
     print("len of Obg: ",len(ObgTgcc))
     print("Zden: ",zden2)
@@ -1547,7 +1495,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     except:
         pass
     
-    coal = Curve(lithotype, mnemonic='CoalFlag',units='coal', index=tvd, null=0)
+    coal = Curve(coalflag, mnemonic='CoalFlag',units='coal', index=tvd, null=0)
     litho = Curve(lithoflag, mnemonic='LithoFlag',units='lith', index=tvd, null=0)
     
     #Pore Pressure Section
@@ -1562,6 +1510,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     print("HUZZAH")
     dalm = dt.as_numpy()*1
     resdeep = rdeep.as_numpy()*1
+
     tvdm = well.data['TVDM'].as_numpy()*1
     tvdm[0] = 0.1
     print("TVDM",tvdm)
@@ -1607,6 +1556,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         hydropsi = hydroppf[:]*(tvd[:]*3.28084)#tvdbglf[:]
         #obgpsi = np.array([np.mean(ObgTppf[0:i]) * tvdbglf[i-1] for i in range(1, len(ObgTppf) + 1)])
         obgpsi= integrho*0.000145038
+    hydrostaticpsi = 0.4335275040012*tvdmslf if glwd<0 else 0.4335275040012*tvdbglf #actually more exact if *tvdbwlf, takes into account groundwater elevation
     mudpsi = mudppf[:]*tvdf[:]
     i = 0
     ppgZhang = np.zeros(len(tvdf))
@@ -1622,7 +1572,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     psiftZhang2 = np.zeros(len(tvdf))
     gccZhang2 = np.zeros(len(tvdf))
     pnpsi = np.zeros(len(tvdf))
-    psipp = np.zeros(len(tvdf))
+    psipp = np.full(len(tvdf),np.nan)
     psiftpp = np.zeros(len(tvdf))
     horsud = np.zeros(len(tvdf))
     lal = np.zeros(len(tvdf))
@@ -1661,9 +1611,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     c=ct
     b=ct
     print("Max velocity is ",deltmu0,"uspf")
-    from obgppshmin import get_PPgrad_Zhang_gcc, get_PPgrad_Eaton_gcc, get_PPgrad_Dxc_gcc
-    from obgppshmin import get_Dxc
-    while i<(len(ObgTppg)-1):
+    from .obgppshmin import get_PPgrad_Zhang_gcc, get_PPgrad_Eaton_gcc, get_PPgrad_Dxc_gcc
+    from .obgppshmin import get_Dxc
+    while i<(len(md)-1):
         if glwd>=0: #Onshore Cases
             if tvd[i]>ul_depth:
                 b = ul_exp
@@ -1705,8 +1655,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 philang[i] = np.arcsin((vp[i]-1.5)/(vp[i]+1.5))
                 H[i] = (4*(np.tan(phi[i])**2))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i]))))
                 K[i] = (4*lal[i]*(np.tan(phi[i])))*(9-(7*np.sin(phi[i])))/(27*(1-(np.sin(phi[i])))) 
-                ym[i] = 0.076*(vp[i]**3.73)*(1000) #in GPa
-                sm[i] = 0.03*(vp[i]**3.30) #in GPa
+                ym[i] = 0.076*(vp[i]**3.73)*(1000) #in MPa
+                sm[i] = 0.03*(vp[i]**3.30)*(1000) #in MPa
                 bm[i] = ym[i]/(3*(1-(2*nu2[i]))) #same units as ym
                 psiftpp[i] = 0.4335275040012 * (
                     gccZhang[i] if program_option[1] == 0 else
@@ -1722,7 +1672,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     next((v for v, f in zip([gccDexp[i], gccEaton[i], gccZhang[i]], [Dexp[i], resdflag[i], dalmflag[i]]) if not np.isnan(f)), np.nan) if program_option[1] == 9 else
                     np.nan  # Default to NaN if none match
                 )
-                psipp[i] = psiftpp[i]*tvdf[i]
+                psipp[i] = psiftpp[i]*tvdbglf[i] if tvdbglf[i]>0 else np.nan
                 #if psipp[i]<hydropsi[i]:
                 #   psipp[i] = hydropsi[i]
         else: #Offshore Cases
@@ -1784,7 +1734,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                     next((v for v, f in zip([gccDexp[i], gccEaton[i], gccZhang[i]], [Dexp[i], resdflag[i], dalmflag[i]]) if not np.isnan(f)), np.nan) if program_option[1] == 9 else
                     np.nan  # Default to NaN if none match
                 )
-                psipp[i] = psiftpp[i]*tvdf[i]
+                psipp[i] = psiftpp[i]*tvdbglf[i] if tvdbglf[i]>0 else np.nan
         i+=1
     
     """plt.plot(phi,tvd, label='nu')
@@ -1810,32 +1760,41 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #gccZhang[0] = np.nan
     psiftpp = psipp/tvdbglf if glwd>0 else psipp/tvdmslf
     gccpp = psiftpp/0.4335275040012 #unified pore pressure gradient in gcc
-    ppgpp = gccpp*8.33 #unified pore pressure gradient in ppg
+    
     
     dphi = np.degrees(phi[:])
     gccpp[-1] = hydrostatic[-1]
-    gccpp[0] = hydrostatic[0]
+    #gccpp[0] = hydrostatic[0]
+    gccpp[np.nanargmin(abs(tvdbgl))] = water
     #gccpp[np.isnan(gccpp)] = water
     #gccZhang2[-1] = hydrostatic[-1]
     #gccZhang2[0] = hydrostatic[0]
     #gccZhang2[np.isnan(gccZhang2)] = water
     #ppgpp[np.isnan(ppgpp)] = water*8.33
     gccpp = interpolate_nan(gccpp)
-    ppgpp = interpolate_nan(ppgpp)
+    gccpp = np.where(gccpp < underbalancereject, underbalancereject, gccpp)
+    ppgpp = gccpp*8.33 #unified pore pressure gradient in ppg
+    #ppgpp = interpolate_nan(ppgpp)
+    psipp[np.nanargmin(abs(tvdbgl))] = hydrostaticpsi[np.nanargmin(abs(tvdbgl))]
     psiftpp = interpolate_nan(psiftpp)
     psipp = interpolate_nan(psipp)
+    psipp = np.where(psipp < hydrostaticpsi*underbalancereject, hydrostaticpsi*underbalancereject, psipp)
+    if np.nanargmin(abs(tvdbgl)) != 0:
+        gccpp[0:np.nanargmin(abs(tvdbgl))] = np.nan
+        psipp[0:np.nanargmin(abs(tvdbgl))] = np.nan
+        psiftpp[0:np.nanargmin(abs(tvdbgl))] = np.nan
     print("GCC_PP: ",gccpp)
     #psiftpp = 0.4335275040012*gccZhang
     
-    
-    #plt.plot(Dexp,tvd, label = 'Dxc', alpha=0.25)
-    plt.plot(gccZhang,tvd, label='zhang', alpha=0.33)
-    plt.plot(gccEaton,tvd, label='eaton', alpha=0.33)
-    plt.plot(gccDexp,tvd, label='d_exp', alpha=0.33)
-    plt.gca().invert_yaxis()
-    plt.legend()
-    plt.savefig(os.path.join(output_dir, "PP_Components.png"))
-    plt.close()
+    if writeFile:
+        #plt.plot(Dexp,tvd, label = 'Dxc', alpha=0.25)
+        plt.plot(gccZhang,tvd, label='zhang', alpha=0.33)
+        plt.plot(gccEaton,tvd, label='eaton', alpha=0.33)
+        plt.plot(gccDexp,tvd, label='d_exp', alpha=0.33)
+        plt.gca().invert_yaxis()
+        plt.legend()
+        plt.savefig(os.path.join(output_dir, "PP_Components.png"))
+        plt.close()
     """
     #Check Plot
     plt.plot(gccZhang,tvd, label='Unloading')
@@ -1868,10 +1827,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     mu = 0.65
     if b > 10.0:
         b=0
-    fgppg = np.zeros(len(ppgZhang))
-    fgcc = np.zeros(len(ppgZhang))
-    mufgppg = np.zeros(len(ppgZhang))
-    mufgcc = np.zeros(len(ppgZhang))
+    fgppg = np.full(len(ppgZhang),np.nan)
+    fgcc = np.full(len(ppgZhang),np.nan)
+    mufgppg = np.full(len(ppgZhang),np.nan)
+    mufgcc = np.full(len(ppgZhang),np.nan)
 
     while i<(len(ObgTppg)-1):
         if tvdbgl[i]>0:
@@ -1885,20 +1844,47 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 mufgcc[i] = np.nan
         fgcc[i] = 0.11982642731*fgppg[i]
         i+=1
-    fgppg = interpolate_nan(fgppg)
-    fgcc = interpolate_nan(fgcc)
+    ppgpp = interpolate_nan(ppgpp)
+    
+    if np.nanargmin(abs(tvdbgl)) != 0:
+        fgppg[0:np.nanargmin(abs(tvdbgl))] = np.nan
+        fgcc[0:np.nanargmin(abs(tvdbgl))] = np.nan
+        mufgcc[0:np.nanargmin(abs(tvdbgl))] = np.nan
+        mufgppg[0:np.nanargmin(abs(tvdbgl))] = np.nan
+
     #fgppg = (nu/(1-nu))(ObgTppg-ppgZhang)+ppgZhang
     psiftfg = 0.4335275040012*fgcc
-    psifg = psiftfg*tvdf
+    if glwd<0:
+        psifg = np.where(tvdmslf > 0, psiftfg * tvdmslf, np.nan)
+    else:
+        psifg = np.where(tvdbglf > 0, psiftfg * tvdbglf, np.nan)
     psimes = ((psifg+obgpsi)/2)+psipp
     shsvratio = psifg/obgpsi
-    
+    #shsvratio2 = interpolate_nan(shsvratio)
+    #fgcc[np.isnan(fgcc)] = shsvratio2[np.isnan(fgcc)]*rhogcc[np.isnan(fgcc)]
+    fgcc[np.nanargmin(abs(tvdbgl))] = rhogcc[np.nanargmin(abs(tvdbgl))]*(np.nanmedian(shsvratio))
+    mufgcc[np.nanargmin(abs(tvdbgl))] = rhogcc[np.nanargmin(abs(tvdbgl))]*(np.nanmedian(shsvratio))
+    fgppg = interpolate_nan(fgppg)
+    fgcc = interpolate_nan(fgcc)
+    psifg = interpolate_nan(psifg)
+    psimes = interpolate_nan(psimes)
+    mufgcc = interpolate_nan(mufgcc)
+    psiftfg = 0.4335275040012*fgcc
+    if glwd<0:
+        psifg = np.where(tvdmslf > 0, psiftfg * tvdmslf, np.nan)
+    else:
+        psifg = np.where(tvdbglf > 0, psiftfg * tvdbglf, np.nan)
+    psifg = np.where(psifg < psipp, psipp, psifg) #SHmin_pressure cant be less than pore pressure
+    psimes = ((psifg+obgpsi)/2)+psipp
+    if np.nanargmin(abs(tvdbgl))>0:
+        fgcc[0:np.nanargmin(abs(tvdbgl))] = np.nan
+        psifg[0:np.nanargmin(abs(tvdbgl))] = np.nan
     
     if forms is not None:
         psippsand = np.zeros(len(md))
-        from hydraulics import getPPfromTopRecursive
-        from hydraulics import compute_optimal_gradient
-        from hydraulics import getHydrostaticPsi
+        from .hydraulics import getPPfromTopRecursive
+        from .hydraulics import compute_optimal_gradient
+        from .hydraulics import getHydrostaticPsi
         gradients = np.zeros(len(md))
         gradlist = np.zeros(len(cdtvdlist))
         eqlithostat = np.zeros(len(md))
@@ -1989,8 +1975,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     
     #from DrawSP import getSHMax_optimized
-    from DrawSP import getSP
-    from DrawSP import drawSP
+    from .DrawSP import getSP
+    from .DrawSP import drawSP
     
     i=0
     sgHMpsi = np.zeros(len(tvd))
@@ -2017,9 +2003,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         i+=1
     sgHMpsi = interpolate_nan(sgHMpsi)
     #psisfl = (psimes[:]*H[:])+K[:]
+    if np.nanargmin(abs(tvdbgl))>0:
+        sgHMpsi[0:np.nanargmin(abs(tvdbgl))] = np.nan
     
-    from BoreStab import get_optimal
-    from BoreStab import draw
+    from .BoreStab import get_optimal
+    from .BoreStab import draw
     
     
     
@@ -2071,7 +2059,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         ilog_flag=ilog[doiX]
         print("nu is ",nu2[doiX])
         print("phi is ",np.degrees(phi[doiX]))
-        drawSP(output_fileSP,sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX],nu2[doiX],bt[doiX],ym[doiX],delTempC[doiX])
+        if writeFile:
+            drawSP(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX],nu2[doiX],bt[doiX],ym[doiX],delTempC[doiX],path=output_fileSP)
+        else:
+            rv4 = plot_to_base64_png(drawSP(sigmaVmpa,ppmpa,bhpmpa,sigmahminmpa,ucsmpa,phi[doiX],ilog_flag,mu2[doiX],nu2[doiX],bt[doiX],ym[doiX],delTempC[doiX]))
         sigmaHMaxmpa = sgHMpsi[doiX]/145.038
         print("SigmaHM = ",sigmaHMaxmpa)
         sigmas = [sigmaHMaxmpa,sigmahminmpa,sigmaVmpa]
@@ -2100,7 +2091,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         alpha = offset
         beta= tilt
         gamma= tiltgamma
-        from BoreStab import getRota
+        
+        from .BoreStab import getRota
         
         Rmat = getRota(alphas[doiX],betas[doiX],gammas[doiX])
         #sigmas[2] = sigmaVmpa+(sigmaVmpa - sigmaVmpa*Rmat[2][2])/Rmat[2][2]
@@ -2109,9 +2101,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sigmas.append(bhpmpa-ppmpa)
         sigmas.append(ppmpa)
         
-        from PlotVec import savevec
-        from PlotVec import showvec
-        from BoreStab import getStens
+        from .PlotVec import savevec
+        from .PlotVec import showvec
+        from .BoreStab import getStens
         print("Alpha :",alphas[doiX],", Beta: ",betas[doiX],", Gamma :",gammas[doiX])
         print("Actual Sv is ",sigmas[2],"Mpa")
         m = np.min([sigmas[0],sigmas[1],sigmas[2]])
@@ -2119,20 +2111,29 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sten = getStens(osx,osy,osz,alphas[doiX],betas[doiX],gammas[doiX])
         sn,se,sd = np.linalg.eigh(sten)[0]
         on,oe,od = np.linalg.eigh(sten)[1]
-        savevec(on,oe,od,2,sn,se,sd,output_fileVec)
+        if writeFile:
+            savevec(on,oe,od,2,sn,se,sd,output_fileVec)
         #drawStab(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
-        draw(output_fileS,tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alphas[doiX],betas[doiX],gammas[doiX],0,nu2[doiX],azmdoi,incdoi,bt[doiX],ym[doiX],delTempC[doiX])
-        
+        if writeFile:
+            try:
+                draw(tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alphas[doiX],betas[doiX],gammas[doiX],0,nu2[doiX],azmdoi,incdoi,bt[doiX],ym[doiX],delTempC[doiX],path=output_fileS)
+            except:
+                pass
+        else:
+            try:
+                rv3 = plot_to_base64_png(draw(tvd[doiX],osx,osy,osz,sigmas[3],sigmas[4],ucsmpa,alphas[doiX],betas[doiX],gammas[doiX],0,nu2[doiX],azmdoi,incdoi,bt[doiX],ym[doiX],delTempC[doiX]))
+            except:
+                rv3 = None
         #drawDITF(sigmas[0],sigmas[1],sigmas[2],sigmas[3],alpha,beta,gamma)
     
     
     
     
     #well.to_las('output.las')
-    from BoreStab import getHoop, getAlignedStress
-    from plotangle import plotfracsQ,plotfrac
-    from failure_criteria import plot_sanding
-    def drawBHimage(doi):
+    from .BoreStab import getHoop, getAlignedStress
+    #from .plotangle import plotfrac
+    from .failure_criteria import plot_sanding
+    def drawBHimage(doi,writeFile=True):
         hfl = 2.5
         doiactual = find_nearest_depth(tvdm,doi-hfl)
         doiS = doiactual[0]
@@ -2179,7 +2180,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             alpha = alpha + offset
             beta= beta+tilt
             """
-            cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
+            cr,fr,minazi,maxazi,minangle,maxangle,angles,noplot = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
             crush[j] = cr
             frac[j] = fr
             if np.max(frac[j])>0:
@@ -2187,7 +2188,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 #data2[j+1] = [tvd[i+1],round((minazi+180)%360),minangle+180]
             i+=1
             j+=1
-        from plotangle import plotfracs, plotfrac
+        from .plotangle import plotfracs, plotfrac
         i=find_nearest_depth(tvdm,doi)[0]
         j=find_nearest_depth(tvdm,doi)[1]
         sigmaVmpa = obgpsi[i]/145.038
@@ -2203,11 +2204,15 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         devdoi = devdata[i]
         incdoi = devdoi[1]
         azmdoi = devdoi[2]
-        cr,fr,minazi,maxazi,minangle,maxangle,angles = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
+        cr,fr,minazi,maxazi,minangle,maxangle,angles,noplot = getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])
         fr = np.array(fr)
         angles = np.array(angles)
         data2 = j,fr,angles,minazi,maxazi
-        d,f = plotfrac(data2,output_fileFrac)
+        if writeFile:
+            d,f = plotfrac(data2,output_fileFrac)
+        else:
+            d,f = plotfrac(data2)
+        
         plotfracs(data)
         plt.imshow(frac,cmap='Reds',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
         plt.imshow(crush,cmap='Blues',alpha=0.5,extent=[0,360,tvd[doiF],tvd[doiS]],aspect=10)
@@ -2220,11 +2225,21 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         plt.xticks([0,90,180,270,360])
         #plt.grid()
         plt.title("Synthetic Borehole Image")
-        plt.savefig(output_fileBHI,dpi=1200)
+        if writeFile:
+            try:
+                plt.savefig(output_fileBHI,dpi=1200)
+            except:
+                pass
+        else:
+            print("SBI plot svg will be returned and not saved")
+            try:
+                return plot_to_base64_png(plt)
+            except:
+                return None
         plt.clf()
         plt.close()
     
-    def plotHoop(doi):
+    def plotHoop(doi,writeFile=True):
         doiactual = find_nearest_depth(tvdm,doi)
         doiS = doiactual[0]
         i=doiS
@@ -2242,9 +2257,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         devdoi = devdata[i]
         incdoi = devdoi[1]
         azmdoi = devdoi[2]
-        getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
-        
-    def drawSand(doi):
+        if writeFile:
+            getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
+        else:
+            return plot_to_base64_png(getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alphas[i],betas[i],gammas[i],nu2[i],bt[i],ym[i],delTempC[i])[-1])
+    def drawSand(doi,writeFile=True):
         doiactual = find_nearest_depth(tvdm,doi)
         doiS = doiactual[0]
         i=doiS
@@ -2267,8 +2284,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         sigmamin = min(Sl[0][0],Sl[1][1])
         sigma_axial = Sl[2][2]
         k0 = 1
-        plot_sanding(os.path.join(output_dir, "Sanding.png"),sigmamax, sigmamin,sigma_axial, ppmpa, ucsmpa, k0, nu2[i])
-        #getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
+        if writeFile:
+            plot_sanding(sigmamax, sigmamin,sigma_axial, ppmpa, ucsmpa, k0, nu2[i],biot[i],os.path.join(output_dir, "Sanding.png"))
+            #getHoop(incdoi,azmdoi,sigmas[0],sigmas[1],sigmas[2],deltaP,ppmpa,ucsmpa,alpha,beta,gamma,nu2[i],bt[i],ym[i],delTempC[i],output_fileHoop)
+        else:
+            return plot_to_base64_png(plot_sanding(sigmamax, sigmamin,sigma_axial, ppmpa, ucsmpa, k0, nu2[i],biot[i]))
         
     def combineHarvest():
         import matplotlib.pyplot as plt
@@ -2300,13 +2320,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         plt.savefig(output_fileAll)
         plt.close()
     if doi>0:
-        plotHoop(doi)
-        drawBHimage(doi)
-        drawSand(doi)
-        combineHarvest()
+        rv5 = plotHoop(doi,writeFile)
+        rv1 = drawBHimage(doi,writeFile)
+        rv2 = drawSand(doi,writeFile)
+        if writeFile:
+            combineHarvest()
     
     from matplotlib.ticker import MultipleLocator
-    from Plotter import plot_logs_labels, cutify, cutify2, chopify, choptop
+    from .Plotter import plot_logs_labels
 
     # Initialize parameters
     tango = min(tango, finaldepth)
@@ -2326,11 +2347,13 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     lademax = np.full(len(tvd),np.nan)
     lademin = np.full(len(tvd),np.nan)
     inca = np.full(len(tvd),np.nan)
-    trufracmpa = np.full(len(tvd),np.nan)
-    from failure_criteria import mod_lad_cmw, mogi
+    minstresspsi = np.nanmin(np.stack((obgpsi, psifg, sgHMpsi)), axis=0)
+    trufracmpa = 0.006894*minstresspsi#np.full(len(tvd),np.nan)
+    from .failure_criteria import mod_lad_cmw, mogi
     print("calculating aligned far field stresses")
     print("Total depth-points to be calculated: ",len(tvd))
-    from BoreStab import get_bhp_critical
+    #print("Alpha,Beta,Gamma = ",alpha,beta,gamma)
+    from .BoreStab import get_bhp_critical
     skip = 21 if 2.0 <= window < 21 else window
     
     for i in range(0,len(tvd),1):
@@ -2378,9 +2401,11 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
             minthetarad = np.radians(np.nanargmin(Stmin))
             #print(lademax[i])
             lademin[i] = np.nanmin(ladempa)
-            trufracmpa[i] = get_bhp_critical(Sb[i], ppmpa, horsud[i], minthetarad, nu2[i],sigmaT)
-            if trufracmpa[i]<=ppmpa: #Self-hydrofrac, unreal
-                trufracmpa[i]=np.nan
+            #loon = get_bhp_critical(Sb[i], ppmpa, horsud[i], minthetarad, nu2[i],sigmaT)
+            #if loon >= np.nanmin(sigmas):
+            trufracmpa[i] = get_bhp_critical(Sb[i], ppmpa, horsud[i], minthetarad, nu2[i],sigmaT) #Or is it? When taking into account the cooling due to mud, the frac pressure can indeed be less than the insitu pore pressure. If we could teleport a can of chilled beer 2km below the mudline (such that an equal volume of rock gets teleported up and there is no net change in volume), the rock around the can will indeed fracture
+            #if trufracmpa[i]<=ppmpa: #Self-hydrofrac, unreal
+            #    trufracmpa[i]=np.nan
             #ladempa = mod_lad_cmw(SbFF[i][0][0],SbFF[i][1][1],SbFF[i][2][2],SbFF[i][0][1],SbFF[i][0][2],SbFF[i][1][2],j,phi[i],lal[i],psipp[i]/145.038)
         except:
             Sb[i] = np.full((3,3),np.nan)
@@ -2393,7 +2418,12 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     Sby = interpolate_nan(SbFF[:,1,1])
     Sbx = interpolate_nan(SbFF[:,0,0])
     hoopmin = interpolate_nan(hoopmin)
+    #if np.isnan(trufracmpa[np.nanargmin(abs(tvdbgl))]):
+    #    trufracmpa[np.nanargmin(abs(tvdbgl))] = obgpsi[np.nanargmin(abs(tvdbgl))]*0.00689476
+    #trufracmpa[np.nanargmin(abs(tvdbgl))]= psifg[np.nanargmin(abs(tvdbgl))]/145.038
+    
     trufracmpa = interpolate_nan(trufracmpa)
+    #trufracmpa[0:np.nanargmin(abs(tvdbgl))] = np.nan
     hoopmax = interpolate_nan(hoopmax)
     Sbminmpa = np.minimum(Sby,Sbx)
     Sbmaxmpa = np.maximum(Sby,Sbx)
@@ -2401,25 +2431,39 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     Sbmaxgcc = ((Sbmaxmpa*145.038)/tvdf)/0.4335275040012
     #tensilefracgcc = (((hoopmax)*145.038)/tvdf)/0.4335275040012
     tensilefracpsi = trufracmpa*145.038#(hoopmax)*145.038
-    tensilefracgcc = (tensilefracpsi/tvdf)/0.4335275040012 #maybe use a better approximation for the gradient calculation depth indices?
+    if np.nanargmin(abs(tvdbgl))>0:
+        tensilefracpsi[0:np.nanargmin(abs(tvdbgl))] = np.nan
     
-    plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
-    plt.plot(interpolate_nan(SbFF[:,1,1]),tvd, label='aligned sy')
-    plt.plot(interpolate_nan(SbFF[:,2,2]),tvd, label='aligned sz')
-    plt.plot(psifg/145.038,tvd, alpha=0.5, label='initial shm')
-    plt.plot(sgHMpsi/145.038,tvd, alpha=0.5, label='initial sHM')
-    plt.plot(obgpsi/145.038,tvd, alpha=0.5, label='initial sV')
-    plt.plot(hoopmin,tvd, alpha=0.5, label='hoopmin')
-    plt.plot(hoopmax,tvd, alpha=0.5, label='hoopmax')
-    plt.plot(interpolate_nan(inca),tvd, alpha=0.5, label='inclination')
-    plt.plot(-horsud/10,tvd, alpha=0.5, label='tensile strength')
-    plt.plot(tensilefracpsi/145.038,tvd, label='fracgrad')
-    plt.plot(trufracmpa,tvd, label='trufracgrad')
-    plt.plot(np.zeros(len(tvd)),tvd, alpha=0.1)
-    plt.gca().invert_yaxis()
-    plt.legend()
-    plt.savefig(os.path.join(output_dir, "StressPlot.png"))
-    plt.close()
+    referencepressure = tensilefracpsi[np.nanargmin(abs(tvdbgl))]
+    referencedepth = well.location.gl*3.2808399#tvdf[np.nanargmin(abs(tvdbgl))]
+    deltaPressure = tensilefracpsi-referencepressure
+    deltaDepth = tvdbglf-referencedepth
+    if glwd<0:
+        tensilefracgcc = tensilefracpsi/hydrostaticpsi#(deltaPressure/deltaDepth)/0.4335275040012#(tensilefracpsi/tvdbglf)/0.4335275040012 #maybe use a better approximation for the gradient calculation depth indices?
+    else:
+        tensilefracgcc = (deltaPressure/deltaDepth)/0.4335275040012#(tensilefracpsi/tvdf)/0.4335275040012
+    #tensilefracgcc = np.where(tensilefracgcc < np.minimum(ObgTgcc, fgcc), np.minimum(ObgTgcc, fgcc), tensilefracgcc)
+    #tensilefracgcc = np.insert(tensilefracgcc, 0, np.nan)
+
+    
+    if writeFile:
+        plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
+        plt.plot(interpolate_nan(SbFF[:,1,1]),tvd, label='aligned sy')
+        plt.plot(interpolate_nan(SbFF[:,2,2]),tvd, label='aligned sz')
+        plt.plot(psifg/145.038,tvd, alpha=0.5, label='initial shm')
+        plt.plot(sgHMpsi/145.038,tvd, alpha=0.5, label='initial sHM')
+        plt.plot(obgpsi/145.038,tvd, alpha=0.5, label='initial sV')
+        plt.plot(hoopmin,tvd, alpha=0.5, label='hoopmin')
+        plt.plot(hoopmax,tvd, alpha=0.5, label='hoopmax')
+        plt.plot(interpolate_nan(inca),tvd, alpha=0.5, label='inclination')
+        plt.plot(-horsud/10,tvd, alpha=0.5, label='tensile strength')
+        plt.plot(tensilefracpsi/145.038,tvd, label='fracgrad')
+        plt.plot(trufracmpa,tvd, label='trufracgrad')
+        plt.plot(np.zeros(len(tvd)),tvd, alpha=0.1)
+        plt.gca().invert_yaxis()
+        plt.legend()
+        plt.savefig(os.path.join(output_dir, "StressPlot.png"))
+        plt.close()
     print("calculation complete")
     
     TVDF = Curve(tvdf, mnemonic='TVDF',units='m', index=md, null=0)
@@ -2443,9 +2487,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     fg2 = Curve(mufgcc, mnemonic='SHmin_ZOBACK',units='G/C3', index=md, null=0)
     well.data['FG2'] =  fg2
     fg3 = Curve(tensilefracgcc, mnemonic='FracGrad',units='G/C3', index=md, null=0)
-    well.data['FG2'] =  fg3   
+    well.data['FG3'] =  fg3   
     fg4 = Curve(tensilefracpsi, mnemonic='FracPressure',units='psi', index=md, null=0)
-    well.data['FG2'] =  fg4
+    well.data['FG4'] =  fg4
     pppsi = Curve(spsipp, mnemonic='GEOPRESSURE',units='psi', index=md, null=0, index_name = 'DEPT')
     well.data['PPpsi'] =  pppsi
     fgpsi = Curve(spsifp, mnemonic='SHmin_PRESSURE',units='psi', index=md, null=0)
@@ -2454,6 +2498,10 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     well.data['SHMpsi'] =  sHMpsi
     mwpsi = Curve(mudpsi, mnemonic='MUD_PRESSURE',units='psi', index=md, null=0)
     well.data['mwpsi'] =  mwpsi
+    overburdenpsi = Curve(obgpsi, mnemonic='OVERBURDEN_PRESSURE',units='psi', index=md, null=0)
+    well.data['obgpsi'] =  overburdenpsi
+    hydrostatpsi = Curve(hydrostaticpsi, mnemonic='HYDROSTATIC_PRESSURE',units='psi', index=md, null=0)
+    well.data['hydropsi'] =  hydrostatpsi
     mhpsi = Curve(mudweight, mnemonic='MUD_GRADIENT',units='g/cc', index=md, null=0)
     well.data['mhpsi'] =  mhpsi
     c0lalmpa = Curve(slal, mnemonic='S0_Lal',units='MPa', index=md, null=0)
@@ -2464,6 +2512,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     well.data['UCSHORSUD'] =  ucshorsudmpa
     ucslalmpa = Curve(slal3, mnemonic='UCS_Lal',units='MPa', index=md, null=0)
     well.data['UCSLAL'] =  ucslalmpa
+    poison = Curve(nu2, mnemonic='Poisson_Ratio',units='', index=md, null=nu)
+    well.data['NU'] =  poison
+    youngsmod = Curve(ym, mnemonic='Youngs_Modulus',units='GPa', index=md, null=0)
+    well.data['YM'] =  youngsmod
+    shearmod = Curve(sm, mnemonic='Shear_Modulus',units='GPa', index=md, null=0)
+    well.data['SM'] =  shearmod
+    bulkmod = Curve(bm, mnemonic='Bulk_Modulus',units='GPa', index=md, null=0)
+    well.data['BM'] =  bulkmod
     
     #pcal = Curve(psicalib[1], mnemonic='PRESSURE TEST',units='psi', index=psicalib[0], null=0)
 
@@ -2478,13 +2534,23 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     output_fileCSV = os.path.join(output_dir1,"GMech.csv")
     df3 = well.df()
     df3.index.name = 'DEPT'
-    df3.to_csv(output_fileCSV)
+    if writeFile:
+        df3.to_csv(output_fileCSV)
     df3 = df3.reset_index()
     header = well._get_curve_mnemonics()
     lasheader = well.header
+    #hbuffer = io.StringIO()
+    #lasheader.to_csv(hbuffer, encoding='utf-8', index=False)
+    #print(hbuffer.getvalue())
+    #print(lasheader)
     c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_GRADIENT":"G/C3","SHmin_DAINES":"G/C3","SHmin_ZOBACK":"G/C3","GEOPRESSURE":"PSI","SHmin_PRESSURE":"PSI", "SHmax_PRESSURE":"PSI", "MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "S0_Lal":"MPA", "S0_Lal_Phi":"MPA", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
-    datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
     
+    from .thirdparty import datasets_to_las
+    
+    filestring = datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
+    
+    if not writeFile:
+        return df3,filestring,rv1,rv2,rv3,rv4,rv5,doi
     #ladempa = mod_lad_cmw(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038,np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
     #ladempa = mod_lad_cmw(hoopmin,hoopmax,Sb[:,2,2],np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
     mogimpa = mogi(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038)

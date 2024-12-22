@@ -1,5 +1,27 @@
+"""
+Copyright (c) 2024-2025 ROCK LAB PRIVATE LIMITED
+This file is part of "Stresslog" project and is released under the 
+GNU Affero General Public License v3.0 (AGPL-3.0)
+See the GNU Affero General Public License for more details: <https://www.gnu.org/licenses/agpl-3.0.html>
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+from io import StringIO
+
+def plot_to_svg(matplot) -> str:
+    """
+    Saves the last plot made using ``matplotlib.pyplot`` to a SVG string.
+    
+    Returns:
+        The corresponding SVG string.
+    """
+    s = StringIO()
+    matplot.savefig(s, format="svg")
+    matplot.close()  # https://stackoverflow.com/a/18718162/14851404
+    return s.getvalue()
+
 
 def plotfracs(data):
     x = data[:, 1]
@@ -56,7 +78,7 @@ def plotfracsQ(data):
 def cot(x):
     return np.cos(x)/np.sin(x)
 
-def plotfrac(data,path):
+def plotfrac(data,path=None):
     tvd,fr,angles,minangle,maxangle = data
     dia = 8.5 #inches, bit
     circumference = np.pi*dia #in inches
@@ -94,14 +116,15 @@ def plotfrac(data,path):
     
     yj = yj-spV
     #depths = depths*sign #Dont FlipV if signed #AntiFlipV
-    plt.figure(figsize=(10, 10))
-    plt.plot(yj)
-    #Setting axis limits
-    plt.xlim(0, 360)
-    plt.ylim(-180, 180)
-    plt.title("Fracture Morphology")
-    plt.savefig(path)
-    plt.close()
+    if path is not None:
+        plt.figure(figsize=(10, 10))
+        plt.plot(yj)
+        #Setting axis limits
+        plt.xlim(0, 360)
+        plt.ylim(-180, 180)
+        plt.title("Fracture Morphology")
+        plt.savefig(path)
+        plt.close()
     print(yj)
     yj[(maxangle-10)%360:(maxangle+15)%360]=np.nan
     yj[(maxangle+170)%360:(maxangle+195)%360]=np.nan

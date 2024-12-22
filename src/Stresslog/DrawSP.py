@@ -1,3 +1,10 @@
+"""
+Copyright (c) 2024-2025 ROCK LAB PRIVATE LIMITED
+This file is part of "Stresslog" project and is released under the 
+GNU Affero General Public License v3.0 (AGPL-3.0)
+See the GNU Affero General Public License for more details: <https://www.gnu.org/licenses/agpl-3.0.html>
+"""
+
 import matplotlib.pyplot as plt3
 from matplotlib.patches import Polygon
 import numpy as np
@@ -10,7 +17,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,delT=0):
+def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,delT=0,path=None):
     
     #mu = (1-(2*nu))/(2*((nu*(1-nu))**0.5))
     
@@ -29,10 +36,10 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym
     print("Corners: ",ShmP,SHMP)
 
 
-    #maxSt = 1.02*SHMP
+    maxSt = 1.02*SHMP
     #minSt = 0.98*ShmP
     
-    maxSt = 200
+    #maxSt = 200
     minSt = 0
 
     fig,ax = plt3.subplots()
@@ -204,12 +211,15 @@ def drawSP(path,Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym
         ax.text(ax.get_xlim()[0] - 5 * x_offset, round(midSH), '{:.0f}'.format(midSH), ha='right', va='center', rotation=90)
     ax.legend(loc='lower right')
     plt3.gca().set_aspect('equal', adjustable='box')
-    plt3.title("Stress Polygon")
+    plt3.title("Stress Polygon Results: Shmin: "+str(round(shmin,1))+"MPa, SV: "+str(round(Sv,1))+"MPa, SHMAX: "+str(round(midSH,2))+"MPa")
     plt3.xlabel("Shmin", labelpad=10)  # Increase labelpad as needed
     plt3.ylabel("SHmax", labelpad=10)  # Increase labelpad as needed
-    plt3.savefig(path, dpi=600)
-    plt3.clf()
-    plt3.close()
+    if path is not None:
+        plt3.savefig(path, dpi=600)
+        plt3.clf()
+        plt3.close()
+    else:
+        return plt3
 
 def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT=0):
     
@@ -393,11 +403,11 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT
     #plt3.clf()
 
 
-from BoreStab import draw
-from BoreStab import drawStab
-import numpy as np
-import math
-
+#from .BoreStab import draw
+#from .BoreStab import drawStab
+#import numpy as np
+#import math
+"""
 def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6, biot=1):
     
     ThetaB=15
@@ -447,13 +457,15 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6, biot=
             SHM2L = ((UCSlow - (biot*(q-1)*Pp)) + ((q+1)*bhp) - ((1-twocos2Beta)*Shm2))/(1+twocos2Beta)          
             
             """
-            SHM1 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
-            SHM2 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
-            SHM1H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
-            SHM2H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
-            SHM1L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
-            SHM2L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+"""
+            #SHM1 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+            #SHM2 = ((UCS + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+            #SHM1H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+            #SHM2H = ((UCShigh + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+            #SHM1L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
+            #SHM2L = ((UCSlow + 2 * Pp + (bhp - Pp)) - Shm2 * (1 + TwoCosPhiB)) / (1 - TwoCosPhiB)
             """
+"""
             xulow = np.array([Shm,Shm2])
             yulow = np.array([SHM1H,SHM2H])
             xuhigh = np.array([Shm,Shm2])
@@ -487,3 +499,4 @@ def getSHMax_optimized(Sv, Pp, bhp, shmin, UCS=0, phi=30 , flag=0, mu=0.6, biot=
     #    maxSH=minSH
     midSH = (minSH + maxSH) / 2
     return [minSH, maxSH, midSH]
+"""

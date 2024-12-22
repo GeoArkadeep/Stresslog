@@ -1,3 +1,10 @@
+"""
+Copyright (c) 2024-2025 ROCK LAB PRIVATE LIMITED
+This file is part of "Stresslog" project and is released under the 
+GNU Affero General Public License v3.0 (AGPL-3.0)
+See the GNU Affero General Public License for more details: <https://www.gnu.org/licenses/agpl-3.0.html>
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt2
 import math
@@ -64,15 +71,15 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     initial_guess = [initial_s2, initial_s1]
     
     # Perform the optimization
-    result = minimize(objective, initial_guess, method='SLSQP', constraints=constraints,bounds=bounds,tol=0.00001)
-    
-    if result.success:
+    try:
+        result = minimize(objective, initial_guess, method='SLSQP', constraints=constraints,bounds=bounds,tol=0.00001) 
+    #if result.success:
         optimized = [0, 0, 0]
         optimized[sorted_indices[0]] = s3
         optimized[sorted_indices[1]] = result.x[0]
         optimized[sorted_indices[2]] = result.x[1]
         return optimized[0], optimized[1], optimized[2]#, alpha, beta, gamma
-    else:
+    except:
         return values[0], values[1], values[2], "Optimization failed to converge. Using initial estimates."
        
 def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
@@ -568,23 +575,26 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
     maxstress = np.argmax(line2[0:180])
     minstress2 = minstress+180
     maxstress2 = maxstress+180
-    if path is not None:
+    
     #print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
-        #plt2.scatter(np.array(range(0,360)),frac)
-        plt2.title("Hoop Stresses and Principal Stress Angles")
-        plt2.plot(angle)
-        plt2.plot(eline)
-        plt2.plot(eline2)
-        plt2.plot(line1)
-        #plt2.plot(frac)
-        #plt2.plot(crush)
-        #plt2.xlim((0,0.67827))
-        #plt2.ylim((1,151))
+    #plt2.scatter(np.array(range(0,360)),frac)
+    plt2.title("Hoop Stresses and Principal Stress Angles")
+    plt2.plot(angle)
+    plt2.plot(eline)
+    plt2.plot(eline2)
+    plt2.plot(line1)
+    #plt2.plot(frac)
+    #plt2.plot(crush)
+    #plt2.xlim((0,0.67827))
+    #plt2.ylim((1,151))
+    if path is not None:
         plt2.savefig(path)
         plt2.close()
-    return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle
+        return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle
+    else:
+        return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,plt2
 
-def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0):
+def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None):
     #phi = 183-(163*nu) ## wayy too high
     #phi = np.arcsin(1-(nu/(1-nu))) #Still too high
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
@@ -715,10 +725,11 @@ def draw(path,tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=
     fig.suptitle("Stability Plot at "+str(round(tvd,2))+"m TVD")
     fig.text(0.5, 0.87, "UCS = " + str(round(UCS)) + ", DeltaP = " + str(round(deltaP)) + ", DeltaT = " + str(round(delT,2)) + ", Nu = " + str(round(nu,2)), 
          ha='center', fontsize=10)
-    
-    plt2.savefig(path,dpi=600)
-    plt2.clf()
-
+    if path is not None:
+        plt2.savefig(path,dpi=600)
+        plt2.clf()
+    else:
+        return plt2
 
 def critical_bhp_calculator(bhp, pp, sigmaT, nu, ucs, Sb, theta):
     """
@@ -752,7 +763,7 @@ def critical_bhp_calculator(bhp, pp, sigmaT, nu, ucs, Sb, theta):
         
     return abs(Stmin - tensilestrength)
 
-def get_bhp_critical(Sb, pp, ucs, theta, nu=0.25, sigmaT=0 ):
+def get_critical_bhp(Sb, pp, ucs, theta, nu=0.25, sigmaT=0 ):
     """
     Find the critical borehole pressure (critical_bhp) by minimizing the difference between the minimum principal stress (Stmin) and the tensile strength (tensilestrength).
     
@@ -774,3 +785,55 @@ def get_bhp_critical(Sb, pp, ucs, theta, nu=0.25, sigmaT=0 ):
     
     critical_bhp = res.x[0]
     return critical_bhp
+
+def get_bhp_critical(Sb, pp, ucs, theta, nu=0.25, sigmaT=0):
+    """
+    Calculate the critical bottomhole pressure (BHP) based on a closed-form solution.
+    
+    Parameters:
+    pp (float): Pore pressure
+    ucs (float): Uniaxial compressive strength
+    Sb (numpy.ndarray): At-wall stress tensor (3x3 matrix)
+    theta (float): Circumferential angle in radians corresponding to the minimum principal stress on the hole wall
+    nu (float): Poisson's ratio (default is 0.25)
+    sigmaT (float): Thermal stress (default is 0)
+    
+    Returns:
+    float: Critical bottomhole pressure (BHP)
+    """
+    
+    # Extract components of the stress tensor for readability
+    Sb11, Sb12, Sb13 = Sb[0, 0], Sb[0, 1], Sb[0, 2]
+    Sb21, Sb22, Sb23 = Sb[1, 0], Sb[1, 1], Sb[1, 2]
+    Sb31, Sb32, Sb33 = Sb[2, 0], Sb[2, 1], Sb[2, 2]
+    
+    # Numerator of the closed-form expression
+    numerator = (
+        10 * pp * ucs - 10 * sigmaT * ucs + ucs ** 2 
+        + 10 * ucs * Sb11 - 200 * nu * pp * np.cos(2 * theta) * Sb11
+        + 200 * nu * sigmaT * np.cos(2 * theta) * Sb11 - 20 * ucs * np.cos(2 * theta) * Sb11
+        - 20 * nu * ucs * np.cos(2 * theta) * Sb11 - 200 * nu * np.cos(2 * theta) * Sb11 ** 2
+        + 400 * nu * (np.cos(2 * theta) ** 2) * Sb11 ** 2
+        + 10 * ucs * Sb22 + 200 * nu * pp * np.cos(2 * theta) * Sb22
+        - 200 * nu * sigmaT * np.cos(2 * theta) * Sb22 + 20 * ucs * np.cos(2 * theta) * Sb22
+        + 20 * nu * ucs * np.cos(2 * theta) * Sb22 - 800 * nu * (np.cos(2 * theta) ** 2) * Sb11 * Sb22
+        + 200 * nu * np.cos(2 * theta) * Sb22 ** 2 + 400 * nu * (np.cos(2 * theta) ** 2) * Sb22 ** 2
+        - 400 * (np.cos(theta) ** 2) * Sb23 ** 2 + 100 * pp * Sb33 - 100 * sigmaT * Sb33
+        + 10 * ucs * Sb33 + 100 * Sb11 * Sb33 - 200 * np.cos(2 * theta) * Sb11 * Sb33
+        + 100 * Sb22 * Sb33 + 200 * np.cos(2 * theta) * Sb22 * Sb33
+        + 800 * np.cos(theta) * Sb13 * Sb23 * np.sin(theta) - 400 * Sb13 ** 2 * (np.sin(theta) ** 2)
+        - 400 * nu * pp * Sb12 * np.sin(2 * theta) + 400 * nu * sigmaT * Sb12 * np.sin(2 * theta)
+        - 40 * ucs * Sb12 * np.sin(2 * theta) - 40 * nu * ucs * Sb12 * np.sin(2 * theta)
+        - 400 * nu * Sb11 * Sb12 * np.sin(2 * theta) + 1600 * nu * np.cos(2 * theta) * Sb11 * Sb12 * np.sin(2 * theta)
+        - 400 * nu * Sb12 * Sb22 * np.sin(2 * theta) - 1600 * nu * np.cos(2 * theta) * Sb12 * Sb22 * np.sin(2 * theta)
+        - 400 * Sb12 * Sb33 * np.sin(2 * theta) + 1600 * nu * Sb12 ** 2 * (np.sin(2 * theta) ** 2)
+    )
+    
+    # Denominator of the closed-form expression
+    denominator = (
+        10 * ucs - 200 * nu * np.cos(2 * theta) * Sb11 + 200 * nu * np.cos(2 * theta) * Sb22
+        + 100 * Sb33 - 400 * nu * Sb12 * np.sin(2 * theta)
+    )
+    
+    # Return the calculated critical BHP
+    return numerator / denominator
