@@ -244,7 +244,7 @@ def read_aliases_from_file(file_path):
     except:
         aliases = {
             'sonic': ['none', 'DTC', 'DT24', 'DTCO', 'DT', 'AC', 'AAC', 'DTHM'],
-            'shearsonic': ['none', 'DTSM'],
+            'shearsonic': ['none', 'DTSM','DTS'],
             'gr': ['none', 'GR', 'GRD', 'CGR', 'GRR', 'GRCFM'],
             'resdeep': ['none', 'HDRS', 'LLD', 'M2RX', 'MLR4C', 'RD', 'RT90', 'RLA1', 'RDEP', 'RLLD', 'RILD', 'ILD', 'RT_HRLT', 'RACELM'],
             'resshal': ['none', 'LLS', 'HMRS', 'M2R1', 'RS', 'RFOC', 'ILM', 'RSFL', 'RMED', 'RACEHM'],
@@ -261,8 +261,11 @@ def read_aliases_from_file(file_path):
 
         }
         # Convert aliases dictionary to JSON string and write to the file
-        with open(file_path, 'w') as file:
-            json.dump(aliases, file, indent=4)
+        try:
+            with open(file_path, 'w') as file:
+                json.dump(aliases, file, indent=4)
+        except:
+            pass
         return aliases
 
 
@@ -493,130 +496,166 @@ def weighted_average_downsampler(curve, window_size=21, window_type='v_shape'):
 
 def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None):
     """
-    Copyright Arkadeep Ghosh 2023-2025
-    
-    Calculates and plots geomechanical parameters for the entire well. These include
-    i) Overburden pressure and gradient
-    ii) Pore pressure and gradient
-    iii) Shmin pressure and gradient
-    iv) SHMax pressure and gradient
-    v) UCS
-    vi) Far field 6 component stress tensor
-    vii) Hoop Stresses around the wellbore
-    viii) Fracture Gradient
-    ix) Shear Failure Gradient
+    Performs geomechanical calculations, data processing, and pore pressure estimation based on 
+    well log data and additional user inputs.
 
-    Also plots the following at a chosen depth of interest (optional):
-    i) Stress Polygon
-    ii) Stability vs Well orientation plot
-    iii) Stress Tensor as three vectors and their orientations w.r.t geographic coordinate system (NED)
-    iv) Expected orientation of fractures if any
-    v) Hoop Stress and failure angles
-    
-    This function generates various plots related to pore pressure prediction using Zhang's method based on well data.
-    The function processes well log data after optional downsampling using median filtering, and generates plots for
-    various geomechanical parameters.
-
-    Parameters:
-    well : Well object
-        The well data containing curves for various parameters.
+    Parameters
+    ----------
+    well : welly.Well
+        The well data containing curves for various parameters. It is essential that the curves 
+        extend all the way to 0 depth and contain deviation data (even if the well is vertical).
     rhoappg : float, optional
-        Apparent density at mudline in g/cc (default is 16.33).
+        Density at mudline in g/cc (default is 16.33).
     lamb : float, optional
-        A parameter related to the geomechanical model (default is 0.0008).
+        Compaction exponent for regions without unloading (default is 0.0008).
     ul_exp : float, optional
-        Unloading exponent (default is 0.0008).
+        Compaction exponent for regions with unloading (default is 0.0008).
     ul_depth : float, optional
-        Unloading depth (default is 0).
+        Depth where unloading starts, in feet (default is 0).
     a : float, optional
-        A parameter related to the geomechanical model (default is 0.630).
+        Daines' exponent for Shmin calculations (default is 0.630).
     nu : float, optional
-        Poisson's ratio (default is 0.4).
+        Poisson's ratio, used in stress calculations (default is 0.4).
     sfs : float, optional
-        Shale flag resistivity cutoff (difference between deep and shallow resistivity in, default is 1.0).
+        Shale flag resistivity or GR cutoff, representing the difference between deep and shallow 
+        resistivity in ohm.m (default is 1.0).
     window : int, optional
-        The window size for downsampling (default is 1).
+        The window size for down-sampling well data (default is 1).
     zulu : int, optional
-        Start depth for analysis (default is 0).
+        Starting depth for analysis, in feet (default is 0).
     tango : int, optional
-        End depth for analysis (default is 2000).
+        Ending depth for analysis, in feet (default is 2000).
     dtml : int, optional
-        deltaT at mudline in uspf (default is 210).
+        Delta T at mudline, in microseconds per foot (default is 210).
     dtmt : int, optional
-        deltaT of matrix in uspf (default is 60).
+        Delta T of matrix, in microseconds per foot (default is 60).
+    res0 : float, optional
+        Initial resistivity value, used for normal resistivity calculation (default is 0.98).
+    be : float, optional
+        Base exponential coefficient for resistivity gradient calculation (default is 0.00014).
+    ne : float, optional
+        Exponent for normal resistivity calculations (default is 0.6).
+    dex0 : float, optional
+        Initial value for drilling exponent in calculations (default is 0.5).
+    de : float, optional
+        Coefficient for drilling exponent gradient calculation (default is 0.00014).
+    nde : float, optional
+        Exponent for normal drilling exponent calculations (default is 0.5).
+    paths : dict, optional
+        Dictionary containing paths for saving output files, including plots, CSVs, and models. Keys 
+        typically include `output_dir`, `plot_figure`, and others for structured saving (default is None).
     water : float, optional
         Water density in g/cc (default is 1.0).
     underbalancereject : int, optional
-        Minimum PP gradient below which to reject underbalanced data (default is 1).
+        Minimum pore pressure gradient below which underbalanced data is rejected (default is 1).
     tecb : int, optional
-        Daines parameter related to tectonic stress (default is 0).
+        Daines' parameter related to tectonic stress (default is 0).
     doi : int, optional
-        Depth of interest (default is 0).
+        Depth of interest for calculations, in feet (default is 0).
     offset : int, optional
-        SHMax azimuth parameter (default is 0).
+        Azimuth of the maximum horizontal stress (SHMax) in degrees (default is 0).
     strike : int, optional
-        Strike parameter (default is 0).
+        Dip direction of the stress tensor in degrees (default is 0).
     dip : int, optional
-        Dip parameter (default is 0).
+        Dip angle of the stress tensor in degrees (default is 0).
     mudtemp : int, optional
-        Mud temperature (default is 0).
+        Mud temperature, in degrees Celsius (default is 0).
     lala : float, optional
-        Parameter for Lal's method (default is -1.0).
+        Parameter for Lal's cohesion method (default is -1.0).
     lalb : float, optional
-        Parameter for Lal's method (default is 1.0).
+        Parameter for Lal's cohesion method (default is 1.0).
     lalm : int, optional
-        Parameter for Lal's method (default is 5).
+        Parameter for Lal's cohesion method (default is 5).
     lale : float, optional
-        Parameter for Lal's method (default is 0.5).
+        Parameter for Lal's cohesion method (default is 0.5).
     lall : int, optional
-        Parameter for Lal's method (default is 5).
+        Parameter for Lal's cohesion method (default is 5).
     horsuda : float, optional
-        Parameter for Horsud's method (default is 0.77).
+        Parameter for Horsud's stress method (default is 0.77).
     horsude : float, optional
-        Parameter for Horsud's method (default is 2.93).
+        Parameter for Horsud's stress method (default is 2.93).
     unitchoice : list, optional
-        Unit choices for output (default is [0,0,0,0,0]).
+        List specifying the unit system for outputs (default is [0, 0, 0, 0, 0]).
     ureg : pint.UnitRegistry, optional
-        Unit registry for unit conversions (default is pint.UnitRegistry with autoconvert_offset_to_baseunit=True).
-    mwvalues : list, optional
-        List of mud weight values (default is [[1.0, 0.0, 0.0, 0.0, 0.0, 0]]).
-    flowgradvals : list, optional
-        List of flow gradient values (default is [[0,0]]).
-    fracgradvals : list, optional
-        List of fracture gradient values (default is [[0,0]]).
-    flowpsivals : list, optional
-        List of flow psi values (default is [[0,0]]).
-    fracpsivals : list, optional
-        List of fracture psi values (default is [[0,0]]).
+        Unit registry for unit conversions (default is a pint.UnitRegistry with 
+        `autoconvert_offset_to_baseunit=True`).
+    mwvalues : list of lists, optional
+        Mud weight values for different depth intervals. Each sublist contains parameters 
+        such as weight, depth, and salinity (default is [[1.0, 0.0, 0.0, 0.0, 0.0, 0]]).
+    flowgradvals : list of lists, optional
+        Flow gradient values for different depths (default is [[0, 0]]).
+    fracgradvals : list of lists, optional
+        Fracture gradient values for different depths (default is [[0, 0]]).
+    flowpsivals : list of lists, optional
+        Flow pressure values for different depths (default is [[0, 0]]).
+    fracpsivals : list of lists, optional
+        Fracture pressure values for different depths (default is [[0, 0]]).
     attrib : list, optional
-        List of section attributes comprising of max ECD, casing shoe depth, casing dia, bit dia, mud salinity and BHT at shoe
-        (default is [1,0,0,0,0,0,0,0]).
-    flags : list, optional
-        Dataframe containing depths of identified conditions (breakouts/DIFs/None) from image log (default is None).
-    UCSs : list, optional
-        Dataframe containing MD and UCS values (default is None).
-    forms : list, optional
-        Dataframe containing formation tops and other formation-specific parameters (default is None).
-    lithos : list, optional
-        Dataframe containing interpreted lithology data, as well as lithology-specific parameters (default is None).
+        Section attributes, including parameters like maximum ECD, casing shoe depth, casing diameter, 
+        bit diameter, mud salinity, and bottom-hole temperature (BHT) at the shoe 
+        (default is [1, 0, 0, 0, 0, 0, 0, 0]).
+    flags : pandas.DataFrame, optional
+        Dataframe containing depths and conditions identified from image logs, such as 
+        breakouts or drilling-induced fractures (default is None).
+    UCSs : pandas.DataFrame, optional
+        Dataframe containing measured depth (MD) and unconfined compressive strength (UCS) values 
+        (default is None).
+    forms : pandas.DataFrame, optional
+        Dataframe containing formation tops and associated formation-specific parameters (default is None).
+    lithos : pandas.DataFrame, optional
+        Dataframe containing interpreted lithology data and lithology-specific parameters 
+        (default is None).
     user_home : str, optional
-        Path to the root of output directories (default is Documents).
+        Path to the user's home directory or the root of output directories (default is `Documents`).
+    paths : dict, optional
+        Dictionary containing file paths for saving outputs and intermediate results (default is None).
+    program_option : list, optional
+        List controlling algorithm behavior, including resolution, algorithm choices, and more 
+        (default is [300, 4, 0, 0, 0]).
+    writeFile : bool, optional
+        Whether to write results to files in the specified paths (default is True).
+    aliasdict : dict, optional
+        Dictionary mapping curve mnemonics to standardized aliases (default is None).
 
-    Returns:
-    A tuple consisting of the well dataframe and the modified well object
+    Returns
+    -------
+    tuple
+        Outputs vary depending on program options, but typically include processed well data, 
+        calculated pore pressure gradients, and stress analysis results. If `writeFile` is True, 
+        outputs are saved as files.
 
-    Notes:
-    The function generates and saves the following plots:
-    - PlotFigure.png: General plot figure.
-    - PlotStability.png: Stability plot.
-    - PlotPolygon.png: Polygon plot.
-    - PlotVec.png: Vector plot.
-    - PlotBHI.png: BHI plot.
-    - PlotHoop.png: Hoop stress plot.
-    - PlotFrac.png: Fracture plot.
-    - PlotAll.png: Combined plot.
-    Additionally, it saves the output as files in CSV and LAS formats.
+     Notes
+    -----
+    - This function integrates geomechanical calculations with well log data processing.
+    - It performs pore pressure estimation, stress analysis, and cohesion calculations.
+    - Extensive customization is available through the numerous optional parameters.
+    - If `writeFile` is True, all generated plots and data will be saved in the specified paths.
+    - The following dataframes must have fixed formats for their respective columns:
+      
+      - **forms**: Must contain columns in this order:
+        ['Formation Top Measured Depth', 'Formation Number', 'Formation Name', 'GR Cutoff', 
+         'Structural Top', 'Structural Bottom', 'Centroid Ratio', 'OWC Depth', 'GOC Depth', 
+         'Coefficient of thermal expansion bulk', 'Alpha', 'Beta', 'Gamma', 'Tectonic Factor', 'SH/SV Ratio', 
+         'Biot Coefficient', 'DT Normal', 'Resistivity Normal', 'DEX Normal']
+      
+      - **lithos**: Must contain columns in this order:
+        ['Measured Depth', 'Lithology Code', 'Poisson Ratio', 'Friction Coefficient', 'UCS']
+      
+      - **flags**: Must contain columns in this order:
+        ['Measured Depth', 'Condition Code']
+        - 'Condition Code' integer, allowed values:
+            0 :	No Image log exists
+            1 : Image log exists, No observations
+            2 : DITF observed on image log
+            3 : Breakouts observed on image log
+            4 : Both DITF and Breakouts observed on image log
+        
+      - **UCSs**: Must contain columns in this order:
+        ['Measured Depth', 'UCS in MPa']
+      
+      Any deviation in column order, or missing values will result in errors during processing.
     """
+    
     print("Starting Geomech Calculation...")
     #program_option = [300,0,0,0,0] #program settings for dpi, pp algrorithm, shmin algorithm, shear failure algorithm, downsampling algorithm   
     numodel = [0.35,0.26,0.23,0.25] #nu2[i] = numodel[lithotype[i]]

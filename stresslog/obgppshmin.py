@@ -76,6 +76,43 @@ def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, wdf, glwd):
     return integrho, integrhopsift, ObgTppg
 
 def get_PPgrad_Zhang_gcc(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot=1):
+    """Calculate pore pressure gradient using Zhang's method for a single point.
+
+    Parameters
+    ----------
+    ObgTgcc : float
+        Overburden gradient in gcc units
+    pn : float
+        Normal (Hydrostatic) pressure gradient in g/cc
+    b : float
+        Compaction coefficient for unloading case
+    tvdbgl : float
+        True vertical depth below ground level
+    c : float
+        Compaction coefficient for loading case
+    mudline : float
+        interval travel time at mudline (uspf)
+    matrick : float
+        matrix interval travel time (uspf)
+    deltmu0 : float
+        interval travel time as recorded on P-sonic log at
+        the depth considered to be the top of unloading condition
+    dalm : float
+        travel time as recorded on P-sonic log (uspf)
+        for the given depth
+    biot : float, optional
+        Biot's coefficient, by default 1
+
+    Returns
+    -------
+    float
+        Calculated pore pressure gradient in gcc units
+
+    Notes
+    -----
+    Implements Zhang's method for calculating pore pressure gradient.
+    The calculation varies based on the relationship between b and c coefficients.
+    """
     if b>=c:
         numerator = ObgTgcc - ((ObgTgcc-pn)*((math.log((mudline-matrick))-(math.log(dalm-matrick)))/(c*tvdbgl)))
     else:
@@ -84,7 +121,43 @@ def get_PPgrad_Zhang_gcc(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, d
     return numerator / biot
 
 def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot=1):
-    # Ensure all inputs are numpy arrays
+    """
+    Calculate pressure gradient using Zhang's method with vectorized inputs.
+
+    Parameters
+    ----------
+    ObgTgcc : array_like
+        Overburden gradient in g/cc
+    pn : array_like
+        Normal (Hydrostatic) pressure gradient in g/cc
+    b : float/array_like
+        Compaction coefficient for unloading case
+    tvdbgl : array_like
+        True vertical depth below ground level in metres
+    c : float/array_like
+        Compaction coefficient for loading case
+    mudline : float/array_like
+        interval travel time at mudline (uspf)
+    matrick : float/array_like
+        interval travel time in matrix (0 porosity case) (uspf)
+    deltmu0 : array_like
+        Interval travel time at top of unloading condition in uspf
+    dalm : array_like
+        P-sonic log array in uspf
+    biot : array_like, optional
+        Biot coefficient, defaults to 1
+
+    Returns
+    -------
+    ndarray
+        Pressure gradient calculated using Zhang's method
+
+    Notes
+    -----
+    This function applies Zhang's method for pressure gradient calculation
+    with support for vectorized operations. All inputs are broadcast to
+    compatible shapes before calculation.
+    """
     ObgTgcc = np.asarray(ObgTgcc)
     pn = np.asarray(pn)
     b = np.asarray(b)
@@ -115,10 +188,74 @@ def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltm
 
 
 def get_PPgrad_Eaton_gcc(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1):
+    """
+    Calculate pressure gradient using Eaton's method.
+
+    Parameters
+    ----------
+    ObgTgcc : float
+        Overburden gradient in g/cc
+    pn : float
+        Normal (Hydrostatic) pressure gradient in g/cc
+    be : float
+        Eaton's parameter b
+    ne : float
+        Eaton's exponent
+    tvdbgl : float
+        True vertical depth below ground level
+    res0 : float
+        Resistivity at mudline
+    resdeep : float
+        Deep resistivity measurement of the given sample
+    biot : float, optional
+        Biot coefficient, defaults to 1
+
+    Returns
+    -------
+    float
+        Pressure gradient calculated using Eaton's method
+
+    Notes
+    -----
+    This is the single-point version of the Eaton pressure gradient calculation.
+    For vectorized operations, use get_PPgrad_Eaton_gcc_vec.
+    """
     numerator = ObgTgcc - ((ObgTgcc - pn)*((resdeep/(res0*np.exp(be*tvdbgl)))**ne))
     return numerator / biot
 
 def get_PPgrad_Eaton_gcc_vec(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1):
+    """
+    Calculate pressure gradient using Eaton's method with vectorized inputs.
+
+    Parameters
+    ----------
+    ObgTgcc : array_like
+        Overburden gradient in g/cc
+    pn : array_like
+        Normal (Hydrostatic) pressure gradient in g/cc
+    be : float/array_like
+        Eaton's parameter b
+    ne : float/array_like
+        Eaton's exponent
+    tvdbgl : array_like
+        True vertical depth below ground level in metres
+    res0 : float/array_like
+        Resistivity at mudline in ohm.m
+    resdeep : array_like
+        Deep resistivity measurements log in ohm.m
+    biot : float/array_like, optional
+        Biot coefficient, defaults to 1
+
+    Returns
+    -------
+    ndarray
+        Pressure gradient calculated using Eaton's method
+
+    Notes
+    -----
+    Vectorized version of the Eaton pressure gradient calculation.
+    All inputs are broadcast to compatible shapes before calculation.
+    """
     # Ensure all inputs are numpy arrays
     ObgTgcc = np.asarray(ObgTgcc)
     pn = np.asarray(pn)
@@ -140,10 +277,74 @@ def get_PPgrad_Eaton_gcc_vec(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1)
 
 
 def get_PPgrad_Dxc_gcc(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
+    """
+    Calculate pressure gradient using d-exponent method.
+
+    Parameters
+    ----------
+    ObgTgcc : float
+        Overburden gradient in g/cc
+    pn : float
+        Normal pressure in g/cc
+    d : float
+        d-exponent parameter
+    nde : float
+        d-exponent power
+    tvdbgl : float
+        True vertical depth below ground level
+    D0 : float
+        d-exponent value at surface
+    Dxc : float
+        Corrected d-exponent
+    biot : float, optional
+        Biot coefficient, defaults to 1
+
+    Returns
+    -------
+    float
+        Pressure gradient calculated using d-exponent method
+
+    Notes
+    -----
+    This is the scalar version of the d-exponent pressure gradient calculation.
+    For vectorized operations, use get_PPgrad_Dxc_gcc_vec.
+    """
     numerator = ObgTgcc - ((ObgTgcc - pn)*((Dxc/(D0*np.exp(d*tvdbgl)))**nde))
     return numerator / biot
 
 def get_PPgrad_Dxc_gcc_vec(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
+    """
+    Calculate pressure gradient using d-exponent method with vectorized inputs.
+
+    Parameters
+    ----------
+    ObgTgcc : array_like
+        Overburden gradient in g/cc
+    pn : array_like
+        Normal pressure in g/cc
+    d : float/array_like
+        d-exponent parameter
+    nde : float/array_like
+        d-exponent power
+    tvdbgl : array_like
+        True vertical depth below ground level
+    D0 : float/array_like
+        Reference d-exponent value
+    Dxc : array_like
+        Corrected d-exponent
+    biot : float/array_like, optional
+        Biot coefficient, defaults to 1
+
+    Returns
+    -------
+    ndarray
+        Pressure gradient calculated using d-exponent method
+
+    Notes
+    -----
+    Vectorized version of the d-exponent pressure gradient calculation.
+    All inputs are broadcast to compatible shapes before calculation.
+    """
     # Ensure all inputs are numpy arrays
     ObgTgcc = np.asarray(ObgTgcc)
     pn = np.asarray(pn)
@@ -164,11 +365,67 @@ def get_PPgrad_Dxc_gcc_vec(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
     return numerator / biot
 
 def get_Dxc(ROP,RPM,WOB,BTDIA,ECD,pn):
+    """
+    Calculate corrected d-exponent.
+
+    Parameters
+    ----------
+    ROP : float
+        Rate of penetration in ft/hr
+    RPM : float
+        Rotations per minute
+    WOB : float
+        Weight on bit in lbs
+    BTDIA : float
+        Bit diameter in inches
+    ECD : float
+        Equivalent circulating density
+    pn : float
+        Hydrostatic pressure gradient, in same units as ECD
+
+    Returns
+    -------
+    float
+        Corrected d-exponent if greater than 0.1, otherwise NaN
+
+    Notes
+    -----
+    This is the scalar version of the corrected d-exponent calculation.
+    For vectorized operations, use get_Dxc_vec.
+    """
     #units= ROP:ft/hr, WOB:lbs, BTDIA:in, 
     Dxc = (np.log10(ROP/(60*RPM))*pn)/(np.log10((12*WOB)/((10**6)*BTDIA))*ECD)
     return Dxc if Dxc>0.1 else np.nan
 
 def get_Dxc_vec(ROP, RPM, WOB, BTDIA, ECD, pn):
+    """
+    Calculate corrected d-exponent with vectorized inputs.
+
+    Parameters
+    ----------
+    ROP : array_like
+        Rate of penetration in ft/hr
+    RPM : array_like
+        Rotations per minute
+    WOB : array_like
+        Weight on bit in lbs
+    BTDIA : array_like
+        Bit diameter in inches
+    ECD : array_like
+        Equivalent circulating density
+    pn : array_like
+        Hydrostatic pressure gradient, in same units as ECD
+
+    Returns
+    -------
+    ndarray
+        Array of corrected d-exponent values
+
+    Notes
+    -----
+    Vectorized version of the corrected d-exponent calculation.
+    All inputs are broadcast to compatible shapes before calculation.
+    """
     # Ensure all inputs are numpy arrays
     ROP = np.asarray(ROP)
     RPM = np.asarray(RPM)

@@ -50,7 +50,6 @@ from .hydraulics import (
     getColumnHeights,
     getPPfromTop,
     getPPfromTopRecursive,
-    getPPfromCentroidRecursive,
     getGasDensity,
     getHydrostaticPsi,
     compute_optimal_offset,
@@ -93,8 +92,7 @@ __all__ = [
 
     # geomechanics
     "plotPPzhang",
-    # GUI app
-    "runGUI",
+
     # hydraulics
     "getColumnHeights", "getPPfromTop", "getPPfromTopRecursive", "getPPfromCentroidRecursive",
     "getGasDensity", "getHydrostaticPsi", "compute_optimal_offset", "compute_optimal_gradient",

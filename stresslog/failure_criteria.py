@@ -8,6 +8,39 @@ See the GNU Affero General Public License for more details: <https://www.gnu.org
 import numpy as np
 
 def mod_lad_cmw(sxx,syy,szz,txy,tyz,tzx,theta,phi,cohesion,pp):#Stress tensor rotated to borehole frame of reference
+    """
+    Calculate the modified Lade critical mud weight with pore pressure correction in the wellbore coordinate system.
+    The stress tensor should already have been rotated to be in the borehole coordinate system.
+
+    Parameters
+    ----------
+    sxx : float or array_like
+        Normal stress component in x-direction
+    syy : float or array_like
+        Normal stress component in y-direction
+    szz : float or array_like
+        Normal stress component in z-direction
+    txy : float or array_like
+        Shear stress component in xy-plane
+    tyz : float or array_like
+        Shear stress component in yz-plane
+    tzx : float or array_like
+        Shear stress component in zx-plane
+    theta : float
+        Wellbore angle in degrees
+    phi : float
+        Internal friction angle in radians
+    cohesion : float
+        Rock cohesion strength
+    pp : float
+        Pore pressure
+
+    Returns
+    -------
+    float or array_like
+        Critical wellbore pressure (Pw)
+    """
+
     ps1 = (cohesion/np.tan(phi))
     pfac= (ps1-pp)
     I1 = (sxx+pfac)+(syy+pfac)+(szz+pfac)
@@ -26,6 +59,40 @@ def mod_lad_cmw(sxx,syy,szz,txy,tyz,tzx,theta,phi,cohesion,pp):#Stress tensor ro
     return Pw
 
 def mod_lad_cmw2(sxx, syy, szz, txy, tyz, tzx, theta, phi, cohesion, pp, nu):
+    """
+    Calculate modified Lade critical mud weight with pore pressure and Poisson's ratio corrections.
+    The stress tensor should already have been rotated to be in the borehole coordinate system
+
+    Parameters
+    ----------
+    sxx : float or array_like
+        Normal stress component in x-direction
+    syy : float or array_like
+        Normal stress component in y-direction
+    szz : float or array_like
+        Normal stress component in z-direction
+    txy : float or array_like
+        Shear stress component in xy-plane
+    tyz : float or array_like
+        Shear stress component in yz-plane
+    tzx : float or array_like
+        Shear stress component in zx-plane
+    theta : float
+        Wellbore angle in degrees
+    phi : float
+        Internal friction angle in radians
+    cohesion : float
+        Rock cohesion strength
+    pp : float
+        Pore pressure
+    nu : float
+        Poisson's ratio
+
+    Returns
+    -------
+    float or array_like
+        Critical wellbore pressure (Pw) with Poisson's ratio correction
+    """
     # Convert theta to radians
     theta_rad = np.radians(theta)
 
@@ -56,16 +123,82 @@ def mod_lad_cmw2(sxx, syy, szz, txy, tyz, tzx, theta, phi, cohesion, pp, nu):
     return Pw
 
 def mogi_failure(s1,s2,s3):
+    """
+    Calculate the Mogi failure criterion for principal stresses.
+
+    Parameters
+    ----------
+    s1 : float or array_like
+        Maximum principal stress
+    s2 : float or array_like
+        Intermediate principal stress
+    s3 : float or array_like
+        Minimum principal stress
+
+    Returns
+    -------
+    float or array_like
+        Mogi failure criterion value (F)
+    """
     F = (0.5*(s1+s3))-((1/3)*((((s1-s2)**2)+((s2-s3)**2)+((s3-s1)**2))**0.5))
     return F
 
 def mohr_failure(s1,s3,cohesion,phi):
+    """
+    Calculate the Mohr-Coulomb failure criterion.
+
+    Parameters
+    ----------
+    s1 : float or array_like
+        Maximum principal stress
+    s3 : float or array_like
+        Minimum principal stress
+    cohesion : float
+        Rock cohesion strength
+    phi : float
+        Internal friction angle in radians
+
+    Returns
+    -------
+    float or array_like
+        Mohr-Coulomb failure criterion value (F)
+    """
     sm2 = (s1+s3)/2
     tmax = (s1-s3)/2
     F = (cohesion*np.cos(phi))+(np.sin(phi)*sm2) - tmax
     return F
 
 def lade_failure(sx,sy,sz,txy,tyz,tzx,phi,cohesion,pp):
+    """
+    Calculate the Modified Lade failure criterion with pore pressure correction.
+
+    Parameters
+    ----------
+    sx : float or array_like
+        Normal stress in x-direction
+    sy : float or array_like
+        Normal stress in y-direction
+    sz : float or array_like
+        Normal stress in z-direction
+    txy : float or array_like
+        Shear stress in xy-plane
+    tyz : float or array_like
+        Shear stress in yz-plane
+    tzx : float or array_like
+        Shear stress in zx-plane
+    phi : float
+        Internal friction angle in radians
+    cohesion : float
+        Rock cohesion strength
+    pp : float
+        Pore pressure
+
+    Returns
+    -------
+    float or array_like
+        Lade failure criterion value (F2)
+    """
+
     s3,s2,s1 = np.sort([sx,sy,sz])
     ps1 = (cohesion/np.tan(phi))
     pfac= (ps1-pp)
@@ -81,6 +214,23 @@ def lade_failure(sx,sy,sz,txy,tyz,tzx,phi,cohesion,pp):
     return F2
 
 def mogi(sx, sy, sz):
+    """
+    Calculate the Mogi failure criterion for stress components with numpy array support.
+
+    Parameters
+    ----------
+    sx : array_like
+        Normal stress in x-direction
+    sy : array_like
+        Normal stress in y-direction
+    sz : array_like
+        Normal stress in z-direction
+
+    Returns
+    -------
+    array_like
+        Mogi failure criterion value (F)
+    """
     # Ensure all inputs are numpy arrays
     sx, sy, sz = map(np.asarray, (sx, sy, sz))
     
@@ -94,6 +244,35 @@ def mogi(sx, sy, sz):
     return F
 
 def lade(sx, sy, sz, txy, tyz, tzx, phi, cohesion, pp):
+    """
+    Calculate the Lade failure criterion with numpy array support.
+
+    Parameters
+    ----------
+    sx : array_like
+        Normal stress in x-direction
+    sy : array_like
+        Normal stress in y-direction
+    sz : array_like
+        Normal stress in z-direction
+    txy : array_like
+        Shear stress in xy-plane
+    tyz : array_like
+        Shear stress in yz-plane
+    tzx : array_like
+        Shear stress in zx-plane
+    phi : array_like
+        Internal friction angle in radians
+    cohesion : array_like
+        Rock cohesion strength
+    pp : array_like
+        Pore pressure
+
+    Returns
+    -------
+    array_like
+        Lade failure criterion value (F)
+    """
     # Ensure all inputs are numpy arrays
     sx, sy, sz, txy, tyz, tzx, phi, cohesion, pp = map(np.asarray, (sx, sy, sz, txy, tyz, tzx, phi, cohesion, pp))
     
@@ -121,9 +300,57 @@ def lade(sx, sy, sz, txy, tyz, tzx, phi, cohesion, pp):
     return F
 
 def zhang_sanding_cwf(sigmamax,sigmamin,pp,ucs,k0,nu,biot=1):
+    """
+    Calculate the Zhang critical wellbore flowing pressure for sanding prediction.
+
+    Parameters
+    ----------
+    sigmamax : float or array_like
+        Maximum principal stress
+    sigmamin : float or array_like
+        Minimum principal stress
+    pp : float or array_like
+        Pore pressure
+    ucs : float
+        Unconfined compressive strength
+    k0 : float
+        Earth stress ratio
+    nu : float
+        Poisson's ratio
+    biot : float, optional
+        Biot's coefficient (default is 1)
+
+    Returns
+    -------
+    float or array_like
+        Critical wellbore flowing pressure
+    """
     return (k0*(1-nu))*(3*sigmamax-sigmamin-(biot*((1-(2*nu))/(1-nu))*pp)-ucs)
 
 def willson_sanding_cwf(sigmamax,sigmamin,pp,ucs,nu,biot=1):
+    """
+    Calculate the Willson critical wellbore flowing pressure for sanding prediction.
+
+    Parameters
+    ----------
+    sigmamax : float or array_like
+        Maximum principal stress
+    sigmamin : float or array_like
+        Minimum principal stress
+    pp : float or array_like
+        Pore pressure
+    ucs : float
+        Unconfined compressive strength
+    nu : float
+        Poisson's ratio
+    biot : float, optional
+        Biot's coefficient (default is 1)
+
+    Returns
+    -------
+    float or array_like
+        Critical wellbore flowing pressure
+    """
     A = biot*(1-(2*nu))/(1-nu)
     return (((3*sigmamax)-sigmamin-ucs)/(2-A)) - (pp*(A/(2-A)))
 
@@ -131,6 +358,35 @@ import matplotlib.pyplot as plt
 
 
 def plot_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1, path=None):
+    """
+    Create a sanding analysis plot comparing Zhang and Willson criteria.
+
+    Parameters
+    ----------
+    sigmamax : float
+        Maximum principal stress
+    sigmamin : float
+        Minimum principal stress
+    sigma_axial : float
+        Axial stress
+    pp : float
+        Pore pressure
+    ucs : float
+        Unconfined compressive strength
+    k0 : float
+        Earth stress ratio
+    nu : float
+        Poisson's ratio
+    biot : float, optional
+        Biot's coefficient (default is 1)
+    path : str, optional
+        Path to save the plot (default is None)
+
+    Returns
+    -------
+    matplotlib.pyplot
+        Plot object if path is None, otherwise saves plot to specified path
+    """
     pparray = np.linspace(pp+50, 0, num=1000)
     ppx = np.linspace(pp, 0, num=100)
     ppy = np.full(len(ppx),pp)

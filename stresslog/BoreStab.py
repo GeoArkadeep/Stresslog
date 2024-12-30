@@ -12,6 +12,18 @@ import math
 from scipy.optimize import minimize
 
 def get_optimal(sx,sy,sz,alpha=0, beta=0, gamma=0):
+    """
+    Optimizes sx, sy, sz to achieve a specified SV
+    under given angular conditions.
+    
+    Parameters:
+    - sx, sy, sz: The values of the principal stresses
+    - alpha, beta, gamma: Euler angles of the principal stresses.
+    
+    Returns:
+    - Optimized values in the order of sx, sy, sz and Euler angles if successful; 
+      otherwise, returns original values.
+    """
     if min(sx,sy,sz)==sz:#reverse faulting
         optimal = get_optimalRF(sx,sy,sz,alpha, beta, gamma)
     else: #normal and strike slip
@@ -84,8 +96,41 @@ def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
        
 def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     """
-    Optimizes sx, sy, sz for reverse faulting, allowing all three to vary,
-    with the condition that osx > osy > osz.
+    Optimizes stress components for reverse faulting conditions.
+
+    Parameters
+    ----------
+    sx : float
+        Initial horizontal stress component in x-direction
+    sy : float
+        Initial horizontal stress component in y-direction
+    specified_SV : float
+        Target vertical stress value
+    alpha : float, optional
+        Rotation angle alpha in degrees, default is 0
+    beta : float, optional
+        Rotation angle beta in degrees, default is 0
+    gamma : float, optional
+        Rotation angle gamma in degrees, default is 0
+
+    Returns
+    -------
+    tuple or str
+        If optimization succeeds:
+            optimized_sx : float
+                Optimized stress in x-direction
+            optimized_sy : float
+                Optimized stress in y-direction
+            optimized_sz : float
+                Optimized stress in z-direction
+        If optimization fails:
+            str
+                Error message indicating optimization failure
+    
+    Notes
+    -----
+    Optimizes stress components under the constraint that σx > σy > σz,
+    which is characteristic of reverse faulting conditions.
     """
     # Initial setup
     initial_guess = [sx, sy, specified_SV]  # All three can vary
@@ -123,6 +168,33 @@ def get_optimalRF(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
         return "Optimization failed to converge. Using initial estimates."
     
 def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
+    """
+    Calculate the vertical stress component after stress tensor rotation.
+
+    Parameters
+    ----------
+    sx : float
+        Stress component in x-direction
+    sy : float
+        Stress component in y-direction
+    sz : float
+        Stress component in z-direction
+    alpha : float, optional
+        Rotation angle alpha in degrees, default is 0
+    beta : float, optional
+        Rotation angle beta in degrees, default is 0
+    gamma : float, optional
+        Rotation angle gamma in degrees, default is 0
+
+    Returns
+    -------
+    complex
+        Vertical stress component with imaginary part representing maximum
+        horizontal stress depending on faulting regime:
+        - Normal slip: imaginary part is max(σyy, σxx)
+        - Strike slip: imaginary part is max(σyy, σxx)
+        - Reverse slip: imaginary part is 0
+    """
     alpha = np.radians(alpha)
     beta = np.radians(beta)
     gamma = np.radians(gamma)
@@ -147,6 +219,34 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     #return complex(Sg[2][2],max(Sg[1][1],Sg[0][0]))
     
 def getAlignedStress(sx,sy,sz,alpha,beta,gamma,azim,inc):
+    """
+    Calculate the stress tensor aligned to a given well azimuth and inclination (Borehole coordinate system)
+
+    Parameters
+    ----------
+    sx : float
+        Stress component in x-direction
+    sy : float
+        Stress component in y-direction
+    sz : float
+        Stress component in z-direction
+    alpha : float
+        First rotation angle in degrees
+    beta : float
+        Second rotation angle in degrees
+    gamma : float
+        Third rotation angle in degrees
+    azim : float
+        Azimuth angle in degrees
+    inc : float
+        Inclination angle in degrees
+
+    Returns
+    -------
+    ndarray
+        3x3 stress tensor in the rotated coordinate system
+    """
+
     Ss = np.array([[sx,0,0],[0,sy,0],[0,0,sz]])
     #print(Ss)
 
@@ -202,6 +302,23 @@ def getAlignedStress(sx,sy,sz,alpha,beta,gamma,azim,inc):
     
 
 def getRota(alpha,beta,gamma):
+    """
+    Generate a rotation matrix from Euler angles.
+
+    Parameters
+    ----------
+    alpha : float
+        First rotation angle in degrees
+    beta : float
+        Second rotation angle in degrees
+    gamma : float
+        Third rotation angle in degrees
+
+    Returns
+    -------
+    ndarray
+        3x3 rotation matrix
+    """
     
     alpha = np.radians(alpha)
     beta = np.radians(beta)
@@ -214,7 +331,35 @@ def getRota(alpha,beta,gamma):
 
 
 def getStens(sx,sy,sz,alpha,beta,gamma):
-    
+    """
+    Calculate the stress tensor in the NED (Geographic) Coordinate System.
+
+    Parameters
+    ----------
+    sx : float
+        Stress component in x-direction
+    sy : float
+        Stress component in y-direction
+    sz : float
+        Stress component in z-direction
+    alpha : float
+        First rotation angle in degrees
+    beta : float
+        Second rotation angle in degrees
+    gamma : float
+        Third rotation angle in degrees
+
+    Returns
+    -------
+    tuple
+        Three 1D arrays representing the rows of the rotated stress tensor
+        (σxx, σxy, σxz), (σyx, σyy, σyz), (σzx, σzy, σzz)
+
+    Notes
+    -----
+    Prints eigenvalues, eigenvectors, vector dip, dip direction, and
+    vertical/horizontal stress components.
+    """
     #print(Ss)
 
     alpha = np.radians(alpha)
@@ -239,6 +384,28 @@ def getStens(sx,sy,sz,alpha,beta,gamma):
     return Sg[0],Sg[1],Sg[2]
 
 def getStrikeDip(alpha,beta,gamma):
+    """
+    Calculate strike, dip, and dip direction from Euler angles.
+
+    Parameters
+    ----------
+    alpha : float
+        First rotation angle in degrees
+    beta : float
+        Second rotation angle in degrees
+    gamma : float
+        Third rotation angle in degrees
+
+    Returns
+    -------
+    tuple
+        strike_direction : float
+            Strike direction in degrees
+        dip_angle : float
+            Dip angle in degrees
+        dip_direction : float
+            Dip direction in degrees
+    """
     alpha = np.radians(alpha)
     beta = np.radians(beta)
     gamma = np.radians(gamma)
@@ -251,6 +418,31 @@ def getStrikeDip(alpha,beta,gamma):
     return strike_direction,dip_angle,dip_direction
 
 def getEuler(alpha,strike, dip):
+    """
+    Optimize beta and gamma angles to match given strike and dip.
+
+    Parameters
+    ----------
+    alpha : float
+        Fixed rotation angle alpha in degrees
+    strike : float
+        Target strike angle in degrees
+    dip : float
+        Target dip angle in degrees
+
+    Returns
+    -------
+    tuple
+        beta_opt : float
+            Optimized beta angle in degrees
+        gamma_opt : float
+            Optimized gamma angle in degrees
+
+    Notes
+    -----
+    Uses Nelder-Mead optimization to find beta and gamma angles that
+    produce the desired strike and dip angles.
+    """
     def objective_function(x, strike, dip):
         beta, gamma = x
         estimated_strike, estimated_dip, _ = getStrikeDip(alpha,beta, gamma)
@@ -268,6 +460,32 @@ def getEuler(alpha,strike, dip):
     return beta_opt, gamma_opt
 
 def getOrit(s1,s2,s3,alpha,beta,gamma):
+    """
+    Calculate principal stress directions after stress tensor rotation.
+
+    Parameters
+    ----------
+    s1 : float
+        First principal stress magnitude
+    s2 : float
+        Second principal stress magnitude
+    s3 : float
+        Third principal stress magnitude
+    alpha : float
+        First rotation angle in degrees
+    beta : float
+        Second rotation angle in degrees
+    gamma : float
+        Third rotation angle in degrees
+
+    Returns
+    -------
+    ndarray
+        3x3 matrix where each column represents a principal stress direction
+        in the rotated coordinate system. The columns correspond to the
+        vertical, north, and east directions respectively.
+    """
+
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     #print(Ss)
 
@@ -285,6 +503,67 @@ def getOrit(s1,s2,s3,alpha,beta,gamma):
     return(orit)
 
 def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,ym=0,delT=0): #Converts farfield stress tensor to at-wall stress, at a single point on the wall of an inclined borehole
+    """
+    Calculate stress components at a point on the wall of an inclined borehole.
+
+    Parameters
+    ----------
+    s1 : float
+        First principal stress magnitude
+    s2 : float
+        Second principal stress magnitude
+    s3 : float
+        Third principal stress magnitude
+    alpha : float
+        First rotation angle in degrees
+    beta : float
+        Second rotation angle in degrees
+    gamma : float
+        Third rotation angle in degrees
+    azim : float
+        Borehole azimuth in degrees
+    inc : float
+        Borehole inclination in degrees
+    theta : float
+        Angular position on borehole wall in degrees
+    deltaP : float
+        Difference between mud pressure and pore pressure
+    Pp : float
+        Pore pressure
+    nu : float, optional
+        Poisson's ratio, default is 0.35
+    bt : float, optional
+        Linear thermal expansion coefficient, default is 0
+    ym : float, optional
+        Young's modulus, default is 0
+    delT : float, optional
+        Temperature difference, default is 0
+
+    Returns
+    -------
+    tuple
+        Stt : float
+            Tangential stress
+        Szz : float
+            Axial stress
+        Ttz : float
+            Shear stress
+        STMax : float
+            Maximum principal stress
+        STMin : float
+            Minimum principal stress
+        omega : float
+            Angle between maximum principal stress and borehole axis
+        orit : list
+            List containing orientation angles [NorthAzimuth, NorthInclination, 
+            EastAzimuth, EastInclination, VerticalInclination, VerticalAzimuth]
+
+    Notes
+    -----
+    This function converts far-field stress tensor to at-wall stress state at a
+    single point on the wall of an inclined borehole, accounting for thermal and
+    poroelastic effects.
+    """
     Ss = np.array([[s1,0,0],[0,s2,0],[0,0,s3]])
     #print(Ss)
 
@@ -369,167 +648,88 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,y
     return Stt,Szz,Ttz,STMax,Stmin,omega,orit
 
 
-def drawStab(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0):
-    values = np.zeros((10,37))
-    inclination = np.zeros((10,37))
-    azimuth = np.zeros((10,37))
-    inc = 0
-    while inc<10:
-        azim = 0
-        while azim<37:
-            pointer= 0
-            line = np.zeros(360)
-            while pointer<360:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp)
-                line[pointer] = STM
-                pointer+=1
-            values[inc][azim] = np.max(line)
-            inclination[inc][azim] = inc*10
-            azimuth[inc][azim] = math.radians(azim*10)
-            azim+=1
-        #print(round((inc/10)*100),"%")
-        inc+=1
-
-
-    fig = plt2.figure()
-    ax = fig.add_subplot(projection='polar')
-    ax.grid(True)
-    ax.set_yticklabels([])
-    ax.set_rmax(90)
-    ax.set_theta_zero_location("N")
-    ax.set_theta_direction(-1)
-    cax = ax.contourf(azimuth, inclination, values, 1000, cmap = 'jet')
-    cb = fig.colorbar(cax, orientation = 'horizontal')
-    cb.set_label("Sigma Theta-Theta Max")
-    plt2.show()
-
-
-def drawBreak(s1,s2,s3,deltaP,Pp,UCS,alpha=0,beta=0,gamma=0,nu=0.35):
-    values = np.zeros((10,37))
-    inclination = np.zeros((10,37))
-    azimuth = np.zeros((10,37))
-    inc = 0
-    while inc<10:
-        azim = 0
-        while azim<37:
-            pointer= 0
-            line = np.zeros(360)
-            width = 0
-            while pointer<360:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
-                if (STT-UCS)>0:
-                    width+=1
-                pointer+=1
-            #print(width)
-            values[inc][azim] = width/2
-            inclination[inc][azim] = inc*10
-            azimuth[inc][azim] = math.radians(azim*10)
-            azim+=1
-        #print(round((inc/10)*100),"%")
-        inc+=1
-
-
-    fig = plt2.figure()
-    ax = fig.add_subplot(projection='polar')
-    ax.grid(False)
-    ax.set_yticklabels([])
-    ax.set_rmax(90)
-    ax.set_theta_zero_location("N")
-    ax.set_theta_direction(-1)
-    levels = np.linspace(0,120,13)
-    cax = ax.contourf(azimuth, inclination, values, 13, levels=levels, extend = 'max', cmap = 'jet', alpha = 0.8)
-    print(orit)
-    ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
-    if(orit[3]<90):
-        ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
-    else:
-        ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
-    if(orit[5]<90):
-        ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-        ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
-    else:
-        ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
-    cb = fig.colorbar(cax, orientation = 'horizontal')
-    cb.set_label("Breakout Widths in Degrees")
-    plt2.title( "UCS = "+str(UCS)+", DeltaP = "+str(deltaP)+", Nu = "+str(nu) , loc="center")
-    plt2.show()
-    
-def drawDITF(s1,s2,s3,deltaP,Pp,alpha=0,beta=0,gamma=0,offset=0,nu=0.35):
-    values = np.zeros((10,37))
-    inclination = np.zeros((10,37))
-    azimuth = np.zeros((10,37))
-    inc = 0
-    while inc<10:
-        azim = 0
-        while azim<37:
-            pointer= 0
-            line = np.zeros(360)
-            angle= np.zeros(360)
-            width= 0
-            frac = np.zeros(360)
-            widthR = np.zeros(360)
-            while pointer<360:
-                STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim*10, inc*10, pointer, deltaP,Pp,nu)
-                line[pointer] = STT
-                angle[pointer] = omega
-                if STT<0:
-                    width+=1
-                    frac[pointer] = frac[pointer-1]+(1/math.tan(math.radians(omega)))
-                else:
-                    frac[pointer] = 0
-                #if pointer>180:
-                    #frac[pointer] = frac[360-pointer]
-                widthR[pointer] = (pointer/360)*0.67827 #in metres
-                pointer+=1
-            if width>0:
-                print("Width = ",width/2,", omega =",np.max(angle), " at inclination = ",inc*10, " and azimuth= ",azim*10)
-                #plt2.scatter(np.array(range(0,360)),frac)
-                #plt2.plot(angle)
-                #plt2.plot(line)
-                #plt2.xlim((0,0.67827))
-                #plt2.ylim((1,151))
-                #plt2.show()
-            values[inc][azim] = np.min(line)
-            inclination[inc][azim] = inc*10
-            azimuth[inc][azim] = math.radians(azim*10+offset)
-            azim+=1
-        #print(round((inc/10)*100),"%")
-        inc+=1
-
-
-    fig = plt2.figure()
-    ax = fig.add_subplot(projection='polar')
-    ax.grid(False)
-    ax.set_yticklabels([])
-    ax.set_rmax(90)
-    ax.set_theta_zero_location("N")
-    ax.set_theta_direction(-1)
-    levels = np.linspace(0,s3,2100)
-    cax = ax.contourf(azimuth, inclination, values, 2100, levels=levels, extend = 'both', cmap = 'jet_r', alpha = 0.8)
-    ax.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)
-    ax.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
-    if(orit[3]<=90):
-        ax.scatter(math.radians(-orit[2]),orit[3], s=20, color = 'black', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),orit[3], " "+str(round(s1,1)))
-    else:
-        ax.scatter(math.radians(-orit[2]),(90-(orit[3]-90)), s=20, color = 'white', edgecolors='black', label=s1)
-        ax.text(math.radians(-orit[2]),(90-(orit[3]-90)), " "+str(round(s1,1)))
-    if(orit[5]<=90):
-        ax.scatter(math.radians(-orit[4]),orit[5], s=20, color = 'black', edgecolors='black',label=s2)
-        ax.text(math.radians(-orit[4]),orit[5], " "+str(round(s2,1)))
-    else:
-        ax.scatter(math.radians(-orit[4]),(90-(orit[5]-90)), s=20, color = 'white', edgecolors='black', label=s2)
-        ax.text(math.radians(-orit[4]),(90-(orit[5]-90)), " "+str(round(s2,1)))
-    cb = fig.colorbar(cax, orientation = 'horizontal')
-    plt2.title( "DeltaP = "+str(round(deltaP,2))+", Nu = "+str(nu) , loc="center")
-    cb.set_label("Excess Mud Pressure to TensileFrac")
-    plt2.show()
-
 def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=0,ym=0,delT=0,path=None):
+    """Calculate and plot hoop stresses around a wellbore circumference.
+
+    This function computes various stress components around the wellbore wall and generates
+    a plot showing hoop stresses, stress angles, and identifies regions of potential failure.
+    It uses modified Zhang equations for stress calculations.
+
+    Parameters
+    ----------
+    inc : float
+        Wellbore inclination in degrees
+    azim : float
+        Wellbore azimuth in degrees
+    s1 : float
+        Maximum principal stress
+    s2 : float
+        Intermediate principal stress
+    s3 : float
+        Minimum principal stress
+    deltaP : float
+        Pressure differential (wellbore pressure - pore pressure)
+    Pp : float
+        Pore pressure
+    ucs : float
+        Unconfined compressive strength
+    alpha : float, optional
+        Principal stress rotation angle alpha in degrees, default 0
+    beta : float, optional
+        Principal stress rotation angle beta in degrees, default 0
+    gamma : float, optional
+        Principal stress rotation angle gamma in degrees, default 0
+    nu : float, optional
+        Poisson's ratio, default 0.35
+    bt : float, optional
+        Biot's coefficient, default 0
+    ym : float, optional
+        Young's modulus, default 0
+    delT : float, optional
+        Temperature difference, default 0
+    path : str, optional
+        File path to save the plot. If None, returns the plot object
+
+    Returns
+    -------
+    tuple
+        If path is provided:
+            - crush : ndarray
+                Binary array indicating compressive failure regions (1 for failure)
+            - frac : ndarray
+                Binary array indicating tensile failure regions (1 for failure)
+            - minstress : int
+                Index of minimum stress location in first 180 degrees
+            - maxstress : int
+                Index of maximum stress location in first 180 degrees
+            - angle_min : float
+                Principal stress angle at minimum stress location
+            - angle_min_opposite : float
+                Principal stress angle at opposite of minimum stress location
+            - angle : ndarray
+                Array of principal stress angles around wellbore
+        
+        If path is None:
+            Returns all above plus matplotlib.pyplot object as the last element
+
+    Notes
+    -----
+    The function calculates:
+    - Tangential (hoop) stresses
+    - Axial stresses
+    - Shear stresses
+    - Principal stress angles
+    - Potential failure regions (both tensile and compressive)
+    
+    The plot shows:
+    - Principal stress angles
+    - Effective hoop stresses (STT - Pp)
+    - Effective axial stresses (SZZ - Pp)
+    - Shear stresses (TTZ)
+
+    Uses Zhang's equations with internal friction angle calculated from
+    Poisson's ratio: phi = arcsin(1-2nu)
+    """
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
     mui = (1+np.sin(phi))/(1-np.sin(phi))
     fmui = ((((mui**2)+1)**0.5)+mui)**2
@@ -595,6 +795,74 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
         return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,plt2
 
 def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None):
+    """Generate wellbore stability plots showing mud weight headroom and breakout widths.
+
+    This function creates two polar projection plots:
+    1. A contour plot showing mud weight headroom in SG units
+    2. A contour plot showing breakout widths in degrees
+    
+    The plots are generated for various wellbore orientations (inclination and azimuth)
+    considering in-situ stresses, rock properties, and wellbore conditions.
+
+    Parameters
+    ----------
+    tvd : float
+        True vertical depth in meters
+    s1 : float
+        Maximum principal stress
+    s2 : float
+        Intermediate principal stress
+    s3 : float
+        Minimum principal stress
+    deltaP : float
+        Pressure differential (wellbore pressure - pore pressure)
+    Pp : float
+        Pore pressure
+    UCS : float, optional
+        Unconfined compressive strength, default 0
+    alpha : float, optional
+        Principal stress rotation angle alpha in degrees, default 0
+    beta : float, optional
+        Principal stress rotation angle beta in degrees, default 0
+    gamma : float, optional
+        Principal stress rotation angle gamma in degrees, default 0
+    offset : float, optional
+        Azimuthal offset in degrees, default 0
+    nu : float, optional
+        Poisson's ratio, default 0.35
+    azimuthu : float, optional
+        Wellbore azimuth in degrees, default 0
+    inclinationi : float, optional
+        Wellbore inclination in degrees, default 0
+    bt : float, optional
+        Biot's coefficient, default 0
+    ym : float, optional
+        Young's modulus, default 0
+    delT : float, optional
+        Temperature difference, default 0
+    path : str, optional
+        File path to save the plot. If None, returns the plot object
+
+    Returns
+    -------
+    matplotlib.pyplot
+        If path is None, returns the matplotlib pyplot object containing the stability plots
+    None
+        If path is provided, saves the plot to the specified path and returns None
+
+    Notes
+    -----
+    The function uses Zhang's equation (phi = np.arcsin(1-(2*nu))) for wellbore stability analysis.
+    The first plot shows mud weight headroom in SG units with a jet_r colormap.
+    The second plot shows breakout widths in degrees with a jet colormap.
+    Both plots use polar projections with inclination (0-90°) and azimuth (0-360°).
+    
+    The plots include:
+    - Contour plots of stability parameters
+    - Green marker showing the actual wellbore orientation
+    - Horizontal colorbars with appropriate units
+    - Title showing TVD and key parameters (UCS, deltaP, deltaT, Nu)
+    """
     #phi = 183-(163*nu) ## wayy too high
     #phi = np.arcsin(1-(nu/(1-nu))) #Still too high
     phi = np.arcsin(1-(2*nu)) #unModified Zhang

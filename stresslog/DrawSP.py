@@ -18,6 +18,62 @@ PhiB = 45
 mu = 0.6
 
 def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,delT=0,path=None):
+    """Draw a stress polygon visualization for wellbore stability analysis.
+
+    Parameters
+    ----------
+    Sv : float
+        Vertical stress in MPa
+    Pp : float
+        Pore pressure in MPa
+    bhp : float
+        Bottom hole pressure in MPa
+    shmin : float
+        Minimum horizontal stress in MPa
+    UCS : float, optional
+        Unconfined compressive strength in MPa, by default 0
+    phi : float, optional
+        Internal friction angle in radians, by default 0
+    flag : int, optional
+        Condition flag for stress calculation:
+        0 - No image log exists
+        1 - Image log exists, no breakouts or tensile fractures observed
+        2 - Breakouts observed
+        3 - Tensile fractures observed
+        4 - Both breakouts and tensile fractures observed
+        By default 0
+    mu : float, optional
+        Friction coefficient, by default 0.65
+    nu : float, optional
+        Poisson's ratio, by default 0
+    bt : float, optional
+        Linear thermal expansion coefficient, by default 0
+    ym : float, optional
+        Young's modulus in MPa, by default 0
+    delT : float, optional
+        Temperature difference in degrees Celsius, by default 0
+    path : str, optional
+        File path to save the plot, by default None
+
+    Returns
+    -------
+    matplotlib.pyplot
+        If path is None, returns the matplotlib plot object
+    None
+        If path is provided, saves the plot to the specified path
+
+    Notes
+    -----
+    The units to the function are not strictly in MPa, other units will
+    work just fine, as long as all units are compatible with each other
+    (for example Sv, Pp, bhp and ucs can all be in psi and the plot will
+    also be in psi)
+    This function creates a stress polygon visualization that includes:
+    - Stress regime domains (Normal, Strike-slip, Reverse)
+    - Breakout analysis with UCS variations
+    - Drilling-induced tensile fracture (DITF) analysis
+    - Stress bounds and interpolated values
+    """
     
     #mu = (1-(2*nu))/(2*((nu*(1-nu))**0.5))
     
@@ -222,6 +278,58 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,de
         return plt3
 
 def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT=0):
+    """Calculate SHmax using stress polygon logic, returns said value without visualisation.
+
+    Parameters
+    ----------
+    Sv : float
+        Vertical stress in MPa
+    Pp : float
+        Pore pressure in MPa
+    bhp : float
+        Bottom hole pressure in MPa
+    shmin : float
+        Minimum horizontal stress in MPa
+    UCS : float, optional
+        Unconfined compressive strength in MPa, by default 0
+    phi : float, optional
+        Internal friction angle in radians, by default 0
+    flag : int, optional
+        Condition flag for stress calculation:
+        0 - No image log exists
+        1 - Image log exists, no breakouts or tensile fractures observed
+        2 - Breakouts observed
+        3 - Tensile fractures observed
+        4 - Both breakouts and tensile fractures observed
+        By default 0
+    mu : float, optional
+        Friction coefficient, by default 0.6
+    nu : float, optional
+        Poisson's ratio, by default 0
+    bt : float, optional
+        Linear thermal expansion coefficient, by default 0
+    ym : float, optional
+        Young's modulus in MPa, by default 0
+    delT : float, optional
+        Temperature difference in degrees Celsius between hole-wall and circulating fluid, by default 0
+
+    Returns
+    -------
+    list
+        A list containing three float values:
+        - minSH: Minimum Max horizontal stress (SHMax)(MPa)
+        - maxSH: Maximum Max horizontal stress (SHMax)(MPa)
+        - midSH: Best Estimate Max horizontal stress (SHMAx)(MPa)
+
+    Notes
+    -----
+    The units to the function are not strictly in MPa, other units will
+    work just fine, as long as all units are compatible with each other
+    (for example Sv, Pp, bhp and ucs can all be in psi and the returned
+    SHMax will also be in psi)
+    This function performs the same stress polygon calculations as drawSP
+    but returns the numerical results without creating a visualization.
+    """
     
     PhiBr = 15
     biot = 1
@@ -387,20 +495,6 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT
     midSH = (minSH + maxSH) / 2
 
     return [minSH, maxSH, midSH]
-    #print([maxSH,minSH,shmin,Sv])
-    #print("DITF :",ditf)
-    #ax.add_patch(DITF)
-    #minmin = np.array([(shmin,minSH),(shmin,maxSH)])
-    #maxmaxsh = np.array([(shmin,minSH),(shmin,maxSH),(0,maxSH),(0,minSH)])
-    #Shmin =  Polygon(maxmaxsh, color='purple', label = 'Sh min',alpha=0.2)
-    #ax.add_patch(Shmin)
-    #ax.legend(loc='lower right')
-    #plt3.gca().set_aspect('equal')
-    #plt3.title("Stress Polygon")
-    #plt3.xlabel("Shmin")
-    #plt3.ylabel("SHmax")
-    #plt3.savefig(path,dpi=600)
-    #plt3.clf()
 
 
 #from .BoreStab import draw

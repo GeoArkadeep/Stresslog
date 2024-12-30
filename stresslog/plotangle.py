@@ -24,6 +24,23 @@ def plot_to_svg(matplot) -> str:
 
 
 def plotfracs(data):
+    """
+    Plot line segments representing fractures based on position and angle data.
+    
+    Parameters
+    ----------
+    data : ndarray
+        A 2D numpy array with shape (n, 4) where:
+        - data[:, 0] contains y-coordinates
+        - data[:, 1] contains x-coordinates
+        - data[:, 2] contains first set of angles
+        - data[:, 3] contains second set of angles
+    
+    Returns
+    -------
+    matplotlib.pyplot
+        A matplotlib pyplot object containing the plotted fractures
+    """
     x = data[:, 1]
     x2 = x+180
     y = data[:, 0]
@@ -61,6 +78,23 @@ def plotfracs(data):
 #plt.show()
 
 def plotfracsQ(data):
+    """
+    Initialize a plot for fractures without plotting the line segments.
+    
+    Parameters
+    ----------
+    data : ndarray
+        A 2D numpy array with shape (n, 4) where:
+        - data[:, 0] contains y-coordinates
+        - data[:, 1] contains x-coordinates
+        - data[:, 2] contains first set of angles
+        - data[:, 3] contains second set of angles
+    
+    Returns
+    -------
+    matplotlib.pyplot
+        A matplotlib pyplot object with initialized axes set to [0, 360]
+    """
     x = data[:, 1]
     x2 = x+180
     y = data[:, 0]
@@ -78,9 +112,46 @@ def plotfracsQ(data):
 def cot(x):
     return np.cos(x)/np.sin(x)
 
-def plotfrac(data,path=None):
+def plotfrac(data,path=None, dia=8.5):
+    """
+    Generate detailed fracture morphology plot with depth calculations.
+    
+    Parameters
+    ----------
+    data : tuple
+        A tuple containing:
+        - tvd : float
+            True vertical depth
+        - fr : ndarray
+            Array of fracture indicators
+        - angles : ndarray
+            Array of angles
+        - minangle : float
+            Minimum angle value
+        - maxangle : float
+            Maximum angle value
+    path : str, optional
+        File path to save the plot. If None, plot is not saved to file.
+    dia  : float, optional
+        Hole Diameter in inches to be used for the calculation, in inches, 8.5 by default
+    
+    Returns
+    -------
+    tuple
+        A tuple containing two ndarrays:
+        - cdepths : ndarray
+            Corrected depths array
+        - fdepths : ndarray
+            Final depths array
+    
+    Notes
+    -----
+    Uses a bit diameter of 8.5 inches for calculations.
+    Handles special angle cases and implements various depth corrections
+    and transformations.
+    """
     tvd,fr,angles,minangle,maxangle = data
-    dia = 8.5 #inches, bit
+    #dia = 8.5 #inches, bit
     circumference = np.pi*dia #in inches
     cm = 0.0254*circumference
     i = 0

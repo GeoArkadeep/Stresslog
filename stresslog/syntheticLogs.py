@@ -24,6 +24,51 @@ def random_curves_dataframe(
     matrick=60, mudline=210, dt_ncts=0.0008,
     rhoappg=17, a=0.08, water=8.6, mudweight=9.8, glwd=-1, seed=None, drop=[]
 ):
+    """Generate synthetic well log data with random variations.
+
+    Parameters
+    ----------
+    start_depth : float
+        Starting depth for the well log in meters
+    stop_depth : float
+        Ending depth for the well log in meters
+    step : float
+        Depth increment between measurements in meters
+    matrick : float, optional
+        Matrix sonic transit time in us/ft, by default 60
+    mudline : float, optional
+        Mudline sonic transit time in us/ft, by default 210
+    dt_ncts : float, optional
+        Compaction trend coefficient, by default 0.0008
+    rhoappg : float, optional
+        Apparent density gradient in ppg, by default 17
+    a : float, optional
+        Density compaction coefficient, by default 0.08
+    water : float, optional
+        Water density in ppg, by default 8.6
+    mudweight : float, optional
+        Mud weight in ppg, by default 9.8
+    glwd : float, optional
+        Ground level water depth in meters, by default -1
+    seed : int, optional
+        Random seed for reproducibility, by default None
+    drop : list, optional
+        List of curve names to exclude from output, by default []
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing synthetic well log curves including:
+        - DEPT: Depth
+        - DTCO: Compressional sonic
+        - RHOB: Bulk density
+        - GR: Gamma ray
+        - NU: Poisson's ratio
+        - DTS: Shear sonic
+        - NPHI: Neutron porosity
+        - ILD: Induction log deep resistivity
+    """
+
     if seed is None:
         seed = random.randint(0, 1000000)
         print("Seed: ", seed)
@@ -112,6 +157,56 @@ def random_curves_dataframe(
 def create_header(name, uwi, strt, stop, step, 
                      comp=None, fld=None, loc=None, cnty=None, stat=None, ctry=None, 
                      api=None, date=None, srvc=None, lati=None, long=None, gdat=None, kb = "1", gl = "0", nully="-999.25"):
+    """Create a LAS file header with well information.
+
+    Parameters
+    ----------
+    name : str
+        Well name
+    uwi : str
+        Unique Well Identifier
+    strt : str
+        Start depth
+    stop : str
+        Stop depth
+    step : str
+        Depth step size
+    comp : str, optional
+        Company name
+    fld : str, optional
+        Field name
+    loc : str, optional
+        Location description
+    cnty : str, optional
+        County name
+    stat : str, optional
+        State name
+    ctry : str, optional
+        Country name
+    api : str, optional
+        API number
+    date : str, optional
+        Log date (DD-MMM-YYYY format)
+    srvc : str, optional
+        Service company name
+    lati : str, optional
+        Latitude (in degrees)
+    long : str, optional
+        Longitude (in degrees)
+    gdat : str, optional
+        Geodetic datum
+    kb : str, optional
+        Kelly bushing elevation in meters, by default "1"
+    gl : str, optional
+        Ground level elevation in meters, by default "0"
+    nully : str, optional
+        Null value indicator, by default "-999.25"
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing formatted LAS file header information
+    """
     # Core mandatory content
     csv_parts = [
         """\
@@ -323,6 +418,34 @@ def create_random_las(
 from welly import Well
 
 def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_angle=None, rateofbuild=None, azimuth=None):
+    """Calculate well deviation data and update well object with TVD information.
+
+    Parameters
+    ----------
+    string_las : str, optional
+        LAS file content as string
+    wella : welly.Well, optional
+        Well object to process
+    deva : pandas.DataFrame, optional
+        Existing deviation data with columns 'MD', 'INC', 'AZIM'
+    kickoffpoint : float, optional
+        Depth at which well deviation begins
+    final_angle : float, optional
+        Target inclination angle in degrees
+    rateofbuild : float, optional
+        Rate of angle build in degrees per meter
+    azimuth : float, optional
+        Well azimuth in degrees
+
+    Returns
+    -------
+    welly.Well
+        Updated well object with deviation data and TVD calculations
+
+    Notes
+    -----
+    Either provide string_las or wella, and either deva or kickoffpoint+final_angle+rateofbuild+azimuth
+    """
     if wella is None:
         wella = Well.from_las(string_las, index="m")
     
@@ -393,6 +516,28 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
     return wella
 
 def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15, drop=[]):
+    """Create a random well object with specified parameters.
+
+    Parameters
+    ----------
+    kb : float
+        Kelly bushing elevation in meters
+    gl : float
+        Ground level elevation in meters
+    kop : float, optional
+        Kickoff point depth in meters, by default 0
+    maxangle : float, optional
+        Maximum deviation angle in degrees, by default 0
+    step : float, optional
+        Depth step size in meters, by default 0.15
+    drop : list, optional
+        List of curves to exclude from output, by default []
+
+    Returns
+    -------
+    welly.Well
+        Well object containing randomly generated log data
+    """
     data_frame_2, header_frame_2, string_buffer = create_random_las(kb=kb,gl=gl, stepper=step,drop=drop)
     string_data = string_buffer.getvalue()
     return Well.from_las(string_data)
