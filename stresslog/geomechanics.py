@@ -508,6 +508,15 @@ def remove_curves(well, mnemonics_to_remove):
             del well.data[key]
             print(f"Removed curve: {mnemonic}")
     return well
+# Define the list of mnemonics to remove
+mnemonics_to_remove = [
+    "ResD", "ShaleFlag", "RHO", "OBG_AMOCO", 
+    "DTCT", "PP_GRADIENT", "SHmin_DAINES", "SHmin_ZOBACK", "FracGrad", 
+    "FracPressure", "GEOPRESSURE", "SHmin_PRESSURE", "SHmax_PRESSURE", 
+    "MUD_PRESSURE", "OVERBURDEN_PRESSURE", "HYDROSTATIC_PRESSURE", 
+    "MUD_GRADIENT", "S0_Lal", "S0_Lal_Phi", "UCS_Horsud", "UCS_Lal", 
+    "Poisson_Ratio", "Youngs_Modulus", "Shear_Modulus", "Bulk_Modulus"
+]
 
 def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None):
     """
