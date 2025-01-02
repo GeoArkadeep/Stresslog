@@ -494,6 +494,21 @@ def weighted_average_downsampler(curve, window_size=21, window_type='v_shape'):
 
     return resampled_curve
 
+def remove_curves(well, mnemonics_to_remove):
+    """
+    Removes curves with the specified mnemonics from the well object.
+    
+    Parameters:
+    well (Well): The welly Well object.
+    mnemonics_to_remove (list): A list of mnemonics to be removed.
+    """
+    for mnemonic in mnemonics_to_remove:
+        keys_to_delete = [key for key, curve in well.data.items() if curve.mnemonic == mnemonic]
+        for key in keys_to_delete:
+            del well.data[key]
+            print(f"Removed curve: {mnemonic}")
+    return well
+
 def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
@@ -690,7 +705,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     motordbpath = paths['motor_db_path']
     
     rv1 = rv2 = rv3 = rv4 = rv5 = None
-
+    
+    well = remove_curves(well, mnemonics_to_remove)
+    
     #from downsampler import downsample_well_average
     #well = downsample_well_average(well, factor=window)
     devdata = well.location.deviation
