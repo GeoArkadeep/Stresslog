@@ -518,7 +518,8 @@ mnemonics_to_remove = [
     "Poisson_Ratio", "Youngs_Modulus", "Shear_Modulus", "Bulk_Modulus"
 ]
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None):
+unitdictdef = {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None, unitdict=unitdictdef):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -648,7 +649,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         calculated pore pressure gradients, and stress analysis results. If `writeFile` is True, 
         outputs are saved as files.
 
-     Notes
+    Notes
     -----
     - This function integrates geomechanical calculations with well log data processing.
     - It performs pore pressure estimation, stress analysis, and cohesion calculations.
@@ -2612,10 +2613,21 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     
     from .thirdparty import datasets_to_las
     
-    filestring = datasets_to_las(output_file4, {'Header': lasheader,'Curves':df3},c_units)
+    category_columns = {
+        'pressure': ['FracPressure', 'GEOPRESSURE', 'SHmin_PRESSURE', 'SHmax_PRESSURE', 'MUD_PRESSURE', 'OVERBURDEN_PRESSURE', 'HYDROSTATIC_PRESSURE'],
+        'strength': ['UCS_Horsud', 'UCS_Lal'],
+        'gradient': ['PP_GRADIENT', 'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad','MUD_GRADIENT',"OBG_AMOCO","RHO"],
+        'length' : ['DEPT','MD','TVDM']
+    }
     
     if not writeFile:
-        return df3,filestring,rv1,rv2,rv3,rv4,rv5,doi
+        from .unit_converter import convert_dataframe_units
+        cdf3,cc_units = convert_dataframe_units(df3, c_units, unitdict, category_columns)
+        
+        filestring = datasets_to_las(None, {'Header': lasheader,'Curves':cdf3},cc_units)
+    
+        return cdf3,filestring,rv1,rv2,rv3,rv4,rv5,doi
+
     #ladempa = mod_lad_cmw(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038,np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
     #ladempa = mod_lad_cmw(hoopmin,hoopmax,Sb[:,2,2],np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
     mogimpa = mogi(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038)

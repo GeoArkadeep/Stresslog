@@ -161,7 +161,80 @@ def convert_torque(values, input_unit, target_unit='g_0 *foot*pound'):
     
     return result.magnitude
 
-#Example usage
-torque_KJ = [100, 200, 300]  # Example values in KJ
-torque_ftlbs = convert_torque(torque_KJ, 'KJ')
-print(torque_ftlbs)
+
+
+uregdef = UnitRegistry(autoconvert_offset_to_baseunit = True)
+uregdef.define('ppg = 0.051948 psi/foot')
+uregdef.define('sg = 0.4335 psi/foot = gcc = SG = GCC = G/CC = g/cc = g/cm3 = G/CM3 = G/C3')
+uregdef.define('ksc = 1.0000005979/0.0703069999987293 psi = KSC = KSc = KsC = ksC = Ksc')
+uregdef.define('HR = hour')
+uregdef.define('M = meter')
+uregdef.define('mpa = MPa = Mpa = MPA')
+
+def convert_dataframe_units(dataframe, c_units, unitdict, category_columns, ureg=uregdef):
+    """
+    Convert units in a dataframe based on provided dictionaries of current and target units,
+    with explicit category-to-column mappings.
+
+    Parameters:
+        dataframe (pd.DataFrame): The input dataframe with columns to be converted.
+        c_units (dict): Dictionary mapping column names to their current units.
+        unitdict (dict): Dictionary mapping categories (e.g., 'pressure') to target units.
+        category_columns (dict): Dictionary mapping categories (e.g., 'pressure', 'gradient') to column lists.
+
+    Returns:
+        pd.DataFrame: Dataframe with converted units.
+        dict: Dictionary mapping column names to their new units.
+    """
+    
+    converted_units = {}  # Dictionary to store the updated units of each column
+    
+    
+
+    # Define mappings for unit categories
+    unit_mappings = {
+        'pressure': {'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm, 'mpa': ureg.MPa},
+        'gradient': {'gcc': ureg.gcc, 'sg': ureg.sg, 'ppg': ureg.ppg, 'psi/foot': ureg.psi / ureg.foot, 'ksc/m': ureg.ksc / ureg.m},
+        'strength': {'mpa': ureg.MPa, 'psi': ureg.psi, 'ksc': ureg.ksc, 'bar': ureg.bar, 'atm': ureg.atm},
+        'length': {'m': ureg.m, 'f': ureg.foot, 'km': ureg.km, 'mile': ureg.mile, 'nm': ureg.nautical_mile, 'in': ureg.inch, 'cm': ureg.cm, 'fathom': ureg.fathom},
+    }
+
+    # Normalize target units in unitdict to lowercase for case-insensitivity
+    unitdict = {category.lower(): unit.lower() for category, unit in unitdict.items()}
+
+    # Normalize current units in c_units to lowercase
+    c_units = {col: unit.lower() for col, unit in c_units.items()}
+    
+    #print(c_units,unitdict)
+    # Iterate over categories and their associated columns
+    for category, columns in category_columns.items():
+        # Skip categories not in the target unit dictionary
+        if category not in unitdict:
+            continue
+        
+        target_unit = unitdict[category]  # Get the target unit for this category
+        target_unit_obj = unit_mappings[category][target_unit]  # Convert to pint unit
+
+        # Process each column in the category
+        for col in columns:
+            if col not in c_units:
+                print(f"Warning: Column '{col}' not found in c_units. Skipping.")
+                continue
+            
+            current_unit = c_units[col]
+            current_unit_obj = unit_mappings[category].get(current_unit)
+            #print(current_unit,current_unit_obj)
+            if not current_unit_obj:
+                print(f"Warning: Unit '{current_unit}' for column '{col}' not recognized. Skipping.")
+                continue
+            #print(target_unit,target_unit_obj)
+            # Perform the unit conversion
+            try:
+                dataframe[col] = dataframe[col].apply(
+                    lambda x: (x * current_unit_obj).to(target_unit_obj).magnitude
+                )
+                converted_units[col] = target_unit
+            except Exception as e:
+                print(f"Error converting column '{col}': {e}")
+
+    return dataframe, converted_units
