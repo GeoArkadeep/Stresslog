@@ -519,6 +519,7 @@ mnemonics_to_remove = [
 ]
 
 unitdictdef = {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}
+
 def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None, unitdict=unitdictdef):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
@@ -2609,7 +2610,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #lasheader.to_csv(hbuffer, encoding='utf-8', index=False)
     #print(hbuffer.getvalue())
     #print(lasheader)
-    c_units = {"TVDM":"M","RHO":"G/C3", "OBG_AMOCO":"G/C3", "DTCT":"US/F", "PP_GRADIENT":"G/C3","SHmin_DAINES":"G/C3","SHmin_ZOBACK":"G/C3","GEOPRESSURE":"PSI","SHmin_PRESSURE":"PSI", "SHmax_PRESSURE":"PSI", "MUD_PRESSURE":"PSI", "MUD_GRADIENT":"G/C3", "S0_Lal":"MPA", "S0_Lal_Phi":"MPA", "UCS_Horsud":"MPA", "UCS_Lal":"MPA"}
+    c_units = {"DEPT":'m', "MD":'m', "TVD":'m', "TVDM":"m","RHO":"gcc", "OBG_AMOCO":"gcc", "DTCT":"US/F", 'FracGrad':'gcc', "PP_GRADIENT":"gcc","SHmin_DAINES":"gcc","SHmin_ZOBACK":"gcc",'OVERBURDEN_PRESSURE':'psi', 'HYDROSTATIC_PRESSURE':'psi',  "GEOPRESSURE":"psi", 'FracPressure':'psi', "SHmin_PRESSURE":"psi", "SHmax_PRESSURE":"psi", "MUD_PRESSURE":"psi", "MUD_GRADIENT":"gcc", "S0_Lal":"mpa", "S0_Lal_Phi":"mpa", "UCS_Horsud":"mpa", "UCS_Lal":"mpa"}
     
     from .thirdparty import datasets_to_las
     
