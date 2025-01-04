@@ -600,7 +600,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     horsude : float, optional
         Parameter for Horsud's stress method (default is 2.93).
     unitchoice : list, optional
-        List specifying the unit system for outputs (default is [0, 0, 0, 0, 0]).
+        <DEPRECATED, will be removed in a future version> List specifying the unit system for outputs (default is [0, 0, 0, 0, 0]).
     ureg : pint.UnitRegistry, optional
         Unit registry for unit conversions (default is a pint.UnitRegistry with 
         `autoconvert_offset_to_baseunit=True`).
