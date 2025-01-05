@@ -596,12 +596,16 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         Parameter for Lal's cohesion method (default is 0.5).
     lall : int, optional
         Parameter for Lal's cohesion method (default is 5).
+    mabw : float, optional
+        Maximum Allowable Breakout Width in degrees (default is 90).
     horsuda : float, optional
         Parameter for Horsud's stress method (default is 0.77).
     horsude : float, optional
         Parameter for Horsud's stress method (default is 2.93).
     unitchoice : list, optional
         <DEPRECATED, will be removed in a future version> List specifying the unit system for outputs (default is [0, 0, 0, 0, 0]).
+    unitdict : dict, optional
+        Unit dictionary to be used for unit conversion, default is {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}.
     ureg : pint.UnitRegistry, optional
         Unit registry for unit conversions (default is a pint.UnitRegistry with 
         `autoconvert_offset_to_baseunit=True`).
@@ -718,6 +722,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     rv1 = rv2 = rv3 = rv4 = rv5 = None
     
     well = remove_curves(well, mnemonics_to_remove)
+    
+    mabw = max(0, min(180, mabw))  # Restrict mabw between 0 and 180
     
     #from downsampler import downsample_well_average
     #well = downsample_well_average(well, factor=window)
@@ -2422,7 +2428,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #print("Alpha,Beta,Gamma = ",alpha,beta,gamma)
     from .BoreStab import get_bhp_critical
     skip = 21 if 2.0 <= window < 21 else window
-    mtol = 1-((2*max(0, min(180, mabw)))/360) #mtol is in percentile total circumferential failure, mabw is in degrees
+    mtol = 1-((2*mabw)/360) #mtol is in percentile total circumferential failure, mabw is in degrees
     
     
     for i in range(0,len(tvd),1):
