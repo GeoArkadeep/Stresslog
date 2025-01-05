@@ -520,7 +520,7 @@ mnemonics_to_remove = [
 
 unitdictdef = {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None, unitdict=unitdictdef):
+def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, mabw = 90, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None, unitdict=unitdictdef):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -2422,6 +2422,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #print("Alpha,Beta,Gamma = ",alpha,beta,gamma)
     from .BoreStab import get_bhp_critical
     skip = 21 if 2.0 <= window < 21 else window
+    mtol = 1-((2*max(0, min(180, mabw)))/360) #mtol is in percentile total circumferential failure, mabw is in degrees
+    
     
     for i in range(0,len(tvd),1):
         #print(i)
@@ -2464,7 +2466,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
                 #print(ladempa[j])
             hoopmax[i] = np.nanmax(STMax) #Maximum principal stress resolved on borehole wall, in MPA
             hoopmin[i] = np.nanmin(Stmin) #Minimum principal stress on borehole wall, not necessarily perpendicular to hole axis, in MPA
-            lademax[i] = np.nanmax(ladempa)
+            #lademax[i] = np.nanmax(ladempa)
+            lademax[i] = np.nanpercentile(ladempa, mtol*100)
             minthetarad = np.radians(np.nanargmin(Stmin))
             #print(lademax[i])
             lademin[i] = np.nanmin(ladempa)
@@ -2501,8 +2504,9 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     if np.nanargmin(abs(tvdbgl))>0:
         tensilefracpsi[0:np.nanargmin(abs(tvdbgl))] = np.nan
     
+    tensilefracpsi = np.where(tensilefracpsi < spsipp, spsipp, tensilefracpsi)
     referencepressure = tensilefracpsi[np.nanargmin(abs(tvdbgl))]
-    referencedepth = well.location.gl*3.2808399#tvdf[np.nanargmin(abs(tvdbgl))]
+    referencedepth = tvdbglf[np.nanargmin(abs(tvdbgl))]#well.location.gl*3.2808399#
     deltaPressure = tensilefracpsi-referencepressure
     deltaDepth = tvdbglf-referencedepth
     if glwd<0:
@@ -2511,7 +2515,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
         tensilefracgcc = (deltaPressure/deltaDepth)/0.4335275040012#(tensilefracpsi/tvdf)/0.4335275040012
     #tensilefracgcc = np.where(tensilefracgcc < np.minimum(ObgTgcc, fgcc), np.minimum(ObgTgcc, fgcc), tensilefracgcc)
     #tensilefracgcc = np.insert(tensilefracgcc, 0, np.nan)
-
+    tensilefracgcc = np.where(tensilefracgcc < spp, spp, tensilefracgcc)
+    
+    mogimpa = mogi(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038)
+    
+    ladegcc = ((lademax*145.038)/tvdf)/0.4335275040012
+    mogigcc = ((mogimpa*145.038)/tvdf)/0.4335275040012
+    ladegcc = interpolate_nan(ladegcc)
+    ladegcc = np.where(ladegcc < spp, spp, ladegcc)
     
     if writeFile:
         plt.plot(interpolate_nan(SbFF[:,0,0]),tvd, label='aligned sx')
@@ -2581,6 +2592,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     well.data['UCSLAL'] =  ucslalmpa
     poison = Curve(nu2, mnemonic='Poisson_Ratio',units='', index=md, null=nu)
     well.data['NU'] =  poison
+    modlade = Curve(ladegcc, mnemonic=f"ML{mabw}",units='g/cc', index=md, null=0)
+    well.data['LADE'] =  modlade
     youngsmod = Curve(ym, mnemonic='Youngs_Modulus',units='GPa', index=md, null=0)
     well.data['YM'] =  youngsmod
     shearmod = Curve(sm, mnemonic='Shear_Modulus',units='GPa', index=md, null=0)
@@ -2610,14 +2623,14 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     #lasheader.to_csv(hbuffer, encoding='utf-8', index=False)
     #print(hbuffer.getvalue())
     #print(lasheader)
-    c_units = {"DEPT":'m', "MD":'m', "TVD":'m', "TVDM":"m","RHO":"gcc", "OBG_AMOCO":"gcc", "DTCT":"US/F", 'FracGrad':'gcc', "PP_GRADIENT":"gcc","SHmin_DAINES":"gcc","SHmin_ZOBACK":"gcc",'OVERBURDEN_PRESSURE':'psi', 'HYDROSTATIC_PRESSURE':'psi',  "GEOPRESSURE":"psi", 'FracPressure':'psi', "SHmin_PRESSURE":"psi", "SHmax_PRESSURE":"psi", "MUD_PRESSURE":"psi", "MUD_GRADIENT":"gcc", "S0_Lal":"mpa", "S0_Lal_Phi":"mpa", "UCS_Horsud":"mpa", "UCS_Lal":"mpa"}
+    c_units = {"DEPT":'m', "MD":'m', "TVD":'m', "TVDM":"m","RHO":"gcc", "OBG_AMOCO":"gcc", "DTCT":"US/F", 'FracGrad':'gcc', "PP_GRADIENT":"gcc","SHmin_DAINES":"gcc","SHmin_ZOBACK":"gcc",'OVERBURDEN_PRESSURE':'psi', 'HYDROSTATIC_PRESSURE':'psi',  "GEOPRESSURE":"psi", 'FracPressure':'psi', "SHmin_PRESSURE":"psi", "SHmax_PRESSURE":"psi", "MUD_PRESSURE":"psi", "MUD_GRADIENT":"gcc", f"ML{mabw}":"gcc", "S0_Lal":"mpa", "S0_Lal_Phi":"mpa", "UCS_Horsud":"mpa", "UCS_Lal":"mpa"}
     
     from .thirdparty import datasets_to_las
     
     category_columns = {
         'pressure': ['FracPressure', 'GEOPRESSURE', 'SHmin_PRESSURE', 'SHmax_PRESSURE', 'MUD_PRESSURE', 'OVERBURDEN_PRESSURE', 'HYDROSTATIC_PRESSURE'],
         'strength': ['UCS_Horsud', 'UCS_Lal'],
-        'gradient': ['PP_GRADIENT', 'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad','MUD_GRADIENT',"OBG_AMOCO","RHO"],
+        'gradient': ['PP_GRADIENT', 'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad','MUD_GRADIENT',"OBG_AMOCO","RHO", f"ML{mabw}"],
         'length' : ['DEPT','MD','TVDM']
     }
     
@@ -2631,11 +2644,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
 
     #ladempa = mod_lad_cmw(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038,np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
     #ladempa = mod_lad_cmw(hoopmin,hoopmax,Sb[:,2,2],np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),np.zeros(len(obgpsi)),offset-90,phi,lal,psipp/145.038)
-    mogimpa = mogi(psifg/145.038,sgHMpsi/145.038,obgpsi/145.038)
-    
-    ladegcc = ((lademax*145.038)/tvdf)/0.4335275040012
-    mogigcc = ((mogimpa*145.038)/tvdf)/0.4335275040012
-    ladegcc = interpolate_nan(ladegcc)
+
     
     """
     plt.plot(ladempa)
