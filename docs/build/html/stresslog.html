@@ -1,0 +1,1584 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stresslog package &mdash; stresslog 1.4.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=02f2166e"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            stresslog
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">stresslog package</a><ul>
+<li><a class="reference internal" href="#stresslog.compute_optimal_gradient"><code class="docutils literal notranslate"><span class="pre">compute_optimal_gradient()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.compute_optimal_offset"><code class="docutils literal notranslate"><span class="pre">compute_optimal_offset()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.draw"><code class="docutils literal notranslate"><span class="pre">draw()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.drawSP"><code class="docutils literal notranslate"><span class="pre">drawSP()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getAlignedStress"><code class="docutils literal notranslate"><span class="pre">getAlignedStress()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getColumnHeights"><code class="docutils literal notranslate"><span class="pre">getColumnHeights()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getEuler"><code class="docutils literal notranslate"><span class="pre">getEuler()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getGasDensity"><code class="docutils literal notranslate"><span class="pre">getGasDensity()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getHoop"><code class="docutils literal notranslate"><span class="pre">getHoop()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getHydrostaticPsi"><code class="docutils literal notranslate"><span class="pre">getHydrostaticPsi()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getOrit"><code class="docutils literal notranslate"><span class="pre">getOrit()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getPPfromTop"><code class="docutils literal notranslate"><span class="pre">getPPfromTop()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getPPfromTopRecursive"><code class="docutils literal notranslate"><span class="pre">getPPfromTopRecursive()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getRota"><code class="docutils literal notranslate"><span class="pre">getRota()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getSP"><code class="docutils literal notranslate"><span class="pre">getSP()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getSigmaTT"><code class="docutils literal notranslate"><span class="pre">getSigmaTT()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getStens"><code class="docutils literal notranslate"><span class="pre">getStens()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getStrikeDip"><code class="docutils literal notranslate"><span class="pre">getStrikeDip()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.getVertical"><code class="docutils literal notranslate"><span class="pre">getVertical()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_Dxc"><code class="docutils literal notranslate"><span class="pre">get_Dxc()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_Dxc_vec"><code class="docutils literal notranslate"><span class="pre">get_Dxc_vec()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_OBG_pascals_vec"><code class="docutils literal notranslate"><span class="pre">get_OBG_pascals_vec()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_PP_grad_Zhang_gcc_vec"><code class="docutils literal notranslate"><span class="pre">get_PP_grad_Zhang_gcc_vec()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_PPgrad_Dxc_gcc"><code class="docutils literal notranslate"><span class="pre">get_PPgrad_Dxc_gcc()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_PPgrad_Dxc_gcc_vec"><code class="docutils literal notranslate"><span class="pre">get_PPgrad_Dxc_gcc_vec()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_PPgrad_Eaton_gcc"><code class="docutils literal notranslate"><span class="pre">get_PPgrad_Eaton_gcc()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_PPgrad_Eaton_gcc_vec"><code class="docutils literal notranslate"><span class="pre">get_PPgrad_Eaton_gcc_vec()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_PPgrad_Zhang_gcc"><code class="docutils literal notranslate"><span class="pre">get_PPgrad_Zhang_gcc()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_Shmin_grad_Daine_ppg"><code class="docutils literal notranslate"><span class="pre">get_Shmin_grad_Daine_ppg()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_Shmin_grad_Daine_ppg_vec"><code class="docutils literal notranslate"><span class="pre">get_Shmin_grad_Daine_ppg_vec()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.get_optimal"><code class="docutils literal notranslate"><span class="pre">get_optimal()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.lade"><code class="docutils literal notranslate"><span class="pre">lade()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.lade_failure"><code class="docutils literal notranslate"><span class="pre">lade_failure()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.mod_lad_cmw"><code class="docutils literal notranslate"><span class="pre">mod_lad_cmw()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.mod_lad_cmw2"><code class="docutils literal notranslate"><span class="pre">mod_lad_cmw2()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.mogi"><code class="docutils literal notranslate"><span class="pre">mogi()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.mogi_failure"><code class="docutils literal notranslate"><span class="pre">mogi_failure()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.mohr_failure"><code class="docutils literal notranslate"><span class="pre">mohr_failure()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.plotPPzhang"><code class="docutils literal notranslate"><span class="pre">plotPPzhang()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.plot_logs_labels"><code class="docutils literal notranslate"><span class="pre">plot_logs_labels()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.plot_sanding"><code class="docutils literal notranslate"><span class="pre">plot_sanding()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.plotfrac"><code class="docutils literal notranslate"><span class="pre">plotfrac()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.willson_sanding_cwf"><code class="docutils literal notranslate"><span class="pre">willson_sanding_cwf()</span></code></a></li>
+<li><a class="reference internal" href="#stresslog.zhang_sanding_cwf"><code class="docutils literal notranslate"><span class="pre">zhang_sanding_cwf()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">stresslog</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">stresslog package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/stresslog.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-stresslog">
+<span id="stresslog-package"></span><h1>stresslog package<a class="headerlink" href="#module-stresslog" title="Link to this heading"></a></h1>
+<p>Copyright (c) 2024-2025 ROCK LAB PRIVATE LIMITED
+This file is part of “Stresslog” project and is released under the
+GNU Affero General Public License v3.0 (AGPL-3.0)
+See the GNU Affero General Public License for more details: &lt;<a class="reference external" href="https://www.gnu.org/licenses/agpl-3.0.html">https://www.gnu.org/licenses/agpl-3.0.html</a>&gt;</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.compute_optimal_gradient">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">compute_optimal_gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tvds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">porepressures</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.compute_optimal_gradient" title="Link to this definition"></a></dt>
+<dd><p>Compute the optimal fluid gradient that best fits the measured pore pressures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvds</strong> (<em>array_like</em>) – Array of True Vertical Depths (meters)</p></li>
+<li><p><strong>porepressures</strong> (<em>array_like</em>) – Array of pore pressures (psi)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimal fluid gradient (g/cc)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Uses scipy.optimize.minimize to find the optimal gradient</p></li>
+<li><p>Handles NaN values in the pore pressure data</p></li>
+<li><p>Minimizes the absolute sum of differences between measured and calculated pressures</p></li>
+<li><p>Initial guess for gradient is 1.0 g/cc</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.compute_optimal_offset">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">compute_optimal_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tvds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">porepressures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.compute_optimal_offset" title="Link to this definition"></a></dt>
+<dd><p>Compute the optimal depth offset that minimizes the difference between
+measured pore pressures and a hydrostatic gradient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvds</strong> (<em>array_like</em>) – Array of True Vertical Depths (meters)</p></li>
+<li><p><strong>porepressures</strong> (<em>array_like</em>) – Array of pore pressures (psi)</p></li>
+<li><p><strong>gradient</strong> (<em>float</em>) – Fluid gradient (g/cc)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimal depth offset (meters)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Uses scipy.optimize.minimize to find the optimal offset</p></li>
+<li><p>Handles NaN values in the pore pressure data</p></li>
+<li><p>Minimizes the absolute sum of differences between measured and calculated pressures</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.draw">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tvd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UCS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuthu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inclinationi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.draw" title="Link to this definition"></a></dt>
+<dd><p>Generate wellbore stability plots showing mud weight headroom and breakout widths.</p>
+<p>This function creates two polar projection plots:
+1. A contour plot showing mud weight headroom in SG units
+2. A contour plot showing breakout widths in degrees</p>
+<p>The plots are generated for various wellbore orientations (inclination and azimuth)
+considering in-situ stresses, rock properties, and wellbore conditions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvd</strong> (<em>float</em>) – True vertical depth in meters</p></li>
+<li><p><strong>s1</strong> (<em>float</em>) – Maximum principal stress</p></li>
+<li><p><strong>s2</strong> (<em>float</em>) – Intermediate principal stress</p></li>
+<li><p><strong>s3</strong> (<em>float</em>) – Minimum principal stress</p></li>
+<li><p><strong>deltaP</strong> (<em>float</em>) – Pressure differential (wellbore pressure - pore pressure)</p></li>
+<li><p><strong>Pp</strong> (<em>float</em>) – Pore pressure</p></li>
+<li><p><strong>UCS</strong> (<em>float</em><em>, </em><em>optional</em>) – Unconfined compressive strength, default 0</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Principal stress rotation angle alpha in degrees, default 0</p></li>
+<li><p><strong>beta</strong> (<em>float</em><em>, </em><em>optional</em>) – Principal stress rotation angle beta in degrees, default 0</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – Principal stress rotation angle gamma in degrees, default 0</p></li>
+<li><p><strong>offset</strong> (<em>float</em><em>, </em><em>optional</em>) – Azimuthal offset in degrees, default 0</p></li>
+<li><p><strong>nu</strong> (<em>float</em><em>, </em><em>optional</em>) – Poisson’s ratio, default 0.35</p></li>
+<li><p><strong>azimuthu</strong> (<em>float</em><em>, </em><em>optional</em>) – Wellbore azimuth in degrees, default 0</p></li>
+<li><p><strong>inclinationi</strong> (<em>float</em><em>, </em><em>optional</em>) – Wellbore inclination in degrees, default 0</p></li>
+<li><p><strong>bt</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot’s coefficient, default 0</p></li>
+<li><p><strong>ym</strong> (<em>float</em><em>, </em><em>optional</em>) – Young’s modulus, default 0</p></li>
+<li><p><strong>delT</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature difference, default 0</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – File path to save the plot. If None, returns the plot object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>matplotlib.pyplot</em> – If path is None, returns the matplotlib pyplot object containing the stability plots</p></li>
+<li><p><em>None</em> – If path is provided, saves the plot to the specified path and returns None</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The function uses Zhang’s equation (phi = np.arcsin(1-(2*nu))) for wellbore stability analysis.
+The first plot shows mud weight headroom in SG units with a jet_r colormap.
+The second plot shows breakout widths in degrees with a jet colormap.
+Both plots use polar projections with inclination (0-90°) and azimuth (0-360°).</p>
+<p>The plots include:
+- Contour plots of stability parameters
+- Green marker showing the actual wellbore orientation
+- Horizontal colorbars with appropriate units
+- Title showing TVD and key parameters (UCS, deltaP, deltaT, Nu)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.drawSP">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">drawSP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Sv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bhp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UCS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.65</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.drawSP" title="Link to this definition"></a></dt>
+<dd><p>Draw a stress polygon visualization for wellbore stability analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Sv</strong> (<em>float</em>) – Vertical stress in MPa</p></li>
+<li><p><strong>Pp</strong> (<em>float</em>) – Pore pressure in MPa</p></li>
+<li><p><strong>bhp</strong> (<em>float</em>) – Bottom hole pressure in MPa</p></li>
+<li><p><strong>shmin</strong> (<em>float</em>) – Minimum horizontal stress in MPa</p></li>
+<li><p><strong>UCS</strong> (<em>float</em><em>, </em><em>optional</em>) – Unconfined compressive strength in MPa, by default 0</p></li>
+<li><p><strong>phi</strong> (<em>float</em><em>, </em><em>optional</em>) – Internal friction angle in radians, by default 0</p></li>
+<li><p><strong>flag</strong> (<em>int</em><em>, </em><em>optional</em>) – Condition flag for stress calculation:
+0 - No image log exists
+1 - Image log exists, no breakouts or tensile fractures observed
+2 - Breakouts observed
+3 - Tensile fractures observed
+4 - Both breakouts and tensile fractures observed
+By default 0</p></li>
+<li><p><strong>mu</strong> (<em>float</em><em>, </em><em>optional</em>) – Friction coefficient, by default 0.65</p></li>
+<li><p><strong>nu</strong> (<em>float</em><em>, </em><em>optional</em>) – Poisson’s ratio, by default 0</p></li>
+<li><p><strong>bt</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear thermal expansion coefficient, by default 0</p></li>
+<li><p><strong>ym</strong> (<em>float</em><em>, </em><em>optional</em>) – Young’s modulus in MPa, by default 0</p></li>
+<li><p><strong>delT</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature difference in degrees Celsius, by default 0</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – File path to save the plot, by default None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>matplotlib.pyplot</em> – If path is None, returns the matplotlib plot object</p></li>
+<li><p><em>None</em> – If path is provided, saves the plot to the specified path</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The units to the function are not strictly in MPa, other units will
+work just fine, as long as all units are compatible with each other
+(for example Sv, Pp, bhp and ucs can all be in psi and the plot will
+also be in psi)
+This function creates a stress polygon visualization that includes:
+- Stress regime domains (Normal, Strike-slip, Reverse)
+- Breakout analysis with UCS variations
+- Drilling-induced tensile fracture (DITF) analysis
+- Stress bounds and interpolated values</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getAlignedStress">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getAlignedStress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getAlignedStress" title="Link to this definition"></a></dt>
+<dd><p>Calculate the stress tensor aligned to a given well azimuth and inclination (Borehole coordinate system)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sx</strong> (<em>float</em>) – Stress component in x-direction</p></li>
+<li><p><strong>sy</strong> (<em>float</em>) – Stress component in y-direction</p></li>
+<li><p><strong>sz</strong> (<em>float</em>) – Stress component in z-direction</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – First rotation angle in degrees</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – Second rotation angle in degrees</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Third rotation angle in degrees</p></li>
+<li><p><strong>azim</strong> (<em>float</em>) – Azimuth angle in degrees</p></li>
+<li><p><strong>inc</strong> (<em>float</em>) – Inclination angle in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>3x3 stress tensor in the rotated coordinate system</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getColumnHeights">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getColumnHeights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tvd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getColumnHeights" title="Link to this definition"></a></dt>
+<dd><p>Calculate the heights of water, oil, and gas columns based on depth parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvd</strong> (<em>float</em>) – True Vertical Depth - the depth at which to calculate column heights</p></li>
+<li><p><strong>structop</strong> (<em>float</em>) – Structural top - the shallowest depth of the structure</p></li>
+<li><p><strong>goc</strong> (<em>float</em>) – Gas-Oil Contact depth</p></li>
+<li><p><strong>owc</strong> (<em>float</em>) – Oil-Water Contact depth</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list containing three heights [h1, h2, h3] where:
+- h1: height of water column (negative value)
+- h2: height of oil column (negative value)
+- h3: height of gas column (negative value)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>All depths should be in meters</p></li>
+<li><p>The function handles invalid inputs by setting appropriate defaults</p></li>
+<li><p>If goc or owc are NaN, 0, or less than structop, they are set to structop</p></li>
+<li><p>If goc &gt; owc, goc is set to owc as this is physically impossible</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getEuler">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getEuler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dip</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getEuler" title="Link to this definition"></a></dt>
+<dd><p>Optimize beta and gamma angles to match given strike and dip.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – Fixed rotation angle alpha in degrees</p></li>
+<li><p><strong>strike</strong> (<em>float</em>) – Target strike angle in degrees</p></li>
+<li><p><strong>dip</strong> (<em>float</em>) – Target dip angle in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>beta_opt<span class="classifier">float</span></dt><dd><p>Optimized beta angle in degrees</p>
+</dd>
+<dt>gamma_opt<span class="classifier">float</span></dt><dd><p>Optimized gamma angle in degrees</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Uses Nelder-Mead optimization to find beta and gamma angles that
+produce the desired strike and dip angles.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getGasDensity">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getGasDensity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getGasDensity" title="Link to this definition"></a></dt>
+<dd><p>Calculate gas density using the ideal gas law.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>float</em>) – Pressure (psi)</p></li>
+<li><p><strong>t</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature (Celsius), default=100</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gas density (kg/m³)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Uses ideal gas law (PV = nRT)</p></li>
+<li><p>Assumes methane (CH4) with molar mass of 16.04 g/mol</p></li>
+<li><p>Converts input pressure from psi to Pa</p></li>
+<li><p>Converts input temperature from Celsius to Kelvin</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getHoop">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getHoop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ucs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getHoop" title="Link to this definition"></a></dt>
+<dd><p>Calculate and plot hoop stresses around a wellbore circumference.</p>
+<p>This function computes various stress components around the wellbore wall and generates
+a plot showing hoop stresses, stress angles, and identifies regions of potential failure.
+It uses modified Zhang equations for stress calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inc</strong> (<em>float</em>) – Wellbore inclination in degrees</p></li>
+<li><p><strong>azim</strong> (<em>float</em>) – Wellbore azimuth in degrees</p></li>
+<li><p><strong>s1</strong> (<em>float</em>) – Maximum principal stress</p></li>
+<li><p><strong>s2</strong> (<em>float</em>) – Intermediate principal stress</p></li>
+<li><p><strong>s3</strong> (<em>float</em>) – Minimum principal stress</p></li>
+<li><p><strong>deltaP</strong> (<em>float</em>) – Pressure differential (wellbore pressure - pore pressure)</p></li>
+<li><p><strong>Pp</strong> (<em>float</em>) – Pore pressure</p></li>
+<li><p><strong>ucs</strong> (<em>float</em>) – Unconfined compressive strength</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Principal stress rotation angle alpha in degrees, default 0</p></li>
+<li><p><strong>beta</strong> (<em>float</em><em>, </em><em>optional</em>) – Principal stress rotation angle beta in degrees, default 0</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – Principal stress rotation angle gamma in degrees, default 0</p></li>
+<li><p><strong>nu</strong> (<em>float</em><em>, </em><em>optional</em>) – Poisson’s ratio, default 0.35</p></li>
+<li><p><strong>bt</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot’s coefficient, default 0</p></li>
+<li><p><strong>ym</strong> (<em>float</em><em>, </em><em>optional</em>) – Young’s modulus, default 0</p></li>
+<li><p><strong>delT</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature difference, default 0</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – File path to save the plot. If None, returns the plot object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>If path is provided:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>crush<span class="classifier">ndarray</span></dt><dd><p>Binary array indicating compressive failure regions (1 for failure)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>frac<span class="classifier">ndarray</span></dt><dd><p>Binary array indicating tensile failure regions (1 for failure)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>minstress<span class="classifier">int</span></dt><dd><p>Index of minimum stress location in first 180 degrees</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>maxstress<span class="classifier">int</span></dt><dd><p>Index of maximum stress location in first 180 degrees</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>angle_min<span class="classifier">float</span></dt><dd><p>Principal stress angle at minimum stress location</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>angle_min_opposite<span class="classifier">float</span></dt><dd><p>Principal stress angle at opposite of minimum stress location</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>angle<span class="classifier">ndarray</span></dt><dd><p>Array of principal stress angles around wellbore</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>If path is None:</dt><dd><p>Returns all above plus matplotlib.pyplot object as the last element</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The function calculates:
+- Tangential (hoop) stresses
+- Axial stresses
+- Shear stresses
+- Principal stress angles
+- Potential failure regions (both tensile and compressive)</p>
+<p>The plot shows:
+- Principal stress angles
+- Effective hoop stresses (STT - Pp)
+- Effective axial stresses (SZZ - Pp)
+- Shear stresses (TTZ)</p>
+<p>Uses Zhang’s equations with internal friction angle calculated from
+Poisson’s ratio: phi = arcsin(1-2nu)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getHydrostaticPsi">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getHydrostaticPsi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tvd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getHydrostaticPsi" title="Link to this definition"></a></dt>
+<dd><p>Calculate hydrostatic pressure in psi at a given depth for a given pressure gradient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tvd</strong> (<em>float</em>) – True Vertical Depth (meters)</p></li>
+<li><p><strong>gradient</strong> (<em>float</em>) – Fluid gradient (g/cc)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Hydrostatic pressure (psi)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Converts input depth from meters to feet</p></li>
+<li><p>Uses conversion factors to calculate pressure in psi</p></li>
+<li><p>Formula: pressure = gradient * 8.3454063545262 * tvd * 3.28084 * 0.052</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getOrit">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getOrit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getOrit" title="Link to this definition"></a></dt>
+<dd><p>Calculate principal stress directions after stress tensor rotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s1</strong> (<em>float</em>) – First principal stress magnitude</p></li>
+<li><p><strong>s2</strong> (<em>float</em>) – Second principal stress magnitude</p></li>
+<li><p><strong>s3</strong> (<em>float</em>) – Third principal stress magnitude</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – First rotation angle in degrees</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – Second rotation angle in degrees</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Third rotation angle in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>3x3 matrix where each column represents a principal stress direction
+in the rotated coordinate system. The columns correspond to the
+vertical, north, and east directions respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getPPfromTop">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getPPfromTop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sealintegrity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stressratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overburden</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oilgrad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watergrad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getPPfromTop" title="Link to this definition"></a></dt>
+<dd><p>Calculate hydraulic pore pressure using a simplified method based on fluid gradients and column heights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sealintegrity</strong> (<em>float</em>) – Seal integrity pressure (psi)</p></li>
+<li><p><strong>stressratio</strong> (<em>float</em>) – Stress ratio (dimensionless)</p></li>
+<li><p><strong>overburden</strong> (<em>float</em>) – Overburden pressure (psi)</p></li>
+<li><p><strong>oilgrad</strong> (<em>float</em>) – Oil gradient (g/cc)</p></li>
+<li><p><strong>watergrad</strong> (<em>float</em>) – Water gradient (g/cc)</p></li>
+<li><p><strong>structop</strong> (<em>float</em>) – Structural top depth (m)</p></li>
+<li><p><strong>goc</strong> (<em>float</em>) – Gas-Oil Contact depth (m)</p></li>
+<li><p><strong>owc</strong> (<em>float</em>) – Oil-Water Contact depth (m)</p></li>
+<li><p><strong>tvd</strong> (<em>float</em>) – True Vertical Depth (m)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Calculated pore pressure (psi)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Uses a constant conversion factor k = 0.145037737731556 for unit conversion</p></li>
+<li><p>Gas density is calculated based on pressure at the top of the structure</p></li>
+<li><p>Assumes constant gradients for oil and water</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getPPfromTopRecursive">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getPPfromTopRecursive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sealintegrity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stressratio</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overburden</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oilgrad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">watergrad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">structop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">owc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getPPfromTopRecursive" title="Link to this definition"></a></dt>
+<dd><p>Calculate hydraulic pore pressure using a recursive method that accounts for gas density variation with depth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sealintegrity</strong> (<em>float</em>) – Seal integrity pressure (psi)</p></li>
+<li><p><strong>stressratio</strong> (<em>float</em>) – Stress ratio (dimensionless)</p></li>
+<li><p><strong>overburden</strong> (<em>float</em>) – Overburden pressure (psi)</p></li>
+<li><p><strong>oilgrad</strong> (<em>float</em>) – Oil gradient (g/cc)</p></li>
+<li><p><strong>watergrad</strong> (<em>float</em>) – Water gradient (g/cc)</p></li>
+<li><p><strong>structop</strong> (<em>float</em>) – Structural top depth (m)</p></li>
+<li><p><strong>goc</strong> (<em>float</em>) – Gas-Oil Contact depth (m)</p></li>
+<li><p><strong>owc</strong> (<em>float</em>) – Oil-Water Contact depth (m)</p></li>
+<li><p><strong>tvd</strong> (<em>float</em>) – True Vertical Depth (m)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Calculated pore pressure (psi)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Uses recursive calculation for gas pressure to account for gas compressibility</p></li>
+<li><p>Steps through the gas column in 1-meter increments</p></li>
+<li><p>More accurate than getPPfromTop for thick gas columns</p></li>
+<li><p>Assumes constant gradients for oil and water</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getRota">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getRota</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getRota" title="Link to this definition"></a></dt>
+<dd><p>Generate a rotation matrix from Euler angles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – First rotation angle in degrees</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – Second rotation angle in degrees</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Third rotation angle in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>3x3 rotation matrix</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getSP">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getSP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Sv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bhp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UCS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getSP" title="Link to this definition"></a></dt>
+<dd><p>Calculate SHmax using stress polygon logic, returns said value without visualisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Sv</strong> (<em>float</em>) – Vertical stress in MPa</p></li>
+<li><p><strong>Pp</strong> (<em>float</em>) – Pore pressure in MPa</p></li>
+<li><p><strong>bhp</strong> (<em>float</em>) – Bottom hole pressure in MPa</p></li>
+<li><p><strong>shmin</strong> (<em>float</em>) – Minimum horizontal stress in MPa</p></li>
+<li><p><strong>UCS</strong> (<em>float</em><em>, </em><em>optional</em>) – Unconfined compressive strength in MPa, by default 0</p></li>
+<li><p><strong>phi</strong> (<em>float</em><em>, </em><em>optional</em>) – Internal friction angle in radians, by default 0</p></li>
+<li><p><strong>flag</strong> (<em>int</em><em>, </em><em>optional</em>) – Condition flag for stress calculation:
+0 - No image log exists
+1 - Image log exists, no breakouts or tensile fractures observed
+2 - Breakouts observed
+3 - Tensile fractures observed
+4 - Both breakouts and tensile fractures observed
+By default 0</p></li>
+<li><p><strong>mu</strong> (<em>float</em><em>, </em><em>optional</em>) – Friction coefficient, by default 0.6</p></li>
+<li><p><strong>nu</strong> (<em>float</em><em>, </em><em>optional</em>) – Poisson’s ratio, by default 0</p></li>
+<li><p><strong>bt</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear thermal expansion coefficient, by default 0</p></li>
+<li><p><strong>ym</strong> (<em>float</em><em>, </em><em>optional</em>) – Young’s modulus in MPa, by default 0</p></li>
+<li><p><strong>delT</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature difference in degrees Celsius between hole-wall and circulating fluid, by default 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list containing three float values:
+- minSH: Minimum Max horizontal stress (SHMax)(MPa)
+- maxSH: Maximum Max horizontal stress (SHMax)(MPa)
+- midSH: Best Estimate Max horizontal stress (SHMAx)(MPa)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The units to the function are not strictly in MPa, other units will
+work just fine, as long as all units are compatible with each other
+(for example Sv, Pp, bhp and ucs can all be in psi and the returned
+SHMax will also be in psi)
+This function performs the same stress polygon calculations as drawSP
+but returns the numerical results without creating a visualization.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getSigmaTT">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getSigmaTT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ym</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getSigmaTT" title="Link to this definition"></a></dt>
+<dd><p>Calculate stress components at a point on the wall of an inclined borehole.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s1</strong> (<em>float</em>) – First principal stress magnitude</p></li>
+<li><p><strong>s2</strong> (<em>float</em>) – Second principal stress magnitude</p></li>
+<li><p><strong>s3</strong> (<em>float</em>) – Third principal stress magnitude</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – First rotation angle in degrees</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – Second rotation angle in degrees</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Third rotation angle in degrees</p></li>
+<li><p><strong>azim</strong> (<em>float</em>) – Borehole azimuth in degrees</p></li>
+<li><p><strong>inc</strong> (<em>float</em>) – Borehole inclination in degrees</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Angular position on borehole wall in degrees</p></li>
+<li><p><strong>deltaP</strong> (<em>float</em>) – Difference between mud pressure and pore pressure</p></li>
+<li><p><strong>Pp</strong> (<em>float</em>) – Pore pressure</p></li>
+<li><p><strong>nu</strong> (<em>float</em><em>, </em><em>optional</em>) – Poisson’s ratio, default is 0.35</p></li>
+<li><p><strong>bt</strong> (<em>float</em><em>, </em><em>optional</em>) – Linear thermal expansion coefficient, default is 0</p></li>
+<li><p><strong>ym</strong> (<em>float</em><em>, </em><em>optional</em>) – Young’s modulus, default is 0</p></li>
+<li><p><strong>delT</strong> (<em>float</em><em>, </em><em>optional</em>) – Temperature difference, default is 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Stt<span class="classifier">float</span></dt><dd><p>Tangential stress</p>
+</dd>
+<dt>Szz<span class="classifier">float</span></dt><dd><p>Axial stress</p>
+</dd>
+<dt>Ttz<span class="classifier">float</span></dt><dd><p>Shear stress</p>
+</dd>
+<dt>STMax<span class="classifier">float</span></dt><dd><p>Maximum principal stress</p>
+</dd>
+<dt>STMin<span class="classifier">float</span></dt><dd><p>Minimum principal stress</p>
+</dd>
+<dt>omega<span class="classifier">float</span></dt><dd><p>Angle between maximum principal stress and borehole axis</p>
+</dd>
+<dt>orit<span class="classifier">list</span></dt><dd><p>List containing orientation angles [NorthAzimuth, NorthInclination,
+EastAzimuth, EastInclination, VerticalInclination, VerticalAzimuth]</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function converts far-field stress tensor to at-wall stress state at a
+single point on the wall of an inclined borehole, accounting for thermal and
+poroelastic effects.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getStens">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getStens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getStens" title="Link to this definition"></a></dt>
+<dd><p>Calculate the stress tensor in the NED (Geographic) Coordinate System.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sx</strong> (<em>float</em>) – Stress component in x-direction</p></li>
+<li><p><strong>sy</strong> (<em>float</em>) – Stress component in y-direction</p></li>
+<li><p><strong>sz</strong> (<em>float</em>) – Stress component in z-direction</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – First rotation angle in degrees</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – Second rotation angle in degrees</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Third rotation angle in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Three 1D arrays representing the rows of the rotated stress tensor
+(σxx, σxy, σxz), (σyx, σyy, σyz), (σzx, σzy, σzz)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Prints eigenvalues, eigenvectors, vector dip, dip direction, and
+vertical/horizontal stress components.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getStrikeDip">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getStrikeDip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getStrikeDip" title="Link to this definition"></a></dt>
+<dd><p>Calculate strike, dip, and dip direction from Euler angles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<em>float</em>) – First rotation angle in degrees</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – Second rotation angle in degrees</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Third rotation angle in degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>strike_direction<span class="classifier">float</span></dt><dd><p>Strike direction in degrees</p>
+</dd>
+<dt>dip_angle<span class="classifier">float</span></dt><dd><p>Dip angle in degrees</p>
+</dd>
+<dt>dip_direction<span class="classifier">float</span></dt><dd><p>Dip direction in degrees</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.getVertical">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">getVertical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.getVertical" title="Link to this definition"></a></dt>
+<dd><p>Calculate the vertical stress component after stress tensor rotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sx</strong> (<em>float</em>) – Stress component in x-direction</p></li>
+<li><p><strong>sy</strong> (<em>float</em>) – Stress component in y-direction</p></li>
+<li><p><strong>sz</strong> (<em>float</em>) – Stress component in z-direction</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Rotation angle alpha in degrees, default is 0</p></li>
+<li><p><strong>beta</strong> (<em>float</em><em>, </em><em>optional</em>) – Rotation angle beta in degrees, default is 0</p></li>
+<li><p><strong>gamma</strong> (<em>float</em><em>, </em><em>optional</em>) – Rotation angle gamma in degrees, default is 0</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Vertical stress component with imaginary part representing maximum
+horizontal stress depending on faulting regime:
+- Normal slip: imaginary part is max(σyy, σxx)
+- Strike slip: imaginary part is max(σyy, σxx)
+- Reverse slip: imaginary part is 0</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_Dxc">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_Dxc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ROP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RPM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">WOB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BTDIA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ECD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_Dxc" title="Link to this definition"></a></dt>
+<dd><p>Calculate corrected d-exponent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ROP</strong> (<em>float</em>) – Rate of penetration in ft/hr</p></li>
+<li><p><strong>RPM</strong> (<em>float</em>) – Rotations per minute</p></li>
+<li><p><strong>WOB</strong> (<em>float</em>) – Weight on bit in lbs</p></li>
+<li><p><strong>BTDIA</strong> (<em>float</em>) – Bit diameter in inches</p></li>
+<li><p><strong>ECD</strong> (<em>float</em>) – Equivalent circulating density</p></li>
+<li><p><strong>pn</strong> (<em>float</em>) – Hydrostatic pressure gradient, in same units as ECD</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Corrected d-exponent if greater than 0.1, otherwise NaN</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This is the scalar version of the corrected d-exponent calculation.
+For vectorized operations, use get_Dxc_vec.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_Dxc_vec">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_Dxc_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ROP</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">RPM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">WOB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BTDIA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ECD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_Dxc_vec" title="Link to this definition"></a></dt>
+<dd><p>Calculate corrected d-exponent with vectorized inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ROP</strong> (<em>array_like</em>) – Rate of penetration in ft/hr</p></li>
+<li><p><strong>RPM</strong> (<em>array_like</em>) – Rotations per minute</p></li>
+<li><p><strong>WOB</strong> (<em>array_like</em>) – Weight on bit in lbs</p></li>
+<li><p><strong>BTDIA</strong> (<em>array_like</em>) – Bit diameter in inches</p></li>
+<li><p><strong>ECD</strong> (<em>array_like</em>) – Equivalent circulating density</p></li>
+<li><p><strong>pn</strong> (<em>array_like</em>) – Hydrostatic pressure gradient, in same units as ECD</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of corrected d-exponent values</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Vectorized version of the corrected d-exponent calculation.
+All inputs are broadcast to compatible shapes before calculation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_OBG_pascals_vec">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_OBG_pascals_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tvd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdmsl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhogcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">water</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">glwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_OBG_pascals_vec" title="Link to this definition"></a></dt>
+<dd><p>Vectorized calculation of comprehensive overburden stress considering offshore and onshore scenarios.</p>
+<p>Parameters:
+tvd (array-like): True Vertical Depth
+tvdbgl (array-like): True Vertical Depth Below Ground Level
+tvdmsl (array-like): True Vertical Depth from Mean Sea Level
+rhogcc (array-like): Density in g/cc
+water (float): Water density
+wdf (float): Water depth factor
+glwd (float): Ground Level Water Depth (negative for offshore)</p>
+<p>Returns:
+tuple: Arrays of integrho (Pa), integrhopsift, and ObgTppg</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_PP_grad_Zhang_gcc_vec">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_PP_grad_Zhang_gcc_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObgTgcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mudline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrick</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltmu0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dalm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_PP_grad_Zhang_gcc_vec" title="Link to this definition"></a></dt>
+<dd><p>Calculate pressure gradient using Zhang’s method with vectorized inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ObgTgcc</strong> (<em>array_like</em>) – Overburden gradient in g/cc</p></li>
+<li><p><strong>pn</strong> (<em>array_like</em>) – Normal (Hydrostatic) pressure gradient in g/cc</p></li>
+<li><p><strong>b</strong> (<em>float/array_like</em>) – Compaction coefficient for unloading case</p></li>
+<li><p><strong>tvdbgl</strong> (<em>array_like</em>) – True vertical depth below ground level in metres</p></li>
+<li><p><strong>c</strong> (<em>float/array_like</em>) – Compaction coefficient for loading case</p></li>
+<li><p><strong>mudline</strong> (<em>float/array_like</em>) – interval travel time at mudline (uspf)</p></li>
+<li><p><strong>matrick</strong> (<em>float/array_like</em>) – interval travel time in matrix (0 porosity case) (uspf)</p></li>
+<li><p><strong>deltmu0</strong> (<em>array_like</em>) – Interval travel time at top of unloading condition in uspf</p></li>
+<li><p><strong>dalm</strong> (<em>array_like</em>) – P-sonic log array in uspf</p></li>
+<li><p><strong>biot</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Biot coefficient, defaults to 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pressure gradient calculated using Zhang’s method</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function applies Zhang’s method for pressure gradient calculation
+with support for vectorized operations. All inputs are broadcast to
+compatible shapes before calculation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_PPgrad_Dxc_gcc">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_PPgrad_Dxc_gcc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObgTgcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nde</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dxc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_PPgrad_Dxc_gcc" title="Link to this definition"></a></dt>
+<dd><p>Calculate pressure gradient using d-exponent method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ObgTgcc</strong> (<em>float</em>) – Overburden gradient in g/cc</p></li>
+<li><p><strong>pn</strong> (<em>float</em>) – Normal pressure in g/cc</p></li>
+<li><p><strong>d</strong> (<em>float</em>) – d-exponent parameter</p></li>
+<li><p><strong>nde</strong> (<em>float</em>) – d-exponent power</p></li>
+<li><p><strong>tvdbgl</strong> (<em>float</em>) – True vertical depth below ground level</p></li>
+<li><p><strong>D0</strong> (<em>float</em>) – d-exponent value at surface</p></li>
+<li><p><strong>Dxc</strong> (<em>float</em>) – Corrected d-exponent</p></li>
+<li><p><strong>biot</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot coefficient, defaults to 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pressure gradient calculated using d-exponent method</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This is the scalar version of the d-exponent pressure gradient calculation.
+For vectorized operations, use get_PPgrad_Dxc_gcc_vec.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_PPgrad_Dxc_gcc_vec">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_PPgrad_Dxc_gcc_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObgTgcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nde</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dxc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_PPgrad_Dxc_gcc_vec" title="Link to this definition"></a></dt>
+<dd><p>Calculate pressure gradient using d-exponent method with vectorized inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ObgTgcc</strong> (<em>array_like</em>) – Overburden gradient in g/cc</p></li>
+<li><p><strong>pn</strong> (<em>array_like</em>) – Normal pressure in g/cc</p></li>
+<li><p><strong>d</strong> (<em>float/array_like</em>) – d-exponent parameter</p></li>
+<li><p><strong>nde</strong> (<em>float/array_like</em>) – d-exponent power</p></li>
+<li><p><strong>tvdbgl</strong> (<em>array_like</em>) – True vertical depth below ground level</p></li>
+<li><p><strong>D0</strong> (<em>float/array_like</em>) – Reference d-exponent value</p></li>
+<li><p><strong>Dxc</strong> (<em>array_like</em>) – Corrected d-exponent</p></li>
+<li><p><strong>biot</strong> (<em>float/array_like</em><em>, </em><em>optional</em>) – Biot coefficient, defaults to 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pressure gradient calculated using d-exponent method</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Vectorized version of the d-exponent pressure gradient calculation.
+All inputs are broadcast to compatible shapes before calculation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_PPgrad_Eaton_gcc">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_PPgrad_Eaton_gcc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObgTgcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ne</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resdeep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_PPgrad_Eaton_gcc" title="Link to this definition"></a></dt>
+<dd><p>Calculate pressure gradient using Eaton’s method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ObgTgcc</strong> (<em>float</em>) – Overburden gradient in g/cc</p></li>
+<li><p><strong>pn</strong> (<em>float</em>) – Normal (Hydrostatic) pressure gradient in g/cc</p></li>
+<li><p><strong>be</strong> (<em>float</em>) – Eaton’s parameter b</p></li>
+<li><p><strong>ne</strong> (<em>float</em>) – Eaton’s exponent</p></li>
+<li><p><strong>tvdbgl</strong> (<em>float</em>) – True vertical depth below ground level</p></li>
+<li><p><strong>res0</strong> (<em>float</em>) – Resistivity at mudline</p></li>
+<li><p><strong>resdeep</strong> (<em>float</em>) – Deep resistivity measurement of the given sample</p></li>
+<li><p><strong>biot</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot coefficient, defaults to 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pressure gradient calculated using Eaton’s method</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This is the single-point version of the Eaton pressure gradient calculation.
+For vectorized operations, use get_PPgrad_Eaton_gcc_vec.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_PPgrad_Eaton_gcc_vec">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_PPgrad_Eaton_gcc_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObgTgcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ne</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resdeep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_PPgrad_Eaton_gcc_vec" title="Link to this definition"></a></dt>
+<dd><p>Calculate pressure gradient using Eaton’s method with vectorized inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ObgTgcc</strong> (<em>array_like</em>) – Overburden gradient in g/cc</p></li>
+<li><p><strong>pn</strong> (<em>array_like</em>) – Normal (Hydrostatic) pressure gradient in g/cc</p></li>
+<li><p><strong>be</strong> (<em>float/array_like</em>) – Eaton’s parameter b</p></li>
+<li><p><strong>ne</strong> (<em>float/array_like</em>) – Eaton’s exponent</p></li>
+<li><p><strong>tvdbgl</strong> (<em>array_like</em>) – True vertical depth below ground level in metres</p></li>
+<li><p><strong>res0</strong> (<em>float/array_like</em>) – Resistivity at mudline in ohm.m</p></li>
+<li><p><strong>resdeep</strong> (<em>array_like</em>) – Deep resistivity measurements log in ohm.m</p></li>
+<li><p><strong>biot</strong> (<em>float/array_like</em><em>, </em><em>optional</em>) – Biot coefficient, defaults to 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pressure gradient calculated using Eaton’s method</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Vectorized version of the Eaton pressure gradient calculation.
+All inputs are broadcast to compatible shapes before calculation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_PPgrad_Zhang_gcc">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_PPgrad_Zhang_gcc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ObgTgcc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvdbgl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mudline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matrick</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltmu0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dalm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_PPgrad_Zhang_gcc" title="Link to this definition"></a></dt>
+<dd><p>Calculate pore pressure gradient using Zhang’s method for a single point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ObgTgcc</strong> (<em>float</em>) – Overburden gradient in gcc units</p></li>
+<li><p><strong>pn</strong> (<em>float</em>) – Normal (Hydrostatic) pressure gradient in g/cc</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – Compaction coefficient for unloading case</p></li>
+<li><p><strong>tvdbgl</strong> (<em>float</em>) – True vertical depth below ground level</p></li>
+<li><p><strong>c</strong> (<em>float</em>) – Compaction coefficient for loading case</p></li>
+<li><p><strong>mudline</strong> (<em>float</em>) – interval travel time at mudline (uspf)</p></li>
+<li><p><strong>matrick</strong> (<em>float</em>) – matrix interval travel time (uspf)</p></li>
+<li><p><strong>deltmu0</strong> (<em>float</em>) – interval travel time as recorded on P-sonic log at
+the depth considered to be the top of unloading condition</p></li>
+<li><p><strong>dalm</strong> (<em>float</em>) – travel time as recorded on P-sonic log (uspf)
+for the given depth</p></li>
+<li><p><strong>biot</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot’s coefficient, by default 1</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Calculated pore pressure gradient in gcc units</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Implements Zhang’s method for calculating pore pressure gradient.
+The calculation varies based on the relationship between b and c coefficients.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_Shmin_grad_Daine_ppg">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_Shmin_grad_Daine_ppg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nu2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObgTppg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppgZhang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tecB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_Shmin_grad_Daine_ppg" title="Link to this definition"></a></dt>
+<dd><p>Scalar calculation of fracture gradient pressure for a single sample.</p>
+<p>Parameters:
+nu2 (float): Poisson’s ratio
+ObgTppg (float): Overburden gradient in ppg
+biot (float): Biot’s coefficient
+ppgZhang (float): Zhang’s pore pressure in ppg
+tecB (float): Tectonic factor</p>
+<p>Returns:
+float: Fracture gradient pressure in ppg</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_Shmin_grad_Daine_ppg_vec">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_Shmin_grad_Daine_ppg_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nu2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ObgTppg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ppgZhang</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tecB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_Shmin_grad_Daine_ppg_vec" title="Link to this definition"></a></dt>
+<dd><p>Vectorized calculation of fracture gradient pressure.</p>
+<p>Parameters:
+nu2 (array-like): Poisson’s ratio
+ObgTppg (array-like): Overburden gradient in ppg
+biot (array-like): Biot’s coefficient
+ppgZhang (array-like): Zhang’s pore pressure in ppg
+tecB (array-like): Tectonic factor</p>
+<p>Returns:
+numpy.ndarray: Fracture gradient pressure in ppg</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.get_optimal">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">get_optimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.get_optimal" title="Link to this definition"></a></dt>
+<dd><p>Optimizes sx, sy, sz to achieve a specified SV
+under given angular conditions.</p>
+<p>Parameters:
+- sx, sy, sz: The values of the principal stresses
+- alpha, beta, gamma: Euler angles of the principal stresses.</p>
+<p>Returns:
+- Optimized values in the order of sx, sy, sz and Euler angles if successful;</p>
+<blockquote>
+<div><p>otherwise, returns original values.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.lade">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">lade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tzx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cohesion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.lade" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Lade failure criterion with numpy array support.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sx</strong> (<em>array_like</em>) – Normal stress in x-direction</p></li>
+<li><p><strong>sy</strong> (<em>array_like</em>) – Normal stress in y-direction</p></li>
+<li><p><strong>sz</strong> (<em>array_like</em>) – Normal stress in z-direction</p></li>
+<li><p><strong>txy</strong> (<em>array_like</em>) – Shear stress in xy-plane</p></li>
+<li><p><strong>tyz</strong> (<em>array_like</em>) – Shear stress in yz-plane</p></li>
+<li><p><strong>tzx</strong> (<em>array_like</em>) – Shear stress in zx-plane</p></li>
+<li><p><strong>phi</strong> (<em>array_like</em>) – Internal friction angle in radians</p></li>
+<li><p><strong>cohesion</strong> (<em>array_like</em>) – Rock cohesion strength</p></li>
+<li><p><strong>pp</strong> (<em>array_like</em>) – Pore pressure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lade failure criterion value (F)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.lade_failure">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">lade_failure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tzx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cohesion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.lade_failure" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Modified Lade failure criterion with pore pressure correction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sx</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress in x-direction</p></li>
+<li><p><strong>sy</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress in y-direction</p></li>
+<li><p><strong>sz</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress in z-direction</p></li>
+<li><p><strong>txy</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress in xy-plane</p></li>
+<li><p><strong>tyz</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress in yz-plane</p></li>
+<li><p><strong>tzx</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress in zx-plane</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – Internal friction angle in radians</p></li>
+<li><p><strong>cohesion</strong> (<em>float</em>) – Rock cohesion strength</p></li>
+<li><p><strong>pp</strong> (<em>float</em>) – Pore pressure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Lade failure criterion value (F2)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.mod_lad_cmw">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">mod_lad_cmw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">szz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tzx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cohesion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.mod_lad_cmw" title="Link to this definition"></a></dt>
+<dd><p>Calculate the modified Lade critical mud weight with pore pressure correction in the wellbore coordinate system.
+The stress tensor should already have been rotated to be in the borehole coordinate system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sxx</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress component in x-direction</p></li>
+<li><p><strong>syy</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress component in y-direction</p></li>
+<li><p><strong>szz</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress component in z-direction</p></li>
+<li><p><strong>txy</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress component in xy-plane</p></li>
+<li><p><strong>tyz</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress component in yz-plane</p></li>
+<li><p><strong>tzx</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress component in zx-plane</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Wellbore angle in degrees</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – Internal friction angle in radians</p></li>
+<li><p><strong>cohesion</strong> (<em>float</em>) – Rock cohesion strength</p></li>
+<li><p><strong>pp</strong> (<em>float</em>) – Pore pressure</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Critical wellbore pressure (Pw)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.mod_lad_cmw2">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">mod_lad_cmw2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sxx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">szz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tzx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cohesion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.mod_lad_cmw2" title="Link to this definition"></a></dt>
+<dd><p>Calculate modified Lade critical mud weight with pore pressure and Poisson’s ratio corrections.
+The stress tensor should already have been rotated to be in the borehole coordinate system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sxx</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress component in x-direction</p></li>
+<li><p><strong>syy</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress component in y-direction</p></li>
+<li><p><strong>szz</strong> (<em>float</em><em> or </em><em>array_like</em>) – Normal stress component in z-direction</p></li>
+<li><p><strong>txy</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress component in xy-plane</p></li>
+<li><p><strong>tyz</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress component in yz-plane</p></li>
+<li><p><strong>tzx</strong> (<em>float</em><em> or </em><em>array_like</em>) – Shear stress component in zx-plane</p></li>
+<li><p><strong>theta</strong> (<em>float</em>) – Wellbore angle in degrees</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – Internal friction angle in radians</p></li>
+<li><p><strong>cohesion</strong> (<em>float</em>) – Rock cohesion strength</p></li>
+<li><p><strong>pp</strong> (<em>float</em>) – Pore pressure</p></li>
+<li><p><strong>nu</strong> (<em>float</em>) – Poisson’s ratio</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Critical wellbore pressure (Pw) with Poisson’s ratio correction</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.mogi">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">mogi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.mogi" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Mogi failure criterion for stress components with numpy array support.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sx</strong> (<em>array_like</em>) – Normal stress in x-direction</p></li>
+<li><p><strong>sy</strong> (<em>array_like</em>) – Normal stress in y-direction</p></li>
+<li><p><strong>sz</strong> (<em>array_like</em>) – Normal stress in z-direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mogi failure criterion value (F)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.mogi_failure">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">mogi_failure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.mogi_failure" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Mogi failure criterion for principal stresses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s1</strong> (<em>float</em><em> or </em><em>array_like</em>) – Maximum principal stress</p></li>
+<li><p><strong>s2</strong> (<em>float</em><em> or </em><em>array_like</em>) – Intermediate principal stress</p></li>
+<li><p><strong>s3</strong> (<em>float</em><em> or </em><em>array_like</em>) – Minimum principal stress</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mogi failure criterion value (F)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.mohr_failure">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">mohr_failure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cohesion</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.mohr_failure" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Mohr-Coulomb failure criterion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s1</strong> (<em>float</em><em> or </em><em>array_like</em>) – Maximum principal stress</p></li>
+<li><p><strong>s3</strong> (<em>float</em><em> or </em><em>array_like</em>) – Minimum principal stress</p></li>
+<li><p><strong>cohesion</strong> (<em>float</em>) – Rock cohesion strength</p></li>
+<li><p><strong>phi</strong> (<em>float</em>) – Internal friction angle in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mohr-Coulomb failure criterion value (F)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.plotPPzhang">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">plotPPzhang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">well</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rhoappg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16.33</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0008</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ul_exp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0008</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ul_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.630</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zulu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tango</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtml</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">210</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">60</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">water</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">underbalancereject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tecb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strike</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mudtemp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.98</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">be</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.00014</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dex0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">de</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.00014</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nde</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lala</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lalb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lalm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horsuda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.77</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horsude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.93</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mabw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">90</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unitchoice</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">unitchoicedef</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ureg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">uregdef</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mwvalues</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flowgradvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0,</span> <span class="pre">0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fracgradvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0,</span> <span class="pre">0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flowpsivals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0,</span> <span class="pre">0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fracpsivals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0,</span> <span class="pre">0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attrib</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">UCSs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lithos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">user_home</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">path_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">program_option</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[300,</span> <span class="pre">4,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeFile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliasdict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unitdict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">unitdictdef</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.plotPPzhang" title="Link to this definition"></a></dt>
+<dd><p>Performs geomechanical calculations, data processing, and pore pressure estimation based on
+well log data and additional user inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>well</strong> (<em>welly.Well</em>) – The well data containing curves for various parameters. It is essential that the curves
+extend all the way to 0 depth and contain deviation data (even if the well is vertical).</p></li>
+<li><p><strong>rhoappg</strong> (<em>float</em><em>, </em><em>optional</em>) – Density at mudline in g/cc (default is 16.33).</p></li>
+<li><p><strong>lamb</strong> (<em>float</em><em>, </em><em>optional</em>) – Compaction exponent for regions without unloading (default is 0.0008).</p></li>
+<li><p><strong>ul_exp</strong> (<em>float</em><em>, </em><em>optional</em>) – Compaction exponent for regions with unloading (default is 0.0008).</p></li>
+<li><p><strong>ul_depth</strong> (<em>float</em><em>, </em><em>optional</em>) – Depth where unloading starts, in feet (default is 0).</p></li>
+<li><p><strong>a</strong> (<em>float</em><em>, </em><em>optional</em>) – Daines’ exponent for Shmin calculations (default is 0.630).</p></li>
+<li><p><strong>nu</strong> (<em>float</em><em>, </em><em>optional</em>) – Poisson’s ratio, used in stress calculations (default is 0.4).</p></li>
+<li><p><strong>sfs</strong> (<em>float</em><em>, </em><em>optional</em>) – Shale flag resistivity or GR cutoff, representing the difference between deep and shallow
+resistivity in ohm.m (default is 1.0).</p></li>
+<li><p><strong>window</strong> (<em>int</em><em>, </em><em>optional</em>) – The window size for down-sampling well data (default is 1).</p></li>
+<li><p><strong>zulu</strong> (<em>int</em><em>, </em><em>optional</em>) – Starting depth for analysis, in feet (default is 0).</p></li>
+<li><p><strong>tango</strong> (<em>int</em><em>, </em><em>optional</em>) – Ending depth for analysis, in feet (default is 2000).</p></li>
+<li><p><strong>dtml</strong> (<em>int</em><em>, </em><em>optional</em>) – Delta T at mudline, in microseconds per foot (default is 210).</p></li>
+<li><p><strong>dtmt</strong> (<em>int</em><em>, </em><em>optional</em>) – Delta T of matrix, in microseconds per foot (default is 60).</p></li>
+<li><p><strong>res0</strong> (<em>float</em><em>, </em><em>optional</em>) – Initial resistivity value, used for normal resistivity calculation (default is 0.98).</p></li>
+<li><p><strong>be</strong> (<em>float</em><em>, </em><em>optional</em>) – Base exponential coefficient for resistivity gradient calculation (default is 0.00014).</p></li>
+<li><p><strong>ne</strong> (<em>float</em><em>, </em><em>optional</em>) – Exponent for normal resistivity calculations (default is 0.6).</p></li>
+<li><p><strong>dex0</strong> (<em>float</em><em>, </em><em>optional</em>) – Initial value for drilling exponent in calculations (default is 0.5).</p></li>
+<li><p><strong>de</strong> (<em>float</em><em>, </em><em>optional</em>) – Coefficient for drilling exponent gradient calculation (default is 0.00014).</p></li>
+<li><p><strong>nde</strong> (<em>float</em><em>, </em><em>optional</em>) – Exponent for normal drilling exponent calculations (default is 0.5).</p></li>
+<li><p><strong>paths</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary containing paths for saving output files, including plots, CSVs, and models. Keys
+typically include <cite>output_dir</cite>, <cite>plot_figure</cite>, and others for structured saving (default is None).</p></li>
+<li><p><strong>water</strong> (<em>float</em><em>, </em><em>optional</em>) – Water density in g/cc (default is 1.0).</p></li>
+<li><p><strong>underbalancereject</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum pore pressure gradient below which underbalanced data is rejected (default is 1).</p></li>
+<li><p><strong>tecb</strong> (<em>int</em><em>, </em><em>optional</em>) – Daines’ parameter related to tectonic stress (default is 0).</p></li>
+<li><p><strong>doi</strong> (<em>int</em><em>, </em><em>optional</em>) – Depth of interest for calculations, in feet (default is 0).</p></li>
+<li><p><strong>offset</strong> (<em>int</em><em>, </em><em>optional</em>) – Azimuth of the maximum horizontal stress (SHMax) in degrees (default is 0).</p></li>
+<li><p><strong>strike</strong> (<em>int</em><em>, </em><em>optional</em>) – Dip direction of the stress tensor in degrees (default is 0).</p></li>
+<li><p><strong>dip</strong> (<em>int</em><em>, </em><em>optional</em>) – Dip angle of the stress tensor in degrees (default is 0).</p></li>
+<li><p><strong>mudtemp</strong> (<em>int</em><em>, </em><em>optional</em>) – Mud temperature, in degrees Celsius (default is 0).</p></li>
+<li><p><strong>lala</strong> (<em>float</em><em>, </em><em>optional</em>) – Parameter for Lal’s cohesion method (default is -1.0).</p></li>
+<li><p><strong>lalb</strong> (<em>float</em><em>, </em><em>optional</em>) – Parameter for Lal’s cohesion method (default is 1.0).</p></li>
+<li><p><strong>lalm</strong> (<em>int</em><em>, </em><em>optional</em>) – Parameter for Lal’s cohesion method (default is 5).</p></li>
+<li><p><strong>lale</strong> (<em>float</em><em>, </em><em>optional</em>) – Parameter for Lal’s cohesion method (default is 0.5).</p></li>
+<li><p><strong>lall</strong> (<em>int</em><em>, </em><em>optional</em>) – Parameter for Lal’s cohesion method (default is 5).</p></li>
+<li><p><strong>mabw</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum Allowable Breakout Width in degrees (default is 90).</p></li>
+<li><p><strong>horsuda</strong> (<em>float</em><em>, </em><em>optional</em>) – Parameter for Horsud’s stress method (default is 0.77).</p></li>
+<li><p><strong>horsude</strong> (<em>float</em><em>, </em><em>optional</em>) – Parameter for Horsud’s stress method (default is 2.93).</p></li>
+<li><p><strong>unitchoice</strong> (<em>list</em><em>, </em><em>optional</em>) – &lt;DEPRECATED, will be removed in a future version&gt; List specifying the unit system for outputs (default is [0, 0, 0, 0, 0]).</p></li>
+<li><p><strong>unitdict</strong> (<em>dict</em><em>, </em><em>optional</em>) – Unit dictionary to be used for unit conversion, default is {‘pressure’:’psi’, ‘strength’:’MPa’, ‘gradient’:’gcc’, ‘length’:’m’}.</p></li>
+<li><p><strong>ureg</strong> (<em>pint.UnitRegistry</em><em>, </em><em>optional</em>) – Unit registry for unit conversions (default is a pint.UnitRegistry with
+<cite>autoconvert_offset_to_baseunit=True</cite>).</p></li>
+<li><p><strong>mwvalues</strong> (<em>list</em><em> of </em><em>lists</em><em>, </em><em>optional</em>) – Mud weight values for different depth intervals. Each sublist contains parameters
+such as weight, depth, and salinity (default is [[1.0, 0.0, 0.0, 0.0, 0.0, 0]]).</p></li>
+<li><p><strong>flowgradvals</strong> (<em>list</em><em> of </em><em>lists</em><em>, </em><em>optional</em>) – Flow gradient values for different depths (default is [[0, 0]]).</p></li>
+<li><p><strong>fracgradvals</strong> (<em>list</em><em> of </em><em>lists</em><em>, </em><em>optional</em>) – Fracture gradient values for different depths (default is [[0, 0]]).</p></li>
+<li><p><strong>flowpsivals</strong> (<em>list</em><em> of </em><em>lists</em><em>, </em><em>optional</em>) – Flow pressure values for different depths (default is [[0, 0]]).</p></li>
+<li><p><strong>fracpsivals</strong> (<em>list</em><em> of </em><em>lists</em><em>, </em><em>optional</em>) – Fracture pressure values for different depths (default is [[0, 0]]).</p></li>
+<li><p><strong>attrib</strong> (<em>list</em><em>, </em><em>optional</em>) – Section attributes, including parameters like maximum ECD, casing shoe depth, casing diameter,
+bit diameter, mud salinity, and bottom-hole temperature (BHT) at the shoe
+(default is [1, 0, 0, 0, 0, 0, 0, 0]).</p></li>
+<li><p><strong>flags</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – Dataframe containing depths and conditions identified from image logs, such as
+breakouts or drilling-induced fractures (default is None).</p></li>
+<li><p><strong>UCSs</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – Dataframe containing measured depth (MD) and unconfined compressive strength (UCS) values
+(default is None).</p></li>
+<li><p><strong>forms</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – Dataframe containing formation tops and associated formation-specific parameters (default is None).</p></li>
+<li><p><strong>lithos</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – Dataframe containing interpreted lithology data and lithology-specific parameters
+(default is None).</p></li>
+<li><p><strong>user_home</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to the user’s home directory or the root of output directories (default is <cite>Documents</cite>).</p></li>
+<li><p><strong>paths</strong> – Dictionary containing file paths for saving outputs and intermediate results (default is None).</p></li>
+<li><p><strong>program_option</strong> (<em>list</em><em>, </em><em>optional</em>) – List controlling algorithm behavior, including resolution, algorithm choices, and more
+(default is [300, 4, 0, 0, 0]).</p></li>
+<li><p><strong>writeFile</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to write results to files in the specified paths (default is True).</p></li>
+<li><p><strong>aliasdict</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary mapping curve mnemonics to standardized aliases (default is None).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Outputs vary depending on program options, but typically include processed well data,
+calculated pore pressure gradients, and stress analysis results. If <cite>writeFile</cite> is True,
+outputs are saved as files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul>
+<li><p>This function integrates geomechanical calculations with well log data processing.</p></li>
+<li><p>It performs pore pressure estimation, stress analysis, and cohesion calculations.</p></li>
+<li><p>Extensive customization is available through the numerous optional parameters.</p></li>
+<li><p>If <cite>writeFile</cite> is True, all generated plots and data will be saved in the specified paths.</p></li>
+<li><p>The following dataframes must have fixed formats for their respective columns:</p>
+<ul>
+<li><p><strong>forms</strong>: Must contain columns in this order:
+[‘Formation Top Measured Depth’, ‘Formation Number’, ‘Formation Name’, ‘GR Cutoff’,</p>
+<blockquote>
+<div><p>‘Structural Top’, ‘Structural Bottom’, ‘Centroid Ratio’, ‘OWC Depth’, ‘GOC Depth’,
+‘Coefficient of thermal expansion bulk’, ‘Alpha’, ‘Beta’, ‘Gamma’, ‘Tectonic Factor’, ‘SH/SV Ratio’,
+‘Biot Coefficient’, ‘DT Normal’, ‘Resistivity Normal’, ‘DEX Normal’]</p>
+</div></blockquote>
+</li>
+<li><p><strong>lithos</strong>: Must contain columns in this order:
+[‘Measured Depth’, ‘Lithology Code’, ‘Poisson Ratio’, ‘Friction Coefficient’, ‘UCS’]</p></li>
+<li><p><strong>flags</strong>: Must contain columns in this order:
+[‘Measured Depth’, ‘Condition Code’]
+- ‘Condition Code’ integer, allowed values:</p>
+<blockquote>
+<div><p>0 : No Image log exists
+1 : Image log exists, No observations
+2 : DITF observed on image log
+3 : Breakouts observed on image log
+4 : Both DITF and Breakouts observed on image log</p>
+</div></blockquote>
+</li>
+<li><p><strong>UCSs</strong>: Must contain columns in this order:
+[‘Measured Depth’, ‘UCS in MPa’]</p></li>
+</ul>
+<p>Any deviation in column order, or missing values will result in errors during processing.</p>
+</li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.plot_logs_labels">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">plot_logs_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">styles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pointstyles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">os.path.join(user_home,</span> <span class="pre">'Stresslog_plots')</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.plot_logs_labels" title="Link to this definition"></a></dt>
+<dd><p>Wrapper function that calls plot_logs three times to generate the main plot and label plots.</p>
+<p>Parameters:
+- Same as plot_logs function, except plot_labels is not included as it’s handled internally.</p>
+<p>Returns:
+- fig, axes: The figure and axes objects of the main plot.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.plot_sanding">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">plot_sanding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmamax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmamin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_axial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ucs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.plot_sanding" title="Link to this definition"></a></dt>
+<dd><p>Create a sanding analysis plot comparing Zhang and Willson criteria.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigmamax</strong> (<em>float</em>) – Maximum principal stress</p></li>
+<li><p><strong>sigmamin</strong> (<em>float</em>) – Minimum principal stress</p></li>
+<li><p><strong>sigma_axial</strong> (<em>float</em>) – Axial stress</p></li>
+<li><p><strong>pp</strong> (<em>float</em>) – Pore pressure</p></li>
+<li><p><strong>ucs</strong> (<em>float</em>) – Unconfined compressive strength</p></li>
+<li><p><strong>k0</strong> (<em>float</em>) – Earth stress ratio</p></li>
+<li><p><strong>nu</strong> (<em>float</em>) – Poisson’s ratio</p></li>
+<li><p><strong>biot</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot’s coefficient (default is 1)</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to save the plot (default is None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Plot object if path is None, otherwise saves plot to specified path</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>matplotlib.pyplot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.plotfrac">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">plotfrac</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dia</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.plotfrac" title="Link to this definition"></a></dt>
+<dd><p>Generate detailed fracture morphology plot with depth calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>tuple</em>) – <p>A tuple containing:
+- tvd : float</p>
+<blockquote>
+<div><p>True vertical depth</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>fr<span class="classifier">ndarray</span></dt><dd><p>Array of fracture indicators</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>angles<span class="classifier">ndarray</span></dt><dd><p>Array of angles</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>minangle<span class="classifier">float</span></dt><dd><p>Minimum angle value</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>maxangle<span class="classifier">float</span></dt><dd><p>Maximum angle value</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – File path to save the plot. If None, plot is not saved to file.</p></li>
+<li><p><strong>dia</strong> (<em>float</em><em>, </em><em>optional</em>) – Hole Diameter in inches to be used for the calculation, in inches, 8.5 by default</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A tuple containing two ndarrays:
+- cdepths : ndarray</p>
+<blockquote>
+<div><p>Corrected depths array</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>fdepths<span class="classifier">ndarray</span></dt><dd><p>Final depths array</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Uses a bit diameter of 8.5 inches for calculations.
+Handles special angle cases and implements various depth corrections
+and transformations.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.willson_sanding_cwf">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">willson_sanding_cwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmamax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmamin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ucs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.willson_sanding_cwf" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Willson critical wellbore flowing pressure for sanding prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigmamax</strong> (<em>float</em><em> or </em><em>array_like</em>) – Maximum principal stress</p></li>
+<li><p><strong>sigmamin</strong> (<em>float</em><em> or </em><em>array_like</em>) – Minimum principal stress</p></li>
+<li><p><strong>pp</strong> (<em>float</em><em> or </em><em>array_like</em>) – Pore pressure</p></li>
+<li><p><strong>ucs</strong> (<em>float</em>) – Unconfined compressive strength</p></li>
+<li><p><strong>nu</strong> (<em>float</em>) – Poisson’s ratio</p></li>
+<li><p><strong>biot</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot’s coefficient (default is 1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Critical wellbore flowing pressure</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stresslog.zhang_sanding_cwf">
+<span class="sig-prename descclassname"><span class="pre">stresslog.</span></span><span class="sig-name descname"><span class="pre">zhang_sanding_cwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmamax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmamin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ucs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#stresslog.zhang_sanding_cwf" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Zhang critical wellbore flowing pressure for sanding prediction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigmamax</strong> (<em>float</em><em> or </em><em>array_like</em>) – Maximum principal stress</p></li>
+<li><p><strong>sigmamin</strong> (<em>float</em><em> or </em><em>array_like</em>) – Minimum principal stress</p></li>
+<li><p><strong>pp</strong> (<em>float</em><em> or </em><em>array_like</em>) – Pore pressure</p></li>
+<li><p><strong>ucs</strong> (<em>float</em>) – Unconfined compressive strength</p></li>
+<li><p><strong>k0</strong> (<em>float</em>) – Earth stress ratio</p></li>
+<li><p><strong>nu</strong> (<em>float</em>) – Poisson’s ratio</p></li>
+<li><p><strong>biot</strong> (<em>float</em><em>, </em><em>optional</em>) – Biot’s coefficient (default is 1)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Critical wellbore flowing pressure</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array_like</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Arkadeep Ghosh.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
