@@ -23,7 +23,7 @@ extensions = [
     'sphinx.ext.autodoc',        # Automatically document from docstrings
     'sphinx.ext.napoleon',       # Support for NumPy and Google-style docstrings
     #'sphinx.ext.viewcode',       # Add links to source code
-    'sphinx_rtd_theme',          # Use the Read the Docs theme
+    'furo',                       # Use the Read the Docs theme
     ]
 
 
