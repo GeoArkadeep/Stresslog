@@ -12,9 +12,9 @@ sys.path.insert(0, os.path.abspath('../../'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'stresslog'
-copyright = '2025, Arkadeep Ghosh'
+copyright = 'ROCK LAB PRIVATE LIMITED'
 author = 'Arkadeep Ghosh'
-release = '1.4.2'
+release = '1.4.10'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -46,4 +46,4 @@ autodoc_inherit_docstrings = False  # Avoid inheriting docstrings from parents
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
