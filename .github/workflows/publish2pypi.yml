@@ -38,8 +38,8 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add setup.py docs/source/conf.py
-          git commit -m "Update version to ${{ env.version }} [skip ci]"
-          git push origin HEAD:main
+          git commit -m "Update version to ${{ env.version }}"
+          git push origin HEAD:master
 
       
       - name: Build release distributions
