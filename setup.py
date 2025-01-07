@@ -12,7 +12,7 @@ setuptools.setup(
     author_email="arkadeep_ghosh@rocklab.in",
     license="AGPL-3.0",
     project_urls={
-        "Documentation":"https://www.rocklab.in/stresslog_docs/",
+        "Documentation":"stresslog.readthedocs.io",
         "Source":"https://github.com/GeoArkadeep/Stresslog"
     },
     classifiers=[
