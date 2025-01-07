@@ -12,7 +12,7 @@ import pandas as pd
 def test_integration_basic():
     # Test case 1: Basic well log generation and plotting
     attrib = [10, 0, 0, 0, 0, 0, 0, 0]
-    well = lst.create_random_well(kb=35, gl=-200, step=0.15)
+    well = lst.create_random_well(kb=35, gl=-200, step=50)
     dev = lst.getwelldev(wella=well)
     output = lst.plotPPzhang(dev, writeFile=False)
 
@@ -21,7 +21,7 @@ def test_integration_basic():
 def test_integration_doi():
     # Test case 2: Well with attributes and DOI
     attrib = [10, -200, 0, 0, 0, 0, 0, 0]
-    well = lst.create_random_well(kb=312, gl=300, step=1)
+    well = lst.create_random_well(kb=312, gl=300, step=4)
     dev = lst.getwelldev(wella=well, kickoffpoint=3000, final_angle=90, rateofbuild=0.2, azimuth=270)
     output = lst.plotPPzhang(dev, attrib=attrib, doi=2625, writeFile=False)
     assert output is not None, "plotPPzhang with attributes and DOI did not return an output"
@@ -29,7 +29,7 @@ def test_integration_doi():
 def test_integration_advanced():
     # Test case 3: Shallow angle well and custom TECB
     attrib = [10, -200, 0, 0, 0, 0, 0, 0]
-    well = lst.create_random_well(kb=35, gl=-200, step=1)
+    well = lst.create_random_well(kb=35, gl=-200, step=4)
     dev = lst.getwelldev(wella=well, kickoffpoint=300, final_angle=10, rateofbuild=0.2, azimuth=270)
     output = lst.plotPPzhang(dev, attrib=attrib, doi=2625, tecb=0.55, writeFile=False)
 
