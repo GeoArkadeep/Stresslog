@@ -18,6 +18,16 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Adjust this to your dependencies file if needed
+
+      - name: Run tests with pytest
+        run: |
+          python -m pip install pytest
+          pytest  # Adjust this command if specific options or directories are needed
+
       - name: Extract version from release tag
         id: get_version
         run: |
@@ -31,17 +41,6 @@ jobs:
           sed -i "s/version=.*,/version='${{ env.version }}',/" setup.py
           sed -i "s/release = .*/release = '${{ env.version }}'/" docs/source/conf.py
 
-      - name: Commit and push version updates
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add setup.py docs/source/conf.py
-          git commit -m "Update version to ${{ env.version }}"
-          git push origin HEAD:master
-
-      
       - name: Build release distributions
         run: |
           python -m pip install build
