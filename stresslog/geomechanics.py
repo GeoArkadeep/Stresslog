@@ -663,8 +663,7 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     - The following dataframes must have fixed formats for their respective columns:
       
       - **forms**: Must contain columns in this order:
-        ['Formation Top Measured Depth', 'Formation Number', 'Formation Name', 'GR Cutoff', 
-         'Structural Top', 'Structural Bottom', 'Centroid Ratio', 'OWC Depth', 'GOC Depth', 
+        ['Formation Top Measured Depth', 'Formation Number', 'Formation Name', 'GR Cutoff', 'Structural Top', 'Structural Bottom', 'Centroid Ratio', 'OWC Depth', 'GOC Depth', 
          'Coefficient of thermal expansion bulk', 'Alpha', 'Beta', 'Gamma', 'Tectonic Factor', 'SH/SV Ratio', 
          'Biot Coefficient', 'DT Normal', 'Resistivity Normal', 'DEX Normal']
       
