@@ -36,11 +36,22 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=${VERSION}" >> $GITHUB_ENV
 
-      - name: Update version in setup.py and conf.py
+      - name: Validate version consistency
         run: |
-          echo "Updating version to ${{ env.version }} in setup.py and conf.py"
-          sed -i "s/version=.*,/version='${{ env.version }}',/" setup.py
-          sed -i "s/release = .*/release = '${{ env.version }}'/" docs/source/conf.py
+          echo "Validating version consistency..."
+          TAG_VERSION=${{ env.version }}
+          SETUP_PY_VERSION=$(python -c "import re; setup=open('setup.py').read(); print(re.search(r'version=[\'\"](.*?)[\'\"],', setup).group(1))")
+          CONF_PY_VERSION=$(python -c "import re; conf=open('./docs/source/conf.py').read(); print(re.search(r'release = [\'\"](.*?)[\'\"]', conf).group(1))")
+
+          echo "Tag version: $TAG_VERSION"
+          echo "setup.py version: $SETUP_PY_VERSION"
+          echo "conf.py version: $CONF_PY_VERSION"
+
+          if [[ "$TAG_VERSION" != "$SETUP_PY_VERSION" || "$TAG_VERSION" != "$CONF_PY_VERSION" ]]; then
+            echo "Version mismatch detected!"
+            exit 1
+          fi
+        shell: bash
 
       - name: Build release distributions
         run: |
