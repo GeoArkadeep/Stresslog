@@ -1,9 +1,11 @@
 import lasio as laua
 import io
+import numpy as np
+import pandas as pd
+
 def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     """
     copyright 2021 Agile Scientific
-
     license
     Apache 2.0
     """
@@ -11,34 +13,22 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     Write datasets to a LAS file on disk.
 
     Args:
-        path (Str): Path to write LAS file to
+        path (Str): Path to write LAS file to. If None, returns string buffer.
         datasets (Dict['<name>': pd.DataFrame]): Dictionary maps a
             dataset name (e.g. 'Curves') or 'Header' to a pd.DataFrame.
-        curve_units (Dict[str, str], optional): Dictionary mapping curve names to their units.
+        custom_units (Dict[str, str], optional): Dictionary mapping curve names to their units.
             If a curve's unit is not specified, it defaults to an empty string.
     Returns:
-        Nothing, only writes in-memory object to disk as .las
+        str if path is None, otherwise writes to file
     """
     from functools import reduce
     import warnings
-    from datetime import datetime
-    from io import StringIO
-    from urllib import error, request
-
-    import lasio
-    import numpy as np
-    import pandas as pd
     from lasio import HeaderItem, CurveItem, SectionItems
-    from pandas._config.config import OptionError
-
-    from welly.curve import Curve
-    from welly import utils
-    from welly.fields import curve_sections, other_sections, header_sections
-    from welly.utils import get_columns_decimal_formatter, get_step_from_array
-    from welly.fields import las_fields as LAS_FIELDS
-    # ensure path is working on every dev set-up
-    path = utils.to_filename(path)
-
+    
+    # ensure no NaN values in header
+    if 'Header' in datasets:
+        datasets['Header'] = datasets['Header'].fillna('')
+    
     # instantiate new LASFile to parse data & header to
     las = laua.LASFile()
 
@@ -49,8 +39,8 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     if not header.empty:
         curve_header = header[header['section'] == 'Curves']
         for _, row in curve_header.iterrows():
-            if row['unit']:  # Ensure there is a unit specified
-                extracted_units[row['original_mnemonic']] = row['unit']
+            if row['unit'] and not pd.isna(row['unit']):  # Check for NaN
+                extracted_units[str(row['original_mnemonic'])] = str(row['unit'])
 
     # Combine extracted units with custom units, custom units take precedence
     all_units = {**extracted_units, **custom_units}
@@ -61,7 +51,6 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     
     # unpack datasets
     for dataset_name, df in datasets.items():
-
         # dataset is the header
         if dataset_name == 'Header':
             # parse header pd.DataFrame to LASFile
@@ -70,70 +59,60 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
                 df_section = df[df.section == section_name]
 
                 if section_name == 'Curves':
-                    # curves header items are handled in curve data loop
-                    pass
-
+                    pass  # curves header items are handled in curve data loop
+                
                 elif section_name == 'Version':
-                    if len(df_section[df_section.original_mnemonic == 'VERS']) > 0:
-                        las.version.VERS = df_section[df_section.original_mnemonic == 'VERS']['value'].values[0]
-                    if len(df_section[df_section.original_mnemonic == 'WRAP']) > 0:
-                        las.version.WRAP = df_section[df_section.original_mnemonic == 'WRAP']['value'].values[0]
-                    if len(df_section[df_section.original_mnemonic == 'DLM']) > 0:
-                        las.version.DLM = df_section[df_section.original_mnemonic == 'DLM']['value'].values[0]
+                    for mnem in ['VERS', 'WRAP', 'DLM']:
+                        section_data = df_section[df_section.original_mnemonic == mnem]
+                        if len(section_data) > 0:
+                            setattr(las.version, mnem, str(section_data['value'].values[0]))
 
-                elif section_name == 'Well':
-                    las.sections["Well"] = SectionItems(
-                        [HeaderItem(r.original_mnemonic,
-                                    r.unit,
-                                    r.value,
-                                    r.descr) for i, r in df_section.iterrows()])
-
-                elif section_name == 'Parameter':
-                    las.sections["Parameter"] = SectionItems(
-                        [HeaderItem(r.original_mnemonic,
-                                    r.unit,
-                                    r.value,
-                                    r.descr) for i, r in df_section.iterrows()])
+                elif section_name in ['Well', 'Parameter']:
+                    las.sections[section_name] = SectionItems(
+                        [HeaderItem(str(r.original_mnemonic),
+                                  str(r.unit) if not pd.isna(r.unit) else '',
+                                  str(r.value) if not pd.isna(r.value) else '',
+                                  str(r.descr) if not pd.isna(r.descr) else '')
+                         for _, r in df_section.iterrows()
+                         if not pd.isna(r.original_mnemonic)])  # Skip NaN mnemonics
 
                 elif section_name == 'Other':
-                    las.sections["Other"] = df_section['descr'].iloc[0]
+                    las.sections["Other"] = str(df_section['descr'].iloc[0]) if not pd.isna(df_section['descr'].iloc[0]) else ''
 
                 else:
-                    m = f"LAS Section was not recognized: '{section_name}'"
-                    warnings.warn(m, stacklevel=2)
+                    warnings.warn(f"LAS Section was not recognized: '{section_name}'", stacklevel=2)
 
         # dataset contains curve data
-        if dataset_name in curve_sections:
-            header_curves = header[header.section == dataset_name]
+        if dataset_name in ['Curves', 'Formation', 'Core']:  # explicit curve sections
             for column_name in df.columns:
                 curve_data = df[column_name]
-                curve_unit = all_units.get(column_name, '')  # Use combined units
-                # Assuming header information for each curve is not available
-                las.append_curve(mnemonic=column_name,
-                                 data=curve_data,
-                                 unit=curve_unit,
-                                 descr='',
-                                 value='')
+                curve_unit = all_units.get(str(column_name), '')
+                las.append_curve(mnemonic=str(column_name),
+                               data=curve_data,
+                               unit=str(curve_unit),
+                               descr='',
+                               value='')
 
-
-    # numeric null value representation from the header (e.g. # -9999)
+    # Handle NULL value
     try:
-        null_value = header[header.original_mnemonic == 'NULL'].value.iloc[0]
-    except IndexError:
+        null_value = float(header[header.original_mnemonic == 'NULL'].value.iloc[0])
+    except (IndexError, ValueError):
         null_value = -999.25
+    
+    # Set the NULL value in both the well section and as general null_value
+    las.well['NULL'] = HeaderItem('NULL', '', null_value, 'Null value')
     las.null_value = null_value
 
-    # las.write defaults to %.5 decimal points. We want to retain the
-    # number of decimals. We first construct a column formatter based
-    # on the max number of decimal points found in each curve.
+    # Set column formatter if not provided
     if 'column_fmt' not in kwargs:
         kwargs['column_fmt'] = column_fmt
-    
+        
+    # write file to disk or return string
+    if path is not None:
+        with open(path, mode='w') as f:
+            las.write(f, **kwargs)
+
     buffer = io.StringIO()
     las.write(buffer, **kwargs)
-    buffer.seek(0)  # Move to the beginning of the buffer
+    buffer.seek(0)
     return buffer.getvalue()
-    
-    # write file to disk
-    #with open(path, mode='w') as f:
-    #    las.write(f, **kwargs)

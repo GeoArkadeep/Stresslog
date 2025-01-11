@@ -22,7 +22,7 @@ np.set_printoptions(precision=3, suppress=True)  # suppress will prevent scienti
 def random_curves_dataframe(
     start_depth, stop_depth, step,
     matrick=60, mudline=210, dt_ncts=0.0008,
-    rhoappg=17, a=0.08, water=8.6, mudweight=9.8, glwd=-1, seed=None, drop=[]
+    rhoappg=17, a=0.08, water=8.6, mudweight=9.8, glwd=-1, seed=None, drop=[],to=0
 ):
     """Generate synthetic well log data with random variations.
 
@@ -68,7 +68,6 @@ def random_curves_dataframe(
         - NPHI: Neutron porosity
         - ILD: Induction log deep resistivity
     """
-
     if seed is None:
         seed = random.randint(0, 1000000)
         print("Seed: ", seed)
@@ -150,6 +149,9 @@ def random_curves_dataframe(
     # Drop specified curves
     data = {key: value for key, value in data.items() if key not in drop}
     df = pd.DataFrame(data)
+    mask = df["DEPT"] <= to
+    df.loc[mask, df.columns.difference(["DEPT"])] = np.nan
+
     return df
 
 
@@ -213,21 +215,19 @@ def create_header(name, uwi, strt, stop, step,
 original_mnemonic,mnemonic,unit,value,descr,section
 WRAP,WRAP,,NO,One Line per depth step,Version
 PROD,PROD,,RockLab,LAS Producer,Version
-PROG,PROG,,DLIS to ASCII 2.3,LAS Program name and version,Version
+PROG,PROG,,Stresslog1.4.x,LAS Program name and version,Version
 CREA,CREA,,2023/07/13 12:42                          :LAS Creation date {{YYYY/MM/DD hh,mm}},Version
 """
     ]
-
-    # Conditional content based on optional parameters
     
+    # Conditional content based on optional parameters
+
     if strt:
         csv_parts.append(f"STRT,STRT,M,{strt},START DEPTH,Well")
     if stop:
         csv_parts.append(f"STOP,STOP,M,{stop},STOP DEPTH,Well")
     if step:
         csv_parts.append(f"STEP,STEP,M,{step},STEP,Well")
-    if nully:
-        csv_parts.append(f"NULL ,NULL , ,{nully},NULL VALUE,Well")
     if comp:
         csv_parts.append(f"COMP,COMP, ,{comp},COMPANY,Well")
     if name:
@@ -284,7 +284,7 @@ DTS,DTS,US/F,,Delta-T Shear,Curves""")
 
 def create_random_las(
     starter=0, 
-    stopper=5800, 
+    stopper=6000, 
     stepper=0.15, 
     key=None, 
     well_name="WonderWell", 
@@ -343,9 +343,11 @@ def create_random_las(
     # Set random seed if not provided
     if key is None:
         key = random.randint(0, 1000)
-    
-    # Generate DataFrame (assuming generate_dataframe is a predefined function)
-    df = random_curves_dataframe(starter, stopper, stepper, seed=key, drop=drop)
+    if gl<0:
+        topoffset=(-gl)+kb
+    else:
+        topoffset = kb-gl
+    df = random_curves_dataframe(starter, stopper, stepper, seed=key, drop=drop, to=topoffset)
     
     # Create header DataFrame
     hdf = create_header(
@@ -417,7 +419,7 @@ def create_random_las(
     
 from welly import Well
 
-def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_angle=None, rateofbuild=None, azimuth=None):
+def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_angle=None, rateofbuild=None, azimuth=None, step=None):
     """Calculate well deviation data and update well object with TVD information.
 
     Parameters
@@ -452,10 +454,13 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
     depth_track = wella.df().index
 
     if deva is None and kickoffpoint is not None and final_angle is not None and rateofbuild is not None and azimuth is not None:
+        if final_angle>=90:
+            final_angle=89.999
         start_depth = depth_track[0]
         final_depth = depth_track[-1]
-        spacing = (final_depth - start_depth) / len(depth_track)
-
+        spacing = depth_track[-5] - depth_track[-4]
+        if step is not None:
+            spacing=step
         # Create a depth array with the same spacing
         md = np.arange(start_depth, final_depth + spacing, spacing)
         inc = np.zeros_like(md)
@@ -471,7 +476,9 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
 
     if deva is not None:
         start_depth = depth_track[0]
-        spacing = (depth_track[-1] - depth_track[0]) / len(depth_track)
+        spacing = depth_track[-5] - depth_track[-4]
+        if step is not None:
+            spacing=step
         padlength = int(start_depth / spacing)
         padval = np.zeros(padlength)
 
@@ -486,7 +493,9 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
         azm = np.interp(md, mda, azma)
     else:
         start_depth = depth_track[0]
-        spacing = (depth_track[-1] - depth_track[0]) / len(depth_track)
+        spacing = (depth_track[-5] - depth_track[4])
+        if step is not None:
+            spacing=step
         padlength = int(start_depth / spacing)
         padval = np.zeros(padlength)
 
@@ -502,7 +511,9 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
 
     wella.location.add_deviation(dz, wella.location.td)
     tvdg = wella.location.tvd
+    #tvdg[-1] = tvdg[-2]+(tvdg[-2]-tvdg[-3])
     md = wella.location.md
+    #md[-1] = md[-2]+(md[-2]-md[-3])
 
     from welly import curve
     MD = curve.Curve(md, mnemonic='MD', units='m', index=md)
@@ -541,8 +552,8 @@ def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15, drop=[]):
     data_frame_2, header_frame_2, string_buffer = create_random_las(kb=kb,gl=gl, stepper=step,drop=drop)
     string_data = string_buffer.getvalue()
     return Well.from_las(string_data)
-    
-"""
+
+
 # Example usage
 if __name__ == "__main__":
     # Demonstrate the function with file writing
@@ -574,4 +585,3 @@ if __name__ == "__main__":
     ax.set_zlabel('Depth (Z)')
 
     plt.show()
-"""

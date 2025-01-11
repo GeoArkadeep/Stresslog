@@ -22,7 +22,7 @@ from .BoreStab import (
 
 from .thirdparty import datasets_to_las
 
-from .syntheticLogs import create_random_las, getwelldev, create_random_well
+from .syntheticLogs import create_random_las, getwelldev, create_random_well, create_header
 
 # DrawSP.py
 from .DrawSP import drawSP, getSP
@@ -41,9 +41,10 @@ from .failure_criteria import (
     plot_sanding
 )
 
+from .forecast import convert_df_tvd, get_analog
 
 # geomechanics.py
-from .geomechanics import plotPPzhang
+from .geomechanics import compute_geomech, remove_curves, add_curves, find_TVD
 
 # hydraulics.py
 from .hydraulics import (
@@ -71,6 +72,9 @@ from .obgppshmin import (
     get_Shmin_grad_Daine_ppg_vec
 )
 
+# forecast.py
+from .forecast import get_analog, convert_df_tvd
+
 # plotangle.py
 from .plotangle import plotfrac
 
@@ -91,10 +95,10 @@ __all__ = [
     "mogi", "lade", "zhang_sanding_cwf", "willson_sanding_cwf", "plot_sanding",
 
     # geomechanics
-    "plotPPzhang",
+    "compute_geomech",
 
     # hydraulics
-    "getColumnHeights", "getPPfromTop", "getPPfromTopRecursive", "getPPfromCentroidRecursive",
+    "getColumnHeights", "getPPfromTop", "getPPfromTopRecursive",
     "getGasDensity", "getHydrostaticPsi", "compute_optimal_offset", "compute_optimal_gradient",
     # obgppshmin
     "get_OBG_pascals_vec", "get_PPgrad_Zhang_gcc", "get_PP_grad_Zhang_gcc_vec",
@@ -103,6 +107,10 @@ __all__ = [
     "get_Shmin_grad_Daine_ppg_vec",
     # plotangle
     "plotfrac",
+    # Misc.
+    "getwelldev","create_random_well","find_TVD","add_curves","remove_curves","create_header","datasets_to_las",
+    # forecast
+    "get_analog", "convert_df_tvd",
     # Plotter
     "plot_logs_labels"
 ]

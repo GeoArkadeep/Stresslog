@@ -494,6 +494,50 @@ def weighted_average_downsampler(curve, window_size=21, window_type='v_shape'):
 
     return resampled_curve
 
+
+from scipy.interpolate import CubicSpline
+
+def find_TVD(well, md):
+    # Get the dataframe
+    df = well.df()
+    
+    # Extract MD and TVDM values
+    md_values = df['MD'].values
+    tvdm_values = df['TVDM'].values
+    
+    # Create a cubic spline for interpolation and extrapolation
+    spline = CubicSpline(md_values, tvdm_values, extrapolate=True)
+    
+    # Evaluate the spline at the given md
+    tvd = spline(md)
+    
+    return float(tvd)
+
+
+def add_curves(well, df, clear=False):
+    """
+    Adds all columns from a DataFrame as curves to the Well object.
+    
+    Parameters:
+    well (Well): The welly Well object.
+    df (pd.DataFrame): The DataFrame containing the data to be added as curves.
+    clear (bool) : If True, all existing columns are cleared before adding new ones. Defaults to False
+    """
+    # Clear all existing curves
+    if clear:
+        well.data.clear()
+        print("All existing curves have been removed.")
+    for column in df.columns:
+        if column in well.data:
+            print(f"Curve with mnemonic '{column}' already exists in the well. Skipping.")
+        else:
+            # Create a Curve object for each column
+            curve = Curve(mnemonic=column, data=df[column].values)
+            well.data[column] = curve
+            print(f"Added curve: {column}")
+
+    return well
+
 def remove_curves(well, mnemonics_to_remove):
     """
     Removes curves with the specified mnemonics from the well object.
@@ -520,7 +564,7 @@ mnemonics_to_remove = [
 
 unitdictdef = {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}
 
-def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, mabw = 90, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None, unitdict=unitdictdef):
+def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0, a = 0.630, nu = 0.25, sfs = 1.0, window = 1, zulu=0, tango=2000, dtml = 210, dtmt = 60, water = 1.0, underbalancereject = 1, tecb = 0, doi = 0, offset = 0, strike = 0, dip = 0, mudtemp = 0, res0 = 0.98, be = 0.00014, ne = 0.6, dex0 = 0.5, de = 0.00014, nde = 0.5,  lala = -1.0, lalb = 1.0, lalm = 5, lale = 0.5, lall = 5, horsuda = 0.77, horsude = 2.93, mabw = 90, unitchoice=unitchoicedef, ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,0]], fracgradvals=[[0,0]], flowpsivals=[[0,0]], fracpsivals=[[0,0]], attrib=[1,0,0,0,0,0,0,0],flags=None, UCSs=None, forms=None, lithos=None, user_home=user_home, paths=path_dict, program_option = [300,4,0,0,0], writeFile=True, aliasdict=None, unitdict=unitdictdef):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -2621,6 +2665,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     df3.index.name = 'DEPT'
     if writeFile:
         df3.to_csv(output_fileCSV)
+    if 'DEPT' in df3.columns:
+        df3 = df3.drop('DEPT', axis=1)
     df3 = df3.reset_index()
     header = well._get_curve_mnemonics()
     lasheader = well.header
@@ -2642,7 +2688,8 @@ def plotPPzhang(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth = 0
     if not writeFile:
         from .unit_converter import convert_dataframe_units
         cdf3,cc_units = convert_dataframe_units(df3, c_units, unitdict, category_columns)
-        
+        print(lasheader)
+        lasheader = lasheader.drop(index=0).reset_index(drop=True)
         filestring = datasets_to_las(None, {'Header': lasheader,'Curves':cdf3},cc_units)
     
         return cdf3,filestring,rv1,rv2,rv3,rv4,rv5,doi
