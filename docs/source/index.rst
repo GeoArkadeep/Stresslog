@@ -18,7 +18,7 @@ This is a python package for geomechanics. The core priorities of this package a
 - Being as automatic as possible:
     - All parameters other than the welly well object are optional, and include default values. We actively try to make the defaults such that the user need to alter as little as possible. While there are perhaps hundreds of algorithms, with more coming out everyday, we include only the most widely used algorithms in the industry
 
-The functions shown here can be called independently, but the preferred way to use this package is using the plotPPzhang function which calculates geomechanical parameters of an entire well at once.
+The functions shown here can be called independently, but the preferred way to use this package is using the compute_geomech function which calculates geomechanical parameters of an entire well at once.
 
 We hope to become *the* python package for geomechanics.
 
