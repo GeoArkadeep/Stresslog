@@ -442,7 +442,7 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
     if list(target_forms)[0].lower()=="toptvd":
         nfd = extract_depth_dict(target_forms)
     else:
-        nfd = extract_depth_dict(convert_df_tvd(target_forms,well))
+        nfd = extract_depth_dict(convert_df_tvd(target_forms,newblankwell))
 
     cfd["Start"] = offset0
     nfd["Start"] = offset1
