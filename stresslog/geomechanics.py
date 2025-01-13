@@ -1192,10 +1192,13 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
     tecB = np.full(len(tvd),tecb)
     SHsh = np.full(len(tvd),np.nan)
     biot = np.full(len(tvd),1)
+    dt_zeros = np.full(len(tvd),dtml)
     dt_ncts = np.full(len(tvd),lamb)
+
     res_ncts = np.full(len(tvd),be)
     res_zeros = np.full(len(tvd),res0)
     res_exp = np.full(len(tvd),ne)
+
     dex_ncts = np.full(len(tvd),de)
     dex_zeros = np.full(len(tvd),dex0)
     dex_exp = np.full(len(tvd),nde)
@@ -1276,10 +1279,22 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
         biotlist = np.append(1,biotlist)
         dt_nct_list = np.transpose(formlist)[16]
         dt_nct_list = np.append(lamb,dt_nct_list)
-        res_nct_list = np.transpose(formlist)[17]
+        dt_zero_list = np.transpose(formlist)[17]
+        dt_zero_list = np.append(dtml,dt_zero_list)
+        
+        res_nct_list = np.transpose(formlist)[18]
         res_nct_list = np.append(be,res_nct_list)
-        dex_nct_list = np.transpose(formlist)[18]
+        res_exp_list = np.transpose(formlist)[19]
+        res_exp_list = np.append(ne,res_exp_list)
+        res_zero_list = np.transpose(formlist)[20]
+        res_zero_list = np.append(res0,res_zero_list)
+        
+        dex_nct_list = np.transpose(formlist)[21]
         dex_nct_list = np.append(de,dex_nct_list)
+        dex_exp_list = np.transpose(formlist)[22]
+        dex_exp_list = np.append(nde,dex_exp_list)
+        dex_zero_list = np.transpose(formlist)[23]
+        dex_zero_list = np.append(dex0,dex_zero_list)
         
         alphalist = alphalist.astype(float)
         betalist = betalist.astype(float)
@@ -1288,9 +1303,14 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
         SHshlist = SHshlist.astype(float)
         biotlist = biotlist.astype(float)
         dt_nct_list = dt_nct_list.astype(float)
+        dt_zero_list = dt_zero_list.astype(float)
         res_nct_list = res_nct_list.astype(float)
+        res_exp_list = res_exp_list.astype(float)
+        res_zero_list = res_zero_list.astype(float)
         dex_nct_list = dex_nct_list.astype(float)
-        print("TecFackist: ",tecBlist)
+        dex_exp_list = dex_exp_list.astype(float)
+        dex_zero_list = dex_zero_list.astype(float)
+        print("TecFacList: ",tecBlist)
         print(alphalist,ftvdlist)
         i=0
         while i<len(fttvdlist):
@@ -1431,8 +1451,14 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
                 gammas[i] = gammalist[p] if np.isfinite(gammalist[p]) else tiltgamma
                 tecB[i] = tecBlist[p] if np.isfinite(tecBlist[p]) else tecb
                 dt_ncts[i] = dt_nct_list[p] if np.isfinite(dt_nct_list[p]) else lamb
+                dt_zeros[i] = dt_zero_list[p] if np.isfinite(dt_zero_list[p]) else dtml
                 res_ncts[i] = res_nct_list[p] if np.isfinite(res_nct_list[p]) else be
-                dex_ncts[i] = dex_nct_list[p] if np.isfinite(dex_nct_list[p]) else de 
+                res_exp[i] = res_exp_list[p] if np.isfinite(res_exp_list[p]) else ne
+                res_zeros[i] = res_zero_list[p] if np.isfinite(res_zero_list[p]) else res0
+                dex_ncts[i] = dex_nct_list[p] if np.isfinite(dex_nct_list[p]) else de
+                dex_exp[i] = dex_exp_list[p] if np.isfinite(dex_exp_list[p]) else nde
+                dex_zeros[i] = dex_zero_list[p] if np.isfinite(dex_zero_list[p]) else dex0
+                
                 SHsh[i] = SHshlist[p] 
                 biot[i] = biotlist[p] if np.isfinite(biotlist[p]) else 1
                 grcut[i] = grlist[p]
@@ -1450,8 +1476,13 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
             else:
                 #cdtvd2[i] = cdtvdlist[p]
                 dt_ncts[i] = dt_nct_list[p] if np.isfinite(dt_nct_list[p]) else lamb
+                dt_zeros[i] = dt_zero_list[p] if np.isfinite(dt_zero_list[p]) else dtml
                 res_ncts[i] = res_nct_list[p] if np.isfinite(res_nct_list[p]) else be
-                dex_ncts[i] = dex_nct_list[p] if np.isfinite(dex_nct_list[p]) else de 
+                res_exp[i] = res_exp_list[p] if np.isfinite(res_exp_list[p]) else ne
+                res_zeros[i] = res_zero_list[p] if np.isfinite(res_zero_list[p]) else res0
+                dex_ncts[i] = dex_nct_list[p] if np.isfinite(dex_nct_list[p]) else de
+                dex_exp[i] = dex_exp_list[p] if np.isfinite(dex_exp_list[p]) else nde
+                dex_zeros[i] = dex_zero_list[p] if np.isfinite(dex_zero_list[p]) else dex0
                 grcut[i] = grlist[p]
                 ttvd[i] = logtoplist[p]
                 btvd[i] = logbotlist[p]
@@ -1701,9 +1732,9 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
             matrix[i] = 65
         if tvdbgl[i]>0:
             if(dalm[i]<matrick):
-                dalm[i] = matrick + (mudline-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
+                dalm[i] = matrick + (dt_zeros[i]-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
             if(np.isnan(dalm[i])):
-                dalm[i] = matrick + (mudline-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
+                dalm[i] = matrick + (dt_zeros[i]-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
                 dalmflag[i] = np.nan
             if(np.isnan(resdeep[i])):
                 resdeep[i] = res0*np.exp(res_ncts[i]*tvdbgl[i])
@@ -1792,13 +1823,13 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
                 if shaleflag[i]<0.5: #Shale PorePressure
                     #gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(dt_ncts[i]*tvdbgl[i])))
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
-                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],mudline,matrick,deltmu0,dalm[i],biot[i])
-                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],ne,tvdbgl[i],res0,resdeep[i],biot[i])
+                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],dt_zeros[i],matrick,deltmu0,dalm[i],biot[i])
+                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],res_exp[i],tvdbgl[i],res_zeros[i],resdeep[i],biot[i])
                     try:
                         Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
                     except:
                         Dexp[i] = np.nan
-                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], nde, tvdbgl[i], dex0, Dexp[i], biot[i]) 
+                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], dex_exp[i], tvdbgl[i], dex_zeros[i], Dexp[i], biot[i]) 
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
@@ -1816,7 +1847,7 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
                     gccDexp[i]=underbalancereject
                 #gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
                 ppgZhang[i] = gccZhang[i]*8.33
-                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
+                dtNormal[i] = matrick + (dt_zeros[i]-matrick)*(math.exp(-dt_ncts[i]*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale) #S0, cohesive strength, in MPa, for all rocks, for gassy rocks apply gassman correction
                 horsud[i] = horsuda*(vp[i]**horsude)
@@ -1854,13 +1885,13 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
                     #gccZhang2[i] = ObgTgcc[i] - ((ObgTgcc[i]-pn)*((math.log((mudline-matrick))-(math.log(dalm[i]-matrick)))/(dt_ncts[i]*tvdbgl[i])))#this is legacy code and should be removed
                     #gccZhang[i] = (ObgTgcc[i] - ((ObgTgcc[i]-(pn*1))/(b*tvdbgl[i]))*((((b-c)/c)*(math.log((mudline-matrick)/(deltmu0-matrick))))+(math.log((mudline-matrick)/(dalm[i]-matrick)))))/1
                     #gccZhang[i] = getGccZhang(ObgTgcc[i],pn,mudline,matrick,dalm[i],ct,tvdbgl[i])
-                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],mudline,matrick,deltmu0,dalm[i],biot[i])
-                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],ne,tvdbgl[i],res0,resdeep[i],biot[i])
+                    gccZhang[i] = get_PPgrad_Zhang_gcc(ObgTgcc[i],pn,b,tvdbgl[i],dt_ncts[i],dt_zeros[i],matrick,deltmu0,dalm[i],biot[i])
+                    gccEaton[i] = get_PPgrad_Eaton_gcc(ObgTgcc[i],pn,res_ncts[i],res_exp[i],tvdbgl[i],res_zeros[i],resdeep[i],biot[i])
                     try:
                         Dexp[i] = get_Dxc(rop[i],rpm[i],wob[i],bit[i],ecd[i],pn)
                     except:
                         Dexp[i] = np.nan
-                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], nde, tvdbgl[i], dex0, Dexp[i], biot[i])
+                    gccDexp[i] = get_PPgrad_Dxc_gcc(ObgTgcc[i], pn, dex_ncts[i], dex_exp[i], tvdbgl[i], dex_zeros[i], Dexp[i], biot[i])
                 else:
                     gccZhang[i] = np.nan #Hydraulic Pore Pressure
                     gccEaton[i] = np.nan
@@ -1878,7 +1909,7 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
                 
                 #gccZhang[np.isnan(gccZhang)] = gccZhang2[np.isnan(gccZhang)]
                 ppgZhang[i] = gccZhang[i]*8.33
-                dtNormal[i] = matrick + (mudline-matrick)*(math.exp(-ct*tvdbgl[i]))
+                dtNormal[i] = matrick + (dt_zeros[i]-matrick)*(math.exp(-ct*tvdbgl[i]))
                 lal3[i] = lall*(304.8/(dalm[i]-1))
                 lal[i] = lalm*(vp[i]+lala)/(vp[i]**lale)
                 horsud[i] = horsuda*(vp[i]**horsude)
