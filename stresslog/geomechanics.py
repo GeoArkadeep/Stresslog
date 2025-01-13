@@ -73,6 +73,53 @@ path_dict.update({
 
 from io import StringIO
 
+def safe_block(curve, cutoffs=None, values=(0,1)):
+    """
+    A safer wrapper around the welly Curve.block() function that handles edge cases.
+    
+    Args:
+        curve: welly Curve object
+        cutoffs: the values at which to create the blocks
+        values: the values to map to (must be one more than cutoffs)
+        
+    Returns:
+        numpy array of blocked values
+    """
+    import numpy as np
+    from welly import utils
+    
+    data = np.digitize(curve.df.values, [cutoffs] if np.isscalar(cutoffs) else cutoffs)
+    data = data.astype(float)
+    
+    # Find the tops of the 'zones'
+    tops, vals = utils.find_edges(data)
+    
+    # Handle edge cases
+    if len(tops) == 0:
+        # No zones found - return all zeros or first value
+        return np.full_like(data, values[0])
+        
+    if len(tops) == 1:
+        # Single zone - fill entire array with appropriate value
+        val_idx = int(vals[0])
+        return np.full_like(data, values[val_idx])
+    
+    # Multiple zones - process normally
+    result = np.copy(data)
+    
+    # Process all zones including the last one
+    for i in range(len(tops)):
+        val_idx = int(vals[i])
+        
+        if i == len(tops) - 1:
+            # Last zone - goes to the end
+            result[tops[i]:] = values[val_idx]
+        else:
+            # Other zones - go from this top to next top
+            result[tops[i]:tops[i+1]] = values[val_idx]
+            
+    return result
+
 def plot_to_svg(matplot) -> str:
     """
     Saves the last plot made using ``matplotlib.pyplot`` to a SVG string.
@@ -516,26 +563,34 @@ def find_TVD(well, md):
 
 def add_curves(well, df, clear=False):
     """
-    Adds all columns from a DataFrame as curves to the Well object.
+    Adds all columns from a DataFrame as curves to the Well object while preserving start, stop, and step values.
     
     Parameters:
     well (Well): The welly Well object.
     df (pd.DataFrame): The DataFrame containing the data to be added as curves.
-    clear (bool) : If True, all existing columns are cleared before adding new ones. Defaults to False
+    clear (bool): If True, all existing columns are cleared before adding new ones. Defaults to False
     """
+    indexcurve= df["DEPT"]
+    
     # Clear all existing curves
     if clear:
         well.data.clear()
         print("All existing curves have been removed.")
+    
     for column in df.columns:
         if column in well.data:
             print(f"Curve with mnemonic '{column}' already exists in the well. Skipping.")
         else:
-            # Create a Curve object for each column
-            curve = Curve(mnemonic=column, data=df[column].values)
+            # Create a Curve object for each column with preserved parameters
+            curve = Curve(
+                mnemonic=column,
+                data=df[column].values,
+                index=indexcurve,
+                null=np.nan
+            )
             well.data[column] = curve
             print(f"Added curve: {column}")
-
+    
     return well
 
 def remove_curves(well, mnemonics_to_remove):
@@ -559,7 +614,7 @@ mnemonics_to_remove = [
     "FracPressure", "GEOPRESSURE", "SHmin_PRESSURE", "SHmax_PRESSURE", 
     "MUD_PRESSURE", "OVERBURDEN_PRESSURE", "HYDROSTATIC_PRESSURE", 
     "MUD_GRADIENT", "S0_Lal", "S0_Lal_Phi", "UCS_Horsud", "UCS_Lal", 
-    "Poisson_Ratio", "Youngs_Modulus", "Shear_Modulus", "Bulk_Modulus"
+    "Poisson_Ratio","ML90", "Youngs_Modulus", "Shear_Modulus", "Bulk_Modulus"
 ]
 
 unitdictdef = {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}
@@ -1036,8 +1091,8 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
         rediff = Curve(lradiff, mnemonic='ResD',units='ohm/m', index=md, null=0)
         well.data['ResDif'] =  rediff
         print("sfs = :",sfs)
-        shaleflag = rediff.block(cutoffs=sfs,values=(0,1)).values
-        zoneflag = rediff.block(cutoffs=sfs,values=(0,1)).values
+        shaleflag = safe_block(rediff, cutoffs=sfs, values=(0,1))
+        zoneflag = safe_block(rediff, cutoffs=sfs, values=(0,1))
         print(shaleflag)
         #plt.plot(shaleflag)        
         ##plt.show()
@@ -1476,8 +1531,8 @@ def compute_geomech(well,rhoappg = 16.33, lamb=0.0008, ul_exp = 0.0008, ul_depth
             shaleflag = np.where(gr < grcut, 1, 0)
             zoneflag = np.where(gr < grcut, 0, 1)
         else:
-            shaleflag = rediff.block(cutoffs=sfs,values=(0,1)).values
-            zoneflag = rediff.block(cutoffs=sfs,values=(1,0)).values
+            shaleflag = safe_block(rediff, cutoffs=sfs, values=(0,1))
+            zoneflag = safe_block(rediff, cutoffs=sfs, values=(0,1))
         print(shaleflag)
         #plt.plot(shaleflag,tvd)        
         #plt.show()

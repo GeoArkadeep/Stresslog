@@ -4,6 +4,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 from difflib import SequenceMatcher
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=RuntimeWarning)
 
 from .syntheticLogs import getwelldev, create_random_well, create_header
 from .geomechanics import remove_curves, add_curves, find_TVD, compute_geomech
@@ -13,7 +16,7 @@ from .thirdparty import datasets_to_las
 #from stresslog import *
 
 
-def create_blank_well(kb,gl,kop=0, maxangle=0, rob=0.1,azimuth=0,dev=None, spacing=0.15,):
+def create_blank_well(kb,gl,kop=0, maxangle=0, rob=0.1,azimuth=0,dev=None, spacing=0.15,td=5000):
     """Create a random well object with specified parameters.
 
     Parameters
@@ -36,7 +39,7 @@ def create_blank_well(kb,gl,kop=0, maxangle=0, rob=0.1,azimuth=0,dev=None, spaci
     welly.Well
         Well object containing randomly generated log data
     """
-    blankwell = getwelldev(wella=create_random_well(kb=kb, gl=gl, step=spacing),step=spacing, deva=dev, kickoffpoint=kop, final_angle=maxangle, rateofbuild=rob, azimuth=azimuth)
+    blankwell = getwelldev(wella=create_random_well(kb=kb, gl=gl, stopper=td, step=spacing),step=spacing, deva=dev, kickoffpoint=kop, final_angle=maxangle, rateofbuild=rob, azimuth=azimuth)
     blankwell = remove_curves(blankwell,["DTCO","RHOB","NPHI","GR","ILD","DTS","NU"])
     return blankwell
     
@@ -80,6 +83,7 @@ def depth_shift_process(df, current_forms_dict, new_forms_dict):
     pandas.DataFrame
         Transformed dataframe with new index positions
     """
+    #df = df.fillna(0.0)
     offset = (new_forms_dict[list(new_forms_dict)[-1]]-current_forms_dict[list(current_forms_dict)[-1]])
     print(offset)
     current_forms_dict["Fin"] = float(df.index[-1])
@@ -173,10 +177,17 @@ def get_analog_well(well,cfd,nfd,spacing=1,blankwell=None, indices="TVDM", dev= 
             blankwell = getwelldev(wella=create_random_well(kb=kb, gl=gl, step=spacing),step=spacing, kickoffpoint=kop, final_angle=maxangle, rateofbuild=rob, azimuth=azimuth)
         blankwell = remove_curves(blankwell,["DTCO","RHOB","NPHI","GR","ILD","DTS","NU"])
     blankdf = blankwell.df()
+    analogdevnp = blankwell.location.deviation
+    analogdevdf = pd.DataFrame(analogdevnp, columns=["MD", "INC", "AZIM"])
+
+    print(analogdevdf)
+    analogdevdf.to_csv("analogdevdf.csv",index=False)
     kb = float(blankwell.header.set_index("mnemonic").loc["KB", "value"])
     gl = float(blankwell.header.set_index("mnemonic").loc["GL", "value"])
     #blankdf = uniform_resample(blankdf,"TVDM",spacing)
-    print(blankdf)
+    if debug:
+        print("Blankdf:")
+        print(blankdf)
     dfmd=blankdf
     # Ensure dftvd's index is float and sorted for interpolation
     dftvd.index = dftvd.index.astype(float)
@@ -203,13 +214,18 @@ def get_analog_well(well,cfd,nfd,spacing=1,blankwell=None, indices="TVDM", dev= 
     #dft_new.index.name = "DEPT"
 
     if debug:
+        print("dft_new:")
         print(dft_new)
     
     analogwell = add_curves(blankwell,dft_new,True)
+    if debug:
+        print("analogwell's df")
+        print(analogwell.df())
 
-    #returning the analogwell directly is a bad idea, let's write it to a las string and return that instead
-    #this way we can i) return something industry standard, ii) human readable so we can check the outcome
-    print("Kellybushing of target well is: ",kb)
+        #returning the analogwell directly is a bad idea, let's write it to a las string and return that instead
+        #this way we can i) return something industry standard, ii) human readable so we can check the outcome
+    
+        print("Kellybushing of target well is: ",kb)
     hdf = create_header(
         name="analogwell",#f"{well_name}-{key}", 
         uwi="ANALOGWELL",#f"WELL#{key}", 
@@ -219,14 +235,15 @@ def get_analog_well(well,cfd,nfd,spacing=1,blankwell=None, indices="TVDM", dev= 
         kb=str(kb),
         gl=str(gl),
     )
-    print(hdf)
+    if debug:
+        print(hdf)
     #analogwell.header = hdf
     cols = list(dft_new.columns)
     cols.reverse()
 
     dft_new = dft_new[cols]
-
-    print(dft_new)
+    if debug:
+        print(dft_new)
     las_string = datasets_to_las("test.las" if debug else None, {'Curves': dft_new, 'Header': hdf}, 
                              {})
     #print(las_string)
@@ -243,9 +260,9 @@ def get_analog_well(well,cfd,nfd,spacing=1,blankwell=None, indices="TVDM", dev= 
         
         # Create the plot
         import matplotlib.pyplot as plt
-        plt.plot(dftvd['DTCO'],dftvd.index.values,label="TVD Model", alpha=0.7)
-        plt.plot(df['DTCO'],df.index.values,label="Post-drill well", alpha=0.7)
-        plt.plot(dft_new['DTCO'],dft_new["TVDM"],label="Analog well")
+        plt.plot(dftvd['DTHM'],dftvd.index.values,label="TVD Model", alpha=0.7)
+        plt.plot(df['DTHM'],df.index.values,label="Post-drill well", alpha=0.7)
+        plt.plot(dft_new['DTHM'],dft_new["TVDM"],label="Analog well")
         plt.legend()
         # Force plot to start at 0,0
         plt.xlim(240, 0)
@@ -271,7 +288,7 @@ def get_analog_well(well,cfd,nfd,spacing=1,blankwell=None, indices="TVDM", dev= 
         plt.savefig("depthshiftprocessing.png")
         plt.close()
     analogwell.header = analogwell.header.drop(index=0).reset_index(drop=True)
-    return analogwell,io.StringIO(las_string)
+    return analogwell,io.StringIO(las_string), analogdevdf
 
 
 
@@ -306,7 +323,7 @@ def convert_df_tvd(df,well):
         The dataframe who's first column has the measured depths we want to convert.
     well : welly.Well
         Source well object containing the original log data and wellbore information.
-        Must contain basic log curves (e.g., GR, RHOB, etc.) and valid deviation data.
+        Must valid deviation data.
     Returns
     -------
     pandas.DataFrame
@@ -315,15 +332,17 @@ def convert_df_tvd(df,well):
     
     originalkey = list(df)[0]
     df[originalkey] = df[originalkey].apply(lambda x: find_TVD(well, x))
-    return df.rename(columns={originalkey: 'TopTVD'})
-    
+    print(df)
+    if originalkey != 'TopTVD':
+        df = df.rename(columns={originalkey: 'TopTVD'})
+    return df
 
 def extract_depth_dict(df):
     originalkey = list(df)[0]
-    f_names = fuzzymatch(df,"Name")
+    f_names = ("Name")#fuzzymatch(df,"Name")
     return {row[f_names]: round(float(row[originalkey]), 2) for _, row in df.iterrows()}
 
-def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0.1,azi=0,debug=False):
+def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0.1,azi=0,debug=False,td=5000):
     """
     Generate an analog well by transforming log data from an existing well according to specified formation depths
     and wellbore geometry parameters. This function creates a new well object with transformed log data that 
@@ -430,14 +449,15 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
     offset0 = (float(well.header.set_index("mnemonic").loc["KB", "value"]))-float(well.header.set_index("mnemonic").loc["GL", "value"])
     
     step = well.df().index.values[1] - well.df().index.values[0]
-    
+    if debug:
+        print(step)
     if list(current_forms)[0].lower()=="toptvd":
         cfd = extract_depth_dict(current_forms)
     else:
         cfd = extract_depth_dict(convert_df_tvd(current_forms,well))
         
     
-    newblankwell=create_blank_well(kb=kb,gl=gl,spacing=step,maxangle=ma,kop=kop,azimuth=azi,dev=dev)
+    newblankwell=create_blank_well(kb=kb,gl=gl,spacing=step,maxangle=ma,kop=kop,azimuth=azi,dev=dev,td=td)
     
     if list(target_forms)[0].lower()=="toptvd":
         nfd = extract_depth_dict(target_forms)
@@ -447,21 +467,36 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
     cfd["Start"] = offset0
     nfd["Start"] = offset1
     
-    return get_analog_well(well,cfd,nfd,spacing,blankwell=newblankwell,debug=debug)
-    
+    return get_analog_well(well,cfd,nfd,5,blankwell=newblankwell,debug=debug)
     
 
+
 if __name__=="__main__":
+    import welly
     spacing = 5
-    well = getwelldev(wella=create_random_well(kb=35, gl=-200, step=spacing),step=spacing, kickoffpoint=2500, final_angle=25, rateofbuild=0.1, azimuth=270)
+    wellu = welly.Well.from_las("testlas.las")
+    print(wellu)
+    dev = pd.read_csv("testdev.csv")
+    print(dev)
+
+    well = getwelldev(wella=wellu,deva=dev,step=spacing)
+    print(well.df())
+    
+    well.header = pd.concat([well.header[well.header["mnemonic"] != "KB"], pd.DataFrame({"mnemonic": ["KB"], "value": [80]})], ignore_index=True)
+    well.header = pd.concat([well.header[well.header["mnemonic"] != "GL"], pd.DataFrame({"mnemonic": ["GL"], "value": [20]})], ignore_index=True)
+    
+    #well = getwelldev(wella=create_random_well(kb=35, gl=-200, step=spacing),step=spacing, kickoffpoint=2500, final_angle=25, rateofbuild=0.1, azimuth=270)
     form_md = """TopTVD,StratiNum,Name,GR_Cut,Struc_Top,Struc_Bot,Z_ratio,OWC,GOC,Bt,Shm_Azim,Dip_Azim,Dip_Angle
     1690,1,Alpha,70,500,2380,0.5,0,0,,,,
     2380,2,Beta,70,1600,2610,0.5,0,0,,,,
     2900,3,Gamma,70,2450,2950,0.5,2499,0,,90,,
     2950,4,Echo,60,2550,3400,0.66,3100,3050,,90,0,0
     3250,5,Delta,65,2750,3300,0.33,2950,2900,,85,2,3"""
+    
+    f0 = pd.read_csv("testforms.csv")
+    print(f0)
 
-    f0 = pd.read_csv(io.StringIO(form_md), sep=",")
+    #f0 = pd.read_csv(io.StringIO(form_md), sep=",")
     cfd = extract_depth_dict(convert_df_tvd(f0,well))
     
     new_md = """topTVD,StratiNum,Formation_Name,GR_Cut,Struc_Top,Struc_Bot,Z_ratio,OWC,GOC,Bt,Shm_Azim,Dip_Azim,Dip_Angle
@@ -471,17 +506,23 @@ if __name__=="__main__":
     3150,4,Echo,60,2550,3400,0.66,3100,3050,,90,0,0
     4200,5,Delta,65,2750,3300,0.33,2950,2900,,85,2,3"""
     
-    f1 = pd.read_csv(io.StringIO(new_md), sep=",")
+    f1 = pd.read_csv("testforms2.csv")
+    print(f1)
+    
+    #f1 = pd.read_csv(io.StringIO(new_md), sep=",")
     #newblankwell=create_blank_well(kb=20,gl=10,spacing=15,maxangle=90,kop=4000,azimuth=90)
     
-    new_well,stringlas = get_analog(well,f0,f1,kb=20,gl=-200,ma=90,kop=4000,azi=90)#,debug=True)
+    new_well,stringlas,devdas = get_analog(well,f0,f1,kb=20,gl=-200,ma=90,kop=1000,azi=90,debug=False)
+    freshnew = getwelldev(string_las=stringlas.read(),deva=devdas,step=5)
+    print(freshnew)
+    print(new_well)
 
-    
-
-    #output = compute_geomech(new_well, writeFile=False)
-    
+    output = compute_geomech(freshnew,sfs=30, tango=4000, writeFile=False,)
+    outdf = output[0]
+    outdf.to_csv("testout.csv")
+    print(new_well.df())
     stringlas.seek(0)
-    print(stringlas.read(1500))
+    print(stringlas.read(2500))
     """
     lulu = io.StringIO(output[1])
     lulu.seek(0)

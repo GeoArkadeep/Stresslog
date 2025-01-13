@@ -73,7 +73,7 @@ from .obgppshmin import (
 )
 
 # forecast.py
-from .forecast import get_analog, convert_df_tvd
+from .forecast import get_analog, convert_df_tvd, create_blank_well
 
 # plotangle.py
 from .plotangle import plotfrac

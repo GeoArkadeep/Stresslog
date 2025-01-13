@@ -458,7 +458,7 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
             final_angle=89.999
         start_depth = depth_track[0]
         final_depth = depth_track[-1]
-        spacing = depth_track[-5] - depth_track[-4]
+        spacing = depth_track[-3] - depth_track[-4]
         if step is not None:
             spacing=step
         # Create a depth array with the same spacing
@@ -476,7 +476,7 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
 
     if deva is not None:
         start_depth = depth_track[0]
-        spacing = depth_track[-5] - depth_track[-4]
+        spacing = depth_track[-3] - depth_track[-4]
         if step is not None:
             spacing=step
         padlength = int(start_depth / spacing)
@@ -493,7 +493,7 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
         azm = np.interp(md, mda, azma)
     else:
         start_depth = depth_track[0]
-        spacing = (depth_track[-5] - depth_track[4])
+        spacing = (depth_track[-3] - depth_track[-4])
         if step is not None:
             spacing=step
         padlength = int(start_depth / spacing)
@@ -526,7 +526,7 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
     print("Great Success!! :D")
     return wella
 
-def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15, drop=[]):
+def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15,starter=0,stopper=5500, drop=[]):
     """Create a random well object with specified parameters.
 
     Parameters
@@ -549,7 +549,7 @@ def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15, drop=[]):
     welly.Well
         Well object containing randomly generated log data
     """
-    data_frame_2, header_frame_2, string_buffer = create_random_las(kb=kb,gl=gl, stepper=step,drop=drop)
+    data_frame_2, header_frame_2, string_buffer = create_random_las(kb=kb,gl=gl, stepper=step, stopper=stopper, drop=drop)
     string_data = string_buffer.getvalue()
     return Well.from_las(string_data)
 
