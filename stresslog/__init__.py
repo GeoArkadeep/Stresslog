@@ -7,7 +7,7 @@ See the GNU Affero General Public License for more details: <https://www.gnu.org
 
 # BoreStab.py
 from .BoreStab import (
-    get_optimal,
+    get_principal_stress,
     getVertical,
     getAlignedStress,
     getRota,
@@ -86,7 +86,7 @@ from .Plotter import plot_logs_labels
 # We want to define __all__ to control what gets imported with "from package import *"
 __all__ = [
     # BoreStab
-    "get_optimal", "getVertical", "getAlignedStress", "getRota", "getStens",
+    "get_principal_stress", "getVertical", "getAlignedStress", "getRota", "getStens",
     "getStrikeDip", "getEuler", "getOrit", "getSigmaTT", "getHoop", "draw",
     # DrawSP
     "drawSP", "getSP",

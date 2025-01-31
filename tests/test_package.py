@@ -11,7 +11,7 @@ import pandas as pd
 
 def test_integration_basic():
 # Test case 1: Basic well log generation and plotting
-    attrib = [10, 0, 0, 0, 0, 0, 0, 0]
+    attrib = [10, 0, 0, 0, 0, 0, 0, 0] #KB, GL, 
     well = lst.create_random_well(kb=35, gl=-200, step=5)
     print(well.df())
     dev = lst.getwelldev(wella=well)

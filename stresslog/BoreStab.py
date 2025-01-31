@@ -11,7 +11,7 @@ import math
 
 from scipy.optimize import minimize
 
-def get_optimal(sx,sy,sz,alpha=0, beta=0, gamma=0):
+def get_optimal_old(sx,sy,sz,alpha=0, beta=0, gamma=0):
     """
     Optimizes sx, sy, sz to achieve a specified SV
     under given angular conditions.
@@ -29,6 +29,63 @@ def get_optimal(sx,sy,sz,alpha=0, beta=0, gamma=0):
     else: #normal and strike slip
         optimal = get_optimalNS(sx,sy,sz,alpha, beta, gamma)
     return optimal[0],optimal[1],optimal[2]
+
+
+def get_principal_stress(sx, sy, sz, dalpha=0, dbeta=0, dgamma=0):
+    """
+    Estimate the principal stresses (s1, s2, s3) such that their rotated stress tensor
+    matches the given stresses (sx, sy, sz) in the geographic coordinate system.
+    
+    Parameters:
+    - sx, sy, sz: Stresses in the geographic coordinate system
+    - alpha, beta, gamma: Rotation angles (in radians)
+    
+    Returns:
+    - s1, s2, s3: Optimized principal stresses
+    """
+    alpha = 0#np.radians(dalpha)
+    beta = np.radians(dbeta)
+    gamma = np.radians(dgamma)
+    # Rotation matrix Rs
+    def rotation_matrix(alpha, beta, gamma):
+        return np.array([[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
+                   [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
+                   [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]])
+    
+    Rs = rotation_matrix(alpha, beta, gamma)
+    
+    # Objective function for optimization
+    def objective(principal_stresses):
+        # Extract s1, s2, s3
+        s1, s2, s3 = principal_stresses
+        # Principal stress tensor
+        Sp = np.diag([s1, s2, s3])
+        # Geographic stress tensor after "de-rotation"
+        Sg = Rs.T @ Sp @ Rs
+        
+        # Extract diagonal elements of Sg
+        geo_diag = np.diag(Sg)
+        # Compute the cost as the sum of squared differences
+        cost = ((geo_diag[0] - sx) ** 2 +
+                (geo_diag[1] - sy) ** 2 +
+                (geo_diag[2] - sz) ** 2)
+        return cost
+    
+    # Initial guess for the principal stresses
+    initial_guess = [sx, sy, sz]
+    bounds = [
+        (0, None),  # s1 must be non-negative
+        (0, None),  # s2 must be non-negative
+        (0, None)   # s3 must be non-negative
+    ]
+    # Perform optimization
+    result = minimize(objective, initial_guess, method="L-BFGS-B", bounds=bounds)
+    
+    # Extract optimized principal stresses
+    s1, s2, s3 = result.x
+
+    return s1, s2, s3
+
 
 def get_optimalNS(sx, sy, specified_SV, alpha=0, beta=0, gamma=0):
     """
@@ -1105,3 +1162,27 @@ def get_bhp_critical(Sb, pp, ucs, theta, nu=0.25, sigmaT=0):
     
     # Return the calculated critical BHP
     return numerator / denominator
+
+def get_frac_pressure(Sb, pp, ucs, theta, nu=0.25, sigmaT=0):
+    """
+    Calculate the critical bottomhole pressure (BHP) based on a closed-form solution.
+    
+    Parameters:
+    pp (float): Pore pressure
+    ucs (float): Uniaxial compressive strength
+    Sb (numpy.ndarray): At-wall stress tensor (3x3 matrix)
+    theta (float): Circumferential angle in radians corresponding to the minimum principal stress on the hole wall
+    nu (float): Poisson's ratio (default is 0.25)
+    sigmaT (float): Thermal stress (default is 0)
+    
+    Returns:
+    float: Critical bottomhole pressure (BHP)
+    """
+    
+    # Extract components of the stress tensor for readability
+    Sb11, Sb12, Sb13 = Sb[0, 0], Sb[0, 1], Sb[0, 2]
+    Sb21, Sb22, Sb23 = Sb[1, 0], Sb[1, 1], Sb[1, 2]
+    Sb31, Sb32, Sb33 = Sb[2, 0], Sb[2, 1], Sb[2, 2]
+    
+    return [(40.0*Sb11**2*nu*np.cos(2.0*theta)**2 - 20.0*Sb11**2*nu*np.cos(2.0*theta) - 40.0*Sb11*Sb12*nu*np.sin(2.0*theta) + 80.0*Sb11*Sb12*nu*np.sin(4.0*theta) - 80.0*Sb11*Sb22*nu*np.cos(2.0*theta)**2 - 20.0*Sb11*Sb33*np.cos(2.0*theta) + 10.0*Sb11*Sb33 - 20.0*Sb11*nu*pp*np.cos(2.0*theta) + 20.0*Sb11*nu*sigmaT*np.cos(2.0*theta) - 2.0*Sb11*nu*ucs*np.cos(2.0*theta) - 2.0*Sb11*ucs*np.cos(2.0*theta) + Sb11*ucs + 160.0*Sb12**2*nu*np.sin(2.0*theta)**2 - 40.0*Sb12*Sb22*nu*np.sin(2.0*theta) - 80.0*Sb12*Sb22*nu*np.sin(4.0*theta) - 40.0*Sb12*Sb33*np.sin(2.0*theta) - 40.0*Sb12*nu*pp*np.sin(2.0*theta) + 40.0*Sb12*nu*sigmaT*np.sin(2.0*theta) - 4.0*Sb12*nu*ucs*np.sin(2.0*theta) - 4.0*Sb12*ucs*np.sin(2.0*theta) - 40.0*Sb13**2*np.sin(theta)**2 + 40.0*Sb13*Sb23*np.sin(2.0*theta) + 40.0*Sb22**2*nu*np.cos(2.0*theta)**2 + 20.0*Sb22**2*nu*np.cos(2.0*theta) + 20.0*Sb22*Sb33*np.cos(2.0*theta) + 10.0*Sb22*Sb33 + 20.0*Sb22*nu*pp*np.cos(2.0*theta) - 20.0*Sb22*nu*sigmaT*np.cos(2.0*theta) + 2.0*Sb22*nu*ucs*np.cos(2.0*theta) + 2.0*Sb22*ucs*np.cos(2.0*theta) + Sb22*ucs - 40.0*Sb23**2*np.cos(theta)**2 + 10.0*Sb33*pp - 10.0*Sb33*sigmaT + Sb33*ucs + pp*ucs - sigmaT*ucs + 0.1*ucs**2)/(-20.0*Sb11*nu*np.cos(2.0*theta) - 40.0*Sb12*nu*np.sin(2.0*theta) + 20.0*Sb22*nu*np.cos(2.0*theta) + 10.0*Sb33 + ucs)]
+
