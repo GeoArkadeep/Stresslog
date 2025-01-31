@@ -19,7 +19,7 @@ We hope to become *the* python package for geomechanics.
 
 .. toctree::
    :maxdepth: 2
-   :caption: API:
+   :caption: Contents:
    
    intro
    stresslog

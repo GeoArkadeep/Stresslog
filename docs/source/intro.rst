@@ -1,8 +1,3 @@
-Stresslog
-=========
-
-**Stresslog** is a Python package designed to facilitate geomechanical analysis from well logs. It offers a comprehensive suite of tools to compute various geomechanical parameters, aiding in the assessment and modeling of subsurface stress conditions.
-
 Key Features
 ------------
 
@@ -21,7 +16,18 @@ To install **Stresslog**, ensure you have Python 3.10 or 3.11 installed. You can
 
     pip install stresslog
 
-For detailed installation instructions and dependencies, please refer to the [Stresslog documentation](https://stresslog.readthedocs.io).
+For developers and pythonistas, you can download the repository from github and install from source as follows:
+
+.. code-block:: bash
+
+   # Clone the repository
+   git clone https://github.com/GeoArkadeep/Stresslog.git
+
+   # Change to the project directory
+   cd Stresslog
+
+   # Install in editable mode
+   pip install -e .
 
 Basic Usage
 -----------
@@ -56,7 +62,7 @@ In this example:
 - Well attributes are defined in the `attrib` list. These attributes can include parameters like Kelly Bushing (KB) height, Ground Level (GL), and others as required.
 - The `compute_geomech` function is called to perform the geomechanical analysis. The `writeFile` parameter is set to `False` to prevent writing output to a file.
 
-For a comprehensive list of parameters and detailed explanations, please refer to the [Stresslog API documentation](https://stresslog.readthedocs.io).
+For a comprehensive list of parameters and detailed explanations, please refer to the [Stresslog API documentation].
 
 Footnote
 --------
