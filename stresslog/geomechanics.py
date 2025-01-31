@@ -1894,7 +1894,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 dynmu[i] = 0.65 # change with the actual coefficient of internal friction calculated from logs please.
                 mufgppg[i] = 1 / ((mu ** 2 + 1) ** 0.5 + mu) ** 2 * (ObgTppg[i] - ppgpp[i]) + ppgpp[i]
                 dmufgppg[i] = 1 / ((dynmu[i] ** 2 + 1) ** 0.5 + dynmu[i]) ** 2 * (ObgTppg[i] - ppgpp[i]) + ppgpp[i]
-                fgppg[i] = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i] if program_option[1] == 0 else mufgppg[i] if program_option[1] == 1 else dmufgppg[i] if program_option[1] == 2 else np.nan
+                fgppg[i] = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i] if program_option[2] == 0 else mufgppg[i] if program_option[2] == 1 else dmufgppg[i] if program_option[2] == 2 else np.nan
             else:
                 fgppg[i] = np.nan
                 mufgppg[i] = np.nan
