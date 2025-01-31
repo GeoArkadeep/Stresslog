@@ -1886,6 +1886,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     fgcc = np.full(len(ppgZhang), np.nan)
     dynmu = np.full(len(ppgZhang), np.nan)
     mufgppg = np.full(len(ppgZhang), np.nan)
+    dmufgppg = np.full(len(ppgZhang), np.nan)
     mufgcc = np.full(len(ppgZhang), np.nan)
     while i < len(ObgTppg) - 1:
         if tvdbgl[i] > 0:
@@ -2583,7 +2584,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         lasheader = lasheader.drop(index=0).reset_index(drop=True)
         filestring = datasets_to_las(None, {'Header': lasheader, 'Curves':
             cdf3}, cc_units)
-        return cdf3, filestring, rv1, rv2, rv3, rv4, rv5, doi
+        return cdf3, filestring, rv1, rv2, rv3, rv4, rv5, doi, well
     """
     plt.plot(ladempa)
     plt.plot(mogimpa)
@@ -2766,4 +2767,5 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         points=points_df, pointstyles=pointstyles, dpi=dpif)
     fig.suptitle('Wellbore : ' + figname, fontsize=14, y=0.9)
     plt.close()
-    return df3, well
+    #return df3, well
+    return cdf3, filestring, rv1, rv2, rv3, rv4, rv5, doi, well

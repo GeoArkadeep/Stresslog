@@ -21,5 +21,5 @@ We hope to become *the* python package for geomechanics.
    :maxdepth: 2
    :caption: Contents:
    
-   intro
-   stresslog
+   Introduction
+   API Reference

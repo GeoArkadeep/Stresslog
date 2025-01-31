@@ -486,9 +486,9 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
             padval[-i] = start_depth - (spacing * i)
 
         md = np.append(padval, depth_track)
-        mda = pd.to_numeric(deva["MD"], errors="coerce")
-        inca = pd.to_numeric(deva["INC"], errors="coerce")
-        azma = pd.to_numeric(deva["AZIM"], errors="coerce")
+        mda = pd.to_numeric(deva.iloc[:, 0], errors="coerce")
+        inca = pd.to_numeric(deva.iloc[:, 1], errors="coerce")
+        azma = pd.to_numeric(deva.iloc[:, 2], errors="coerce")
         inc = np.interp(md, mda, inca)
         azm = np.interp(md, mda, azma)
     else:

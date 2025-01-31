@@ -1,4 +1,4 @@
-stresslog package
+stresslog apidocs
 =================
 
 .. automodule:: stresslog
