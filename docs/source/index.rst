@@ -15,7 +15,7 @@ This is a python package for geomechanics. The core priorities of this package a
 
 The functions shown here can be called independently, but the preferred way to use this package is using the compute_geomech function which calculates geomechanical parameters of an entire well at once.
 
-We hope to become *the* python package for geomechanics.
+We hope that this becomes *the* python package for geomechanics.
 
 .. toctree::
    :maxdepth: 2
