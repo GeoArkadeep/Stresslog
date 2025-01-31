@@ -571,7 +571,7 @@ unitdictdef = {'pressure': 'psi', 'strength': 'MPa', 'gradient': 'gcc',
 
 
 def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
-    ul_depth=0, a=0.63, nu=0.25, sfs=1.0, window=1, zulu=0, tango=2000,
+    ul_depth=0, a=0.63, nu=0.25, mu = 0.65, sfs=1.0, window=1, zulu=0, tango=2000,
     dtml=210, dtmt=60, water=1.0, underbalancereject=1, tecb=0, doi=0,
     offset=0, strike=0, dip=0, mudtemp=0, res0=0.98, be=0.00014, ne=0.6,
     dex0=0.5, de=0.00014, nde=0.5, lala=-1.0, lalb=1.0, lalm=5, lale=0.5,
@@ -1874,28 +1874,33 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     plt.show()
     plt.clf()
     plt.close()"""
+    
+    #Daines Shmin
+    
     print('Tectonic factor input = ', tecb) if debug else None
     i = 0
-    mu = 0.65
+    
     if b > 10.0:
         b = 0
     fgppg = np.full(len(ppgZhang), np.nan)
     fgcc = np.full(len(ppgZhang), np.nan)
+    dynmu = np.full(len(ppgZhang), np.nan)
     mufgppg = np.full(len(ppgZhang), np.nan)
     mufgcc = np.full(len(ppgZhang), np.nan)
     while i < len(ObgTppg) - 1:
         if tvdbgl[i] > 0:
             if shaleflag[i] < 0.5:
-                fgppg[i] = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] *
-                    ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i]
-                mufgppg[i] = 1 / ((mu ** 2 + 1) ** 0.5 + mu) ** 2 * (ObgTppg
-                    [i] - ppgpp[i]) + ppgpp[i]
-                mufgcc[i] = 0.11982642731 * mufgppg[i]
+                #fgppg[i] = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i]
+                dynmu[i] = 0.65 # change with the actual coefficient of internal friction calculated from logs please.
+                mufgppg[i] = 1 / ((mu ** 2 + 1) ** 0.5 + mu) ** 2 * (ObgTppg[i] - ppgpp[i]) + ppgpp[i]
+                dmufgppg[i] = 1 / ((dynmu[i] ** 2 + 1) ** 0.5 + dynmu[i]) ** 2 * (ObgTppg[i] - ppgpp[i]) + ppgpp[i]
+                fgppg[i] = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i] if program_option[1] == 0 else mufgppg[i] if program_option[1] == 1 else dmufgppg[i] if program_option[1] == 2 else np.nan
             else:
                 fgppg[i] = np.nan
                 mufgppg[i] = np.nan
                 mufgcc[i] = np.nan
         fgcc[i] = 0.11982642731 * fgppg[i]
+        mufgcc[i] = 0.11982642731 * mufgppg[i]
         i += 1
     ppgpp = interpolate_nan(ppgpp)
     if np.nanargmin(abs(tvdbgl)) != 0:
