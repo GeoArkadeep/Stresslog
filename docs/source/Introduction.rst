@@ -46,6 +46,14 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
     # This will also write output files to the default directories. If you don't want that, set writeFile=False
     # This will assume all the optional parameters are at their default settings
     output = lst.compute_geomech(well)
+    # The 'output' contains the following:
+    # - output[0]: Well log DataFrame (original and computed values) with mnemonics as headers
+    # - output[1]: LAS file as StringIO object containing original and computed values
+    # - output[2] to output[6]: Base64 encoded plot strings for properties calculated at depth of interest (or None if written to files or not calculated at doi=0)
+    # - output[7]: Depth of Interest as specified (in meters)
+    # - output[8]: Welly object containing all data
+
+.. code-block:: python
 
     # If deviation data is available as a DataFrame
     import pandas as pd
@@ -62,13 +70,6 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
 
     # Perform geomechanical analysis
     output = lst.compute_geomech(wellwithdeviation, attrib=attrib, writeFile=False)
-
-    # The 'output' contains the computed geomechanical parameters:
-    # - output[0]: Well log DataFrame with mnemonics as headers
-    # - output[1]: LAS file as StringIO object containing original and computed values
-    # - output[2] to output[6]: Base64 encoded plot strings for properties calculated at depth of interest (or None if written to files or not calculated at doi=0)
-    # - output[7]: Depth of Interest as specified (in meters)
-    # - output[8]: Welly object containing all data
 
 
 In this example:
