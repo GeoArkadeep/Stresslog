@@ -40,12 +40,15 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
     from welly import Well
 
     # Load your well data from a LAS file
+
     well = Well.from_las('path/to/your/well.las')
 
     # Simplest use case: Vertical well with no deviation data at full resolution (will take a fairly long time, enough for a coffee break)
     # This will also write output files to the default directories. If you don't want that, set writeFile=False
     # This will assume all the optional parameters are at their default settings
+
     output = lst.compute_geomech(well)
+
     # The 'output' contains the following:
     # - output[0]: Well log DataFrame (original and computed values) with mnemonics as headers
     # - output[1]: LAS file as StringIO object containing original and computed values
@@ -56,6 +59,7 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
 .. code-block:: python
 
     # If deviation data is available as a DataFrame
+
     import pandas as pd
     # Ensure first three columns are MD, inclination, azimuth
     deviation_data = pd.read_csv('path/to/deviation_data.csv')
@@ -63,12 +67,13 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
     # Next we create a new welly object by combining the original welly object and the deviation data
     # Instead of the welly object, we can also pass the las file directly as a stringIO object using the parameter string_las)
     # We can also resample the welly object at this step. Here we resample it to every 10 metres
+
     wellwithdeviation = lst.getwelldev(wella=well,deva=deviation_data,step=10)
 
     # Define well attributes (e.g., KB, GL, etc.)
     attrib = [30, -120, 0, 0, 0, 0, 0, 0]  # Customize as needed
 
-    # Perform geomechanical analysis
+    # Perform geomechanical analysis. This time it will much faster, few seconds maybe
     output = lst.compute_geomech(wellwithdeviation, attrib=attrib, writeFile=False)
 
 
