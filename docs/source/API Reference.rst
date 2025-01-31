@@ -1,5 +1,5 @@
-stresslog apidocs
-=================
+API Reference
+=============
 
 .. automodule:: stresslog
    :members:
