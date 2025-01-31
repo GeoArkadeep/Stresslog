@@ -73,7 +73,7 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
     # Define well attributes (e.g., KB, GL, etc.)
     attrib = [30, -120, 0, 0, 0, 0, 0, 0]  # Customize as needed
 
-    # Perform geomechanical analysis. This time it will much faster, few seconds maybe
+    # Perform geomechanical analysis. This time it will return much faster (takes about five seconds on my pc, your milage may vary)
     output = lst.compute_geomech(wellwithdeviation, attrib=attrib, writeFile=False)
 
 
