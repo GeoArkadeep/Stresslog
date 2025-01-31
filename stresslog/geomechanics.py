@@ -194,7 +194,7 @@ def calculate_motor_rpms(torque_array, flow_array, motor_id_array, dbpath):
                 pass
         return np.round(rpm_array, 2)
     except Exception as e:
-        print(f'An error occurred: {str(e)}')
+        #print(f'An error occurred: {str(e)}')
         return np.zeros(len(torque_array))
 
 
@@ -2576,14 +2576,14 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'UCS_Horsud', 'UCS_Lal'], 'gradient': ['PP_GRADIENT',
         'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad', 'MUD_GRADIENT',
         'OBG_AMOCO', 'RHO', f'ML{mabw}'], 'length': ['DEPT', 'MD', 'TVDM']}
+    from .unit_converter import convert_dataframe_units
+    cdf3, cc_units = convert_dataframe_units(df3, c_units, unitdict,
+        category_columns)
+    print(lasheader) if debug else None
+    lasheader = lasheader.drop(index=0).reset_index(drop=True)
+    filestring = datasets_to_las(None, {'Header': lasheader, 'Curves':
+        cdf3}, cc_units)
     if not writeFile:
-        from .unit_converter import convert_dataframe_units
-        cdf3, cc_units = convert_dataframe_units(df3, c_units, unitdict,
-            category_columns)
-        print(lasheader) if debug else None
-        lasheader = lasheader.drop(index=0).reset_index(drop=True)
-        filestring = datasets_to_las(None, {'Header': lasheader, 'Curves':
-            cdf3}, cc_units)
         return cdf3, filestring, rv1, rv2, rv3, rv4, rv5, doi, well
     """
     plt.plot(ladempa)

@@ -58,9 +58,9 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
 
 .. code-block:: python
 
-    # If deviation data is available as a DataFrame
-
+    # If deviation data is available:
     import pandas as pd
+
     # Ensure first three columns are MD, inclination, azimuth
     deviation_data = pd.read_csv('path/to/deviation_data.csv')
 
@@ -82,8 +82,7 @@ In this example:
 - We load a well from a LAS file using the `welly` library.
 - Deviation data is added to the well object. The deviation data should be provided as a DataFrame with columns: measured depth, inclination, and azimuth, in that order.
 - Well attributes are defined in the `attrib` list. These attributes can include parameters like Kelly Bushing (KB) height, Ground Level (GL), and others as required.
-- The `compute_geomech` function is called to perform the geomechanical analysis. The `writeFile` parameter is set to `False` to prevent writing output to files.
-
-For a comprehensive list of parameters and detailed explanations, please refer to the api documentation.
+- The `compute_geomech` function is called to perform the geomechanical analysis. The `writeFile` parameter is set to `False` to prevent writing output to files. 
+- For a comprehensive list of parameters for 'compute_geomech', please refer to the API documentation.
 
 
