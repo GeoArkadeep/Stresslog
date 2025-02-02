@@ -292,6 +292,8 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
             'track': 1, 'left': 300, 'right': 50, 'type': 'linear', 'unit':
             'us/ft'}, 'mudweight': {'color': 'brown', 'linewidth': 1.5,
             'style': '-', 'track': 2, 'left': 0, 'right': 3, 'type':
+            'linear', 'unit': 'gcc'},'shmin_grad': {'color': 'dodgerblue', 'linewidth': 
+            1, 'style': '-', 'track': 2, 'left': 0, 'right': 3, 'type':
             'linear', 'unit': 'gcc'}, 'fg': {'color': 'blue', 'linewidth': 
             1.5, 'style': '-', 'track': 2, 'left': 0, 'right': 3, 'type':
             'linear', 'unit': 'gcc'}, 'pp': {'color': 'red', 'linewidth': 
@@ -368,7 +370,7 @@ def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units,
         with open(file_path, 'r') as file:
             pstyles = json.load(file)
     except:
-        pstyles = {'frac_grad': {'color': 'dodgerblue', 'pointsize': 100,
+        pstyles = {'frac_grad': {'color': 'black', 'pointsize': 100,
             'symbol': 4, 'track': 2, 'left': 0, 'right': 3, 'type':
             'linear', 'unit': 'gcc'}, 'flow_grad': {'color': 'orange',
             'pointsize': 100, 'symbol': 5, 'track': 2, 'left': 0, 'right': 
@@ -2478,7 +2480,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         plt.plot(interpolate_nan(inca), tvd, alpha=0.5, label='inclination')
         plt.plot(-horsud / 10, tvd, alpha=0.5, label='tensile strength')
         plt.plot(tensilefracpsi / 145.038, tvd, label='fracgrad')
-        plt.plot(trufracmpa, tvd, label='trufracgrad')
+        #plt.plot(trufracmpa, tvd, label='trufracgrad')
         plt.plot(np.zeros(len(tvd)), tvd, alpha=0.1)
         plt.gca().invert_yaxis()
         plt.legend()
@@ -2612,7 +2614,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     print(shorsud)"""
     results = pd.DataFrame({'dalm': dalm, 'dtNormal': dtNormal,
         'lresnormal': lresnormal, 'lresdeep': lresdeep, 'Dexp': Dexp,
-        'dexnormal': dexnormal, 'mudweight': mudweight * ureg.gcc, 'fg': 
+        'dexnormal': dexnormal, 'mudweight': mudweight * ureg.gcc, 'shmin_grad':fg.as_numpy() * ureg.gcc,'fg': 
         fg3.as_numpy() * ureg.gcc, 'pp': pp.as_numpy() * ureg.gcc, 'sfg': 
         ladegcc * ureg.gcc, 'obgcc': obgcc.as_numpy() * ureg.gcc, 'fgpsi': 
         fg4.as_numpy() * ureg.psi, 'ssgHMpsi': ssgHMpsi * ureg.psi,
@@ -2642,7 +2644,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             if col in converted_data.columns:
                 converted_data[col] = (converted_data[col].values * ureg.psi
                     ).to(unit_mappings['pressure'][pressure_unit])
-        gradient_columns = ['mudweight', 'fg', 'pp', 'sfg', 'obgcc']
+        gradient_columns = ['mudweight', 'fg', 'pp', 'sfg', 'obgcc', 'shmin_grad']
         for col in gradient_columns:
             if col in converted_data.columns:
                 converted_data[col] = (converted_data[col].values * ureg.gcc

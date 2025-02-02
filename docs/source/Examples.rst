@@ -10,7 +10,7 @@ Let's do the vertical example first:
     from welly import Well
     import pandas as pd
 
-    # We thank Equinor for making the EOS Northern Lights dataset publicly available.
+    # We thank Equinor for making the Northern Lights Eos dataset publicly available.
     # To obtain your own copy, please follow the guidelines on the Equinor Website
     # The las used here is created by splicing together two dlis files present in the original dataset
 
