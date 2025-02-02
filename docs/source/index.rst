@@ -22,4 +22,5 @@ We hope that this becomes *the* python package for geomechanics.
    :caption: Contents:
    
    Introduction
+   Examples
    API Reference
