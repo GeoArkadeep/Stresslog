@@ -33,7 +33,7 @@ This software is aimed at empowering researchers with a simple to use and compre
 
 # Methodology
 
-Overburden gradient, pore pressure, minimum horizontal stress, rock strength and other parameters are calculated considering the given well, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
+Overburden gradient, pore pressure, minimum horizontal stress, rock strength and other parameters are calculated considering the given well logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
 
 The calculation of tilted stress states using the given methodology requires the Euler angles Alpha, Beta and Gamma. However this is not immediately apparent from a geological perspective. To solve this, we attempt to calculate the Euler angles from geological data in terms of dip angle and dip azimuth. While there are many formats of specifying geological data, such as strike direction and dip angle, we have chosen to specify the dip direction and dip angle, as they are the least ambiguous.
 
@@ -51,7 +51,7 @@ In the technique proposed by Peska and Zoback, they start with good estimates of
 
 For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value (thus if upto 90 degree width breakouts are tolerable then we take the 50 percentile value, the acceptable width of breakouts in degrees is set by the 'mabw' parameter). The upper critical mudweight (fracture gradient) can be calculated by itertatively minimising the difference between the sigma-theta-minimum (the minimum principal stress as resolved on the hole wall) and the tensile strength (here taken to be -UCS/10). Considering that the minimum principal stress along the wellbore wall is a function of pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, euler angles alpha, beta and gamma, and wellbore inclination and azimuth, as well as the mud pressure at the given depth (providing the radial stress), we can express this as follows:
 f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, alpha, beta, gamma, inclination, azimuth, critical mud weight)-g(UCS) = 0
-From this, knowing the exact expression of f and g, we can solve for critical mud weight to arrive at a closed-form solution, which is what is used in the package. This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
+From this, knowing the exact expression of f and g, we solved for critical mud weight using sympy to arrive at a closed-form solution. This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
 
 If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth, given the mud weight, stresses and pore pressure, as well as uniaxial compressive strength, poisson's ratio, temperature difference between borehole wall and circualting fluid, coefficient of thermal expansion and biot's poroelastic constant. Mohr-Coloumb failure criteria is used to predict compressive failures (borehole breakouts). For tensile failure, a simplified Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres above and below the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values.
 
@@ -66,6 +66,8 @@ The well data from Equinor Northern Lights dataset has been used as the example 
 # Discussion
 
 From observations on multiple wells sampling the same stress field at different wellbore orientations, a better estimate of the stress tensor orientation is possible. The program does not currently operate on more than one well at a time, and the iterations to arrive at a satisfactory solution are carried out by visual estimation alone. Further work in the future may help automate the process by incorporating the means to import the image log data directly, calculating a difference between the calculated image log and the imported one, and attempt to manipulate the stress orientation in an effort to minimise the difference. The current program is modular in nature, and the stability calculation subroutines in the module BoreStab.py can be re-used for this purpose.
+
+Not everyone is comfortable with python, for such users a webapp using stresslog, streamlit (and toga for offline use) is currently in development.
 
 # Disclosure
 No funding/financial support of any form was involved in the creation of this work. The author retains the rights to make available commercially, derivative forms of this software, in the future.

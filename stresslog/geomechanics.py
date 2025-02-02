@@ -34,30 +34,34 @@ uregdef.define('HR = hour')
 uregdef.define('M = meter')
 uregdef.define('mpa = MPa = Mpa')
 unitchoicedef = [0, 0, 0, 0, 0]
-path_dict = {}
-path_dict['output_dir'] = os.path.join(user_home, 'Stresslog_Plots')
-path_dict['output_dir1'] = os.path.join(user_home, 'Stresslog_Data')
-path_dict['input_dir'] = os.path.join(user_home, 'Stresslog_Models')
-path_dict['motor_dir'] = os.path.join(user_home, 'Mud_Motor')
-path_dict.update({'plot_figure': os.path.join(path_dict['output_dir'],
-    'PlotFigure.png'), 'plot_stability': os.path.join(path_dict[
-    'output_dir'], 'PlotStability.png'), 'plot_polygon': os.path.join(
-    path_dict['output_dir'], 'PlotPolygon.png'), 'plot_vec': os.path.join(
-    path_dict['output_dir'], 'PlotVec.png'), 'plot_bhi': os.path.join(
-    path_dict['output_dir'], 'PlotBHI.png'), 'plot_hoop': os.path.join(
-    path_dict['output_dir'], 'PlotHoop.png'), 'plot_frac': os.path.join(
-    path_dict['output_dir'], 'PlotFrac.png'), 'plot_all': os.path.join(
-    path_dict['output_dir'], 'PlotAll.png'), 'output_csv': os.path.join(
-    path_dict['output_dir1'], 'output.csv'), 'output_forms': os.path.join(
-    path_dict['output_dir1'], 'tempForms.csv'), 'output_ucs': os.path.join(
-    path_dict['output_dir1'], 'tempUCS.csv'), 'output_las': os.path.join(
-    path_dict['output_dir1'], 'output.las'), 'model_path': os.path.join(
-    path_dict['input_dir'], 'model.csv'), 'alias_path': os.path.join(
-    path_dict['input_dir'], 'alias.txt'), 'unit_path': os.path.join(
-    path_dict['input_dir'], 'units.txt'), 'styles_path': os.path.join(
-    path_dict['input_dir'], 'styles.txt'), 'pstyles_path': os.path.join(
-    path_dict['input_dir'], 'pstyles.txt'), 'motor_db_path': os.path.join(
-    path_dict['motor_dir'], 'motor_db.json')})
+
+def get_path_dict(user_home):
+    path_dict = {}
+    path_dict['output_dir'] = os.path.join(user_home, 'Stresslog_Plots')
+    path_dict['output_dir1'] = os.path.join(user_home, 'Stresslog_Data')
+    path_dict['input_dir'] = os.path.join(user_home, 'Stresslog_Models')
+    path_dict['motor_dir'] = os.path.join(user_home, 'Mud_Motor')
+    path_dict.update({'plot_figure': os.path.join(path_dict['output_dir'],
+        'PlotFigure.png'), 'plot_stability': os.path.join(path_dict[
+        'output_dir'], 'PlotStability.png'), 'plot_polygon': os.path.join(
+        path_dict['output_dir'], 'PlotPolygon.png'), 'plot_vec': os.path.join(
+        path_dict['output_dir'], 'PlotVec.png'), 'plot_bhi': os.path.join(
+        path_dict['output_dir'], 'PlotBHI.png'), 'plot_hoop': os.path.join(
+        path_dict['output_dir'], 'PlotHoop.png'), 'plot_frac': os.path.join(
+        path_dict['output_dir'], 'PlotFrac.png'), 'plot_all': os.path.join(
+        path_dict['output_dir'], 'PlotAll.png'), 'output_csv': os.path.join(
+        path_dict['output_dir1'], 'output.csv'), 'output_forms': os.path.join(
+        path_dict['output_dir1'], 'tempForms.csv'), 'output_ucs': os.path.join(
+        path_dict['output_dir1'], 'tempUCS.csv'), 'output_las': os.path.join(
+        path_dict['output_dir1'], 'output.las'), 'model_path': os.path.join(
+        path_dict['input_dir'], 'model.csv'), 'alias_path': os.path.join(
+        path_dict['input_dir'], 'alias.txt'), 'unit_path': os.path.join(
+        path_dict['input_dir'], 'units.txt'), 'styles_path': os.path.join(
+        path_dict['input_dir'], 'styles.txt'), 'pstyles_path': os.path.join(
+        path_dict['input_dir'], 'pstyles.txt'), 'motor_db_path': os.path.join(
+        path_dict['motor_dir'], 'motor_db.json')})
+    return path_dict
+
 from io import StringIO
 
 
@@ -571,16 +575,16 @@ unitdictdef = {'pressure': 'psi', 'strength': 'MPa', 'gradient': 'gcc',
 
 
 def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
-    ul_depth=0, a=0.63, nu=0.25, mu = 0.65, sfs=1.0, window=1, zulu=0, tango=2000,
+    ul_depth=0, a=0.63, nu=0.25, mu = 0.65, sfs=1.0, window=1, plotstart=0, plotend=6000,
     dtml=210, dtmt=60, water=1.0, underbalancereject=1, tecb=0, doi=0,
-    offset=0, strike=0, dip=0, mudtemp=0, res0=0.98, be=0.00014, ne=0.6,
+    offset=0, dip_dir=0, dip=0, mudtemp=0, res0=0.98, be=0.00014, ne=0.6,
     dex0=0.5, de=0.00014, nde=0.5, lala=-1.0, lalb=1.0, lalm=5, lale=0.5,
     lall=5, horsuda=0.77, horsude=2.93, mabw=90, unitchoice=unitchoicedef,
     ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,
     0]], fracgradvals=[[0, 0]], flowpsivals=[[0, 0]], fracpsivals=[[0, 0]],
     attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
-    lithos=None, user_home=user_home, paths=path_dict, program_option=[300,
-    4, 0, 0, 0], writeFile=True, aliasdict=None, unitdict=unitdictdef,
+    lithos=None, user_home=user_home, program_option=[300,
+    4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
     debug=False):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
@@ -608,22 +612,22 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         resistivity in ohm.m (default is 1.0).
     window : int, optional
         The window size for down-sampling well data (default is 1).
-    zulu : int, optional
-        Starting depth for analysis, in feet (default is 0).
-    tango : int, optional
-        Ending depth for analysis, in feet (default is 2000).
+    plotstart : int, optional
+        Starting depth for plotted image (if any), in metres (default is 0).
+    plotend : int, optional
+        End depth for plotted image (if any), in metres (default is 2000).
     dtml : int, optional
         Delta T at mudline, in microseconds per foot (default is 210).
     dtmt : int, optional
         Delta T of matrix, in microseconds per foot (default is 60).
     res0 : float, optional
-        Initial resistivity value, used for normal resistivity calculation (default is 0.98).
+        Resistivity at mudline (default is 0.98).
     be : float, optional
         Base exponential coefficient for resistivity gradient calculation (default is 0.00014).
     ne : float, optional
         Exponent for normal resistivity calculations (default is 0.6).
     dex0 : float, optional
-        Initial value for drilling exponent in calculations (default is 0.5).
+        D-exp at mudline (default is 0.5).
     de : float, optional
         Coefficient for drilling exponent gradient calculation (default is 0.00014).
     nde : float, optional
@@ -641,7 +645,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Depth of interest for calculations, in feet (default is 0).
     offset : int, optional
         Azimuth of the maximum horizontal stress (SHMax) in degrees (default is 0).
-    strike : int, optional
+    dip_dir : int, optional
         Dip direction of the stress tensor in degrees (default is 0).
     dip : int, optional
         Dip angle of the stress tensor in degrees (default is 0).
@@ -664,15 +668,15 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     horsude : float, optional
         Parameter for Horsud's stress method (default is 2.93).
     unitchoice : list, optional
-        <DEPRECATED, will be removed in a future version> List specifying the unit system for outputs (default is [0, 0, 0, 0, 0]).
+        <DEPRECATED, will be removed in a future version> List specifying the unit system for file output plots (default is [0, 0, 0, 0, 0]).
     unitdict : dict, optional
         Unit dictionary to be used for unit conversion, default is {'pressure':'psi', 'strength':'MPa', 'gradient':'gcc', 'length':'m'}.
     ureg : pint.UnitRegistry, optional
         Unit registry for unit conversions (default is a pint.UnitRegistry with 
         `autoconvert_offset_to_baseunit=True`).
     mwvalues : list of lists, optional
-        Mud weight values for different depth intervals. Each sublist contains parameters 
-        such as weight, depth, and salinity (default is [[1.0, 0.0, 0.0, 0.0, 0.0, 0]]).
+        Section attributes, including parameters like maximum ECD, casing shoe depth, casing diameter, 
+        bit diameter, mud salinity, and bottom-hole temperature (BHT) at the shoe
     flowgradvals : list of lists, optional
         Flow gradient values for different depths (default is [[0, 0]]).
     fracgradvals : list of lists, optional
@@ -682,8 +686,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     fracpsivals : list of lists, optional
         Fracture pressure values for different depths (default is [[0, 0]]).
     attrib : list, optional
-        Section attributes, including parameters like maximum ECD, casing shoe depth, casing diameter, 
-        bit diameter, mud salinity, and bottom-hole temperature (BHT) at the shoe 
+        Well attributes list. The fields correspond to KB, GL/WD, WL, Latitude, Longitude, BHT, Mud Resistance, Mud filtrate Resistance
         (default is [1, 0, 0, 0, 0, 0, 0, 0]).
     flags : pandas.DataFrame, optional
         Dataframe containing depths and conditions identified from image logs, such as 
@@ -697,9 +700,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Dataframe containing interpreted lithology data and lithology-specific parameters 
         (default is None).
     user_home : str, optional
-        Path to the user's home directory or the root of output directories (default is `Documents`).
-    paths : dict, optional
-        Dictionary containing file paths for saving outputs and intermediate results (default is None).
+        Path to the root of output directories (default is `~/Documents`).
     program_option : list, optional
         List controlling algorithm behavior, including resolution, algorithm choices, and more 
         (default is [300, 4, 0, 0, 0]).
@@ -747,6 +748,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     """
     print('Starting Geomech Calculation...') if debug else None
     numodel = [0.35, 0.26, 0.23, 0.25]
+    
+    paths = get_path_dict(user_home)
     output_dir = paths['output_dir']
     output_dir1 = paths['output_dir1']
     input_dir = paths['input_dir']
@@ -814,8 +817,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     final_depth = well.df().index[-1]
     plt.clf()
     from .BoreStab import getEuler
-    if strike != 0 or dip != 0:
-        tilt, tiltgamma = getEuler(offset, strike, dip)
+    if dip_dir != 0 or dip != 0:
+        tilt, tiltgamma = getEuler(offset, dip_dir, dip)
         print('Alpha :', offset, ', Beta: ', tilt, ', Gamma :', tiltgamma
             ) if debug else None
     else:
@@ -1150,7 +1153,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         alphalist = np.transpose(formlist)[10]
         alphalist = np.append(offset, alphalist)
         betalist = np.transpose(formlist)[11]
-        betalist = np.append(strike, betalist)
+        betalist = np.append(dip_dir, betalist)
         gammalist = np.transpose(formlist)[12]
         gammalist = np.append(dip, gammalist)
         tecBlist = np.transpose(formlist)[13]
@@ -2349,13 +2352,13 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             combineHarvest()
     from matplotlib.ticker import MultipleLocator
     from .Plotter import plot_logs_labels
-    tango = min(tango, finaldepth)
-    if zulu > finaldepth or zulu > tango:
-        zulu = 0
-    mogu1 = np.nanmax(ssgHMpsi[:find_nearest_depth(tvd, tango)[0]])
-    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd, tango)[0]])
-    mogu3 = np.nanmin(hydropsi[find_nearest_depth(tvd, zulu)[0]:
-        find_nearest_depth(tvd, tango)[0]])
+    plotend = min(plotend, finaldepth)
+    if plotstart > finaldepth or plotstart > plotend:
+        plotstart = 0
+    mogu1 = np.nanmax(ssgHMpsi[:find_nearest_depth(tvd, plotend)[0]])
+    mogu2 = np.nanmax(obgpsi[:find_nearest_depth(tvd, plotend)[0]])
+    mogu3 = np.nanmin(hydropsi[find_nearest_depth(tvd, plotstart)[0]:
+        find_nearest_depth(tvd, plotend)[0]])
     maxchartpressure = 1000 * math.ceil(max(mogu1, mogu2) / 1000)
     minpressure = round(mogu3)
     Sb = np.full((len(tvd), 3, 3), np.nan)
@@ -2761,10 +2764,11 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     if dpif > 900:
         dpif = 900
     figname = well.uwi if well.uwi != '' and well.uwi != None else well.name
-    fig, axes = plot_logs_labels(data, styles, y_min=(float(tango) * ureg(
-        'metre').to(ul[unitchoice[0]])).magnitude, y_max=(float(zulu) *
+    details={"unit":depth_unit,"type":"TVD","reference":"KB/DF","KB":float(attrib[0]),"GL":float(attrib[1])}
+    fig, axes = plot_logs_labels(data, styles, y_min=(float(plotend) * ureg(
+        'metre').to(ul[unitchoice[0]])).magnitude, y_max=(float(plotstart) *
         ureg('metre').to(ul[unitchoice[0]])).magnitude, width=15, height=10,
-        points=points_df, pointstyles=pointstyles, dpi=dpif)
+        points=points_df, pointstyles=pointstyles, dpi=dpif, output_dir=paths['output_dir'],title=figname, details=details)
     fig.suptitle('Wellbore : ' + figname, fontsize=14, y=0.9)
     plt.close()
     #return df3, well

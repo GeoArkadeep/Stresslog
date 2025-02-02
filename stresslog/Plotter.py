@@ -18,7 +18,7 @@ import os
 
 user_home = os.path.expanduser("~/Documents")
 
-def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots")):
+def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=True, title=None, details={"unit":"metres","type":"TVD","reference":"KB/DF","KB":0,"GL":0}):
     """
     Wrapper function that calls plot_logs three times to generate the main plot and label plots.
     
@@ -37,92 +37,105 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
     # Call plot_logs for bottom labels
     plot_logs(simulated_data, styles, None, None, labelmax+1, labelmax+2, 
               plot_labels=True, width=width, height=3, label_height=98, 
-              dpi=dpi)
+              dpi=dpi, output_dir=output_dir,to_plotly=to_plotly)
     
     # Call plot_logs for top labels
     plot_logs(simulated_data, styles, None, None, labelmax+1, labelmax, 
               plot_labels=True, width=width, height=3, label_height=98, 
-              dpi=dpi)
+              dpi=dpi, output_dir=output_dir,to_plotly=to_plotly)
     # Call plot_logs for the main plot without labels
     fig, axes = plot_logs(data, styles, points, pointstyles, y_min, y_max, 
                           plot_labels=False, width=width,height=height, label_height=label_height, 
-                          dpi=dpi)
+                          dpi=dpi,to_plotly=to_plotly)
     plotfile = os.path.join(output_dir,"PlotFigure.png")
+    if title is not None:
+        fig.suptitle('Wellbore: ' + title, fontsize=18, y=0.91)
+        #fig.text(0.50, 0.89, 'Wellbore: ' + title, fontsize=18, horizontalalignment='center')
+        fig.text(0.05, 0.91, 'Depth in '+details["unit"]+", "+details["type"], fontsize=9, horizontalalignment='left')
+        fig.text(0.05, 0.89, 'Depth Reference: '+details["reference"], fontsize=9, horizontalalignment='left')
+        
+        fig.text(0.95, 0.91, 'KB: '+str(details["KB"])+' '+details["unit"]+' above MSL', fontsize=9, horizontalalignment='right')
+        fig.text(0.95, 0.89, 'GL: '+str(-(details["GL"]))+' '+details["unit"]+' below MSL', fontsize=9, horizontalalignment='right') if details["GL"]<0 else fig.text(0.95, 0.89, 'GL: '+str(details["GL"])+' '+details["unit"]+' above MSL', fontsize=9, horizontalalignment='right')
+    
     plt.savefig(plotfile,dpi=dpi)
-    plotly_fig = tls.mpl_to_plotly(fig)
-    normalization_info = {}
-    for col, style in styles.items():
-        normalization_info[col] = {
-            'type': style['type'],
-            'left': style['left'],
-            'right': style['right']
-        }
-    if pointstyles:
-        for col, style in pointstyles.items():
+    choptop(55,0,os.path.join(output_dir,'BottomLabel.png'))
+    cutify2(os.path.join(output_dir,'PlotFigure.png'),os.path.join(output_dir,'BottomLabel.png'), os.path.join(output_dir,'WellPlot.png'), 0, 300, 0, 0)
+    choptop(200,0,os.path.join(output_dir,'WellPlot.png'))
+    if to_plotly:
+        plotly_fig = tls.mpl_to_plotly(fig)
+        normalization_info = {}
+        for col, style in styles.items():
             normalization_info[col] = {
                 'type': style['type'],
                 'left': style['left'],
                 'right': style['right']
             }
-    # Update Plotly figure with custom hover templates
-    for trace in plotly_fig.data:
-        if 'name' in trace and trace.name in normalization_info:
-            col_name = trace.name
-            norm_info = normalization_info[col_name]
-            
-            # Check if it's a line trace (mode should include 'lines')
-            if 'lines' in trace.mode:
-                if norm_info['type'] == 'linear':
-                    left, right = norm_info['left'], norm_info['right']
-                    # Denormalize the data
-                    original_data = [x * (right - left) + left for x in trace.x]
-                    trace.customdata = original_data
-                    hovertemplate = f"{col_name}: " + "%{customdata:.2f}<br>Depth: %{y}<extra></extra>"
-                elif norm_info['type'] == 'log':
-                    hovertemplate = f"{col_name}: " + "%{x:.2e}<br>Depth: %{y}<extra></extra>"
-                trace.update(hovertemplate=hovertemplate)
+        if pointstyles:
+            for col, style in pointstyles.items():
+                normalization_info[col] = {
+                    'type': style['type'],
+                    'left': style['left'],
+                    'right': style['right']
+                }
+        # Update Plotly figure with custom hover templates
+        for trace in plotly_fig.data:
+            if 'name' in trace and trace.name in normalization_info:
+                col_name = trace.name
+                norm_info = normalization_info[col_name]
+                
+                # Check if it's a line trace (mode should include 'lines')
+                if 'lines' in trace.mode:
+                    if norm_info['type'] == 'linear':
+                        left, right = norm_info['left'], norm_info['right']
+                        # Denormalize the data
+                        original_data = [x * (right - left) + left for x in trace.x]
+                        trace.customdata = original_data
+                        hovertemplate = f"{col_name}: " + "%{customdata:.2f}<br>Depth: %{y}<extra></extra>"
+                    elif norm_info['type'] == 'log':
+                        hovertemplate = f"{col_name}: " + "%{x:.2e}<br>Depth: %{y}<extra></extra>"
+                    trace.update(hovertemplate=hovertemplate)
+                else:
+                    # For scatter plots or unidentified traces, turn off hover
+                    trace.update(hoverinfo='skip')
             else:
-                # For scatter plots or unidentified traces, turn off hover
+                # For any trace we can't identify, turn off hover
                 trace.update(hoverinfo='skip')
-        else:
-            # For any trace we can't identify, turn off hover
-            trace.update(hoverinfo='skip')
-    #plt.close()
-    # Fix the x-axis range for both subplots
-    plotly_fig.update_xaxes(fixedrange=True)
+        #plt.close()
+        # Fix the x-axis range for both subplots
+        plotly_fig.update_xaxes(fixedrange=True)
 
-    # Share the y-axis between subplots
-    plotly_fig.update_yaxes(matches='y')
+        # Share the y-axis between subplots
+        plotly_fig.update_yaxes(matches='y')
 
-    # Make sure the plot fits the width of the browser
-    plotly_fig.update_layout(
-        autosize=True,
-        width=None,  # Remove the fixed width to make it responsive
-        #height=600,  # Set a fixed height if needed, or leave it auto-sized
-        margin=dict(l=30, r=30, t=30, b=30)  # Adjust margins as needed
-    )
-    plotly_fig.update_xaxes(showgrid=True, gridcolor = 'rgba(211, 211, 211, 0.8)', tickcolor='rgba(0, 0, 0, 0)', showticklabels=False)
-    plotly_fig.update_yaxes(automargin=False,showgrid=True, gridcolor = 'rgba(211, 211, 211, 0.8)', tickcolor='rgba(0, 0, 0, 0)', tickformat='.0f', linecolor='grey', linewidth=1)
-    plotly_fig.update_layout(
-        yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
-        yaxis2=dict(showticklabels=False),  # Hide labels for the second column
-        yaxis3=dict(showticklabels=False),  # Hide labels for the third column
-        yaxis4=dict(showticklabels=False),
-        yaxis5=dict(showticklabels=False),
-        yaxis6=dict(showticklabels=False),
-    )
-    plotly_fig.update_layout(margin=dict(l=30,r=0,t=0,b=0))
-    plotly_fig.update_layout(
-        paper_bgcolor='white',  # Background of the entire figure
-        plot_bgcolor='white',   # Background of the plot area
-    )
-    #plotly_fig.update_yaxes(showticklabels=False) # hide all the yticks
-    # Save as an interactive HTML file and open it in the browser
-    pio.write_json(plotly_fig,os.path.join(output_dir,'plotly.json'))
-    #pio.write_html(plotly_fig,'plotly.html')
+        # Make sure the plot fits the width of the browser
+        plotly_fig.update_layout(
+            autosize=True,
+            width=None,  # Remove the fixed width to make it responsive
+            #height=600,  # Set a fixed height if needed, or leave it auto-sized
+            margin=dict(l=30, r=30, t=30, b=30)  # Adjust margins as needed
+        )
+        plotly_fig.update_xaxes(showgrid=True, gridcolor = 'rgba(211, 211, 211, 0.8)', tickcolor='rgba(0, 0, 0, 0)', showticklabels=False)
+        plotly_fig.update_yaxes(automargin=False,showgrid=True, gridcolor = 'rgba(211, 211, 211, 0.8)', tickcolor='rgba(0, 0, 0, 0)', tickformat='.0f', linecolor='grey', linewidth=1)
+        plotly_fig.update_layout(
+            yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
+            yaxis2=dict(showticklabels=False),  # Hide labels for the second column
+            yaxis3=dict(showticklabels=False),  # Hide labels for the third column
+            yaxis4=dict(showticklabels=False),
+            yaxis5=dict(showticklabels=False),
+            yaxis6=dict(showticklabels=False),
+        )
+        plotly_fig.update_layout(margin=dict(l=30,r=0,t=0,b=0))
+        plotly_fig.update_layout(
+            paper_bgcolor='white',  # Background of the entire figure
+            plot_bgcolor='white',   # Background of the plot area
+        )
+        #plotly_fig.update_yaxes(showticklabels=False) # hide all the yticks
+        # Save as an interactive HTML file and open it in the browser
+        pio.write_json(plotly_fig,os.path.join(output_dir,'plotly.json'))
+        #pio.write_html(plotly_fig,'plotly.html')
     return fig, axes
 
-def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, width=15,height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots")):
+def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, plot_labels=True, width=15,height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=False):
     """
     Plots well log data in tracks and sparse data points.
 
@@ -347,34 +360,36 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
         if pltsign > 0:
             #plt.tight_layout()
             plt.savefig(os.path.join(output_dir,"BottomLabel.png"), dpi=dpi)
+            
             return
         else:
-            plotly_fig = tls.mpl_to_plotly(fig)
-            #plt.tight_layout()
-            plotly_fig.update_layout(
-                autosize=True,
-                width=None,  # Remove the fixed width to make it responsive
-                #height=600,  # Set a fixed height if needed, or leave it auto-sized
-                margin=dict(l=30, r=0, t=0, b=20)  # Adjust margins as needed
-            )
-            plotly_fig.update_layout(
-                paper_bgcolor='white',  # Background of the entire figure
-                plot_bgcolor='white',   # Background of the plot area
-            )
-            plotly_fig.update_xaxes(showgrid=False, tickcolor='rgba(0, 0, 0, 0)',showticklabels=False)
-            plotly_fig.update_yaxes(automargin=False,showgrid=False, tickcolor='rgba(0, 0, 0, 0)',tickformat='.0f',tickfont=dict(color='rgba(0, 0, 0, 0)'), linecolor='grey', linewidth=1)
-            plotly_fig.update_layout(
-                yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
-                yaxis2=dict(showticklabels=False),  # Hide labels for the second column
-                yaxis3=dict(showticklabels=False),# Hide labels for the third column
-                yaxis4=dict(showticklabels=False),
-                yaxis5=dict(showticklabels=False),
-                yaxis6=dict(showticklabels=False),
-            )
-            plotly_fig.update_layout(margin=dict(l=50,r=50,t=0,b=0))
-            pio.write_json(plotly_fig,os.path.join(output_dir,"TopPlotly.json"))
-            #plotly_fig.write_image("TopPlotly.png")
-            #plt.savefig('TopLabel.png', dpi=dpi)
+            if to_plotly:
+                plotly_fig = tls.mpl_to_plotly(fig)
+                #plt.tight_layout()
+                plotly_fig.update_layout(
+                    autosize=True,
+                    width=None,  # Remove the fixed width to make it responsive
+                    #height=600,  # Set a fixed height if needed, or leave it auto-sized
+                    margin=dict(l=30, r=0, t=0, b=20)  # Adjust margins as needed
+                )
+                plotly_fig.update_layout(
+                    paper_bgcolor='white',  # Background of the entire figure
+                    plot_bgcolor='white',   # Background of the plot area
+                )
+                plotly_fig.update_xaxes(showgrid=False, tickcolor='rgba(0, 0, 0, 0)',showticklabels=False)
+                plotly_fig.update_yaxes(automargin=False,showgrid=False, tickcolor='rgba(0, 0, 0, 0)',tickformat='.0f',tickfont=dict(color='rgba(0, 0, 0, 0)'), linecolor='grey', linewidth=1)
+                plotly_fig.update_layout(
+                    yaxis=dict(showticklabels=True),  # Show labels for the leftmost y-axis
+                    yaxis2=dict(showticklabels=False),  # Hide labels for the second column
+                    yaxis3=dict(showticklabels=False),# Hide labels for the third column
+                    yaxis4=dict(showticklabels=False),
+                    yaxis5=dict(showticklabels=False),
+                    yaxis6=dict(showticklabels=False),
+                )
+                plotly_fig.update_layout(margin=dict(l=50,r=50,t=0,b=0))
+                pio.write_json(plotly_fig,os.path.join(output_dir,"TopPlotly.json"))
+                #plotly_fig.write_image("TopPlotly.png")
+            #plt.savefig(os.path.join(output_dir,'TopLabel.png'), dpi=dpi)
             return
     #print(normalization_info)
     return fig, axes
