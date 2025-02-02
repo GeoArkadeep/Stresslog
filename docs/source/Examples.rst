@@ -5,6 +5,7 @@ We wil now demonstrate two real world exaples, one vertical and one deviated wel
 Let's do the vertical example first:
 
 .. code-block:: python
+
     import stresslog as lst
     from welly import Well
     import pandas as pd
@@ -72,6 +73,7 @@ Let's do the vertical example first:
    :alt: Overlay comparison with actual image log
 
 .. code-block:: python
+    
     # While the inbuilt plotting tools work, the main output is the dataframe (and the las string generated from the dataframe and other info)
     print(output[0])
     print(list(output[0]))
