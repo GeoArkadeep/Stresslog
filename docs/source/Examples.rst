@@ -21,7 +21,7 @@ Let's do the vertical example first:
     print(list(formations))
 
     """
-    Top TVD  Number                  Formation Name  ...  DXP_NCT  DXP_exp  DXP_ML
+       Top TVD  Number                  Formation Name  ...  DXP_NCT  DXP_exp  DXP_ML
     0      488       1  URU(Upperregionalunconformity)  ...      NaN      NaN     NaN
     1      772       2                           Skade  ...      NaN      NaN     NaN
     2     1144       3              HordalandGreenClay  ...      NaN      NaN     NaN
@@ -73,12 +73,12 @@ Let's do the vertical example first:
    :alt: Overlay comparison with actual image log
 
 .. code-block:: python
-    
+
     # While the inbuilt plotting tools work, the main output is the dataframe (and the las string generated from the dataframe and other info)
     print(output[0])
     print(list(output[0]))
     """
-                    DEPT           DTCO  ...  Shear_Modulus     Bulk_Modulus
+                      DEPT           DTCO  ...  Shear_Modulus     Bulk_Modulus
     0         0.0000000000            NaN  ...   0.0000000000     0.0000000000
     1         0.1470000000            NaN  ...   0.0000000000     0.0000000000
     2         0.2940000000            NaN  ...   0.0000000000     0.0000000000
