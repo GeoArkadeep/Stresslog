@@ -63,15 +63,12 @@ Let's do the vertical example first:
 
 .. image:: ../Figures/WellPlot.png
    :alt: Well profile visualization
-   :width: 80%
 
 .. image:: ../Figures/PlotAll.png
    :alt: Full well plot including zobackogram, stability plot, hoop stresses, and synthetic borehole image
-   :width: 80%
 
 .. image:: ../Figures/overlay.png
    :alt: Overlay comparison with actual image log
-   :width: 80%
 
 .. code-block:: python
     # While the inbuilt plotting tools work, the main output is the dataframe (and the las string generated from the dataframe and other info)
@@ -164,8 +161,6 @@ Let's do the vertical example first:
     """
     # Had we decided to not save the files, the stress polygon, stability plot, hoop stress plot and syntheic borehole image would have been returned as base64 encoded string in the output tuple
 
-
-.. code-block:: python
 
 
 
