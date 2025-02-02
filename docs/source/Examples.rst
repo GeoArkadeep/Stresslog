@@ -60,14 +60,14 @@ Let's do the vertical example first:
                                 plotstart=2570,mudtemp=35)
     # Instead of plotting the entire well, we can also control the plot depths (Here we plot from 2570m down to the end of the data)
     # The real interesting thing in this calculation are the calculations at the depth of interest, 2627.5m
-    # Let's check the "PlotAll.png" in the output/Stresslog_Plots to see the zobackogram, stability plot, hoop stresses and synthetic borehole image
+    # Let's check the "PlotAll.png" in the output/Stresslog_Plots to see the stress polygon, stability plot, sanding prediction and synthetic borehole image
     # Compare the "PlotBHI.png" to the actual image log of the EOS Northern Lights well
 
 .. image:: ../Figures/WellPlot.png
    :alt: Well profile visualization
 
 .. image:: ../Figures/PlotAll.png
-   :alt: Full well plot including zobackogram, stability plot, hoop stresses, and synthetic borehole image
+   :alt: Full well plot including Zobackogram, stability plot, hoop stresses, and synthetic borehole image
 
 .. image:: ../Figures/overlay.png
    :alt: Overlay comparison with actual image log
@@ -162,7 +162,7 @@ Let's do the vertical example first:
         0.00000    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    0.00000    0.00000    0.00000    0.00000    0.00000    -999.25    -999.25   60.00000    -999.25    -999.25    1.48043    -999.25    -999.25  436.74626    -999.25    -999.25    0.00000    0.00000    0.00000    1.26000    0.00000    0.00000    0.00000    0.00000    0.25000    0.51126    0.00000    0.00000    0.00000
         0.14700    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -
     """
-    # Had we decided to not save the files, the stress polygon, stability plot, hoop stress plot and syntheic borehole image would have been returned as base64 encoded string in the output tuple
+    # Had we decided to not save the files, the stress polygon, stability plot, sanding prediction plot and syntheic borehole image would have been returned as base64 encoded string in the output tuple
 
 
 
