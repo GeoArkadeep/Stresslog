@@ -286,9 +286,9 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
             2, 'type': 'linear', 'unit': ''}, 'dexnormal': {'color':
             'brown', 'linewidth': 1.5, 'style': '-.', 'track': 1, 'left': 0,
             'right': 2, 'type': 'linear', 'unit': ''}, 'dalm': {'color':
-            'green', 'linewidth': 1.5, 'style': '-', 'track': 1, 'left': 
+            'green', 'linewidth': 1, 'style': '-', 'track': 1, 'left': 
             300, 'right': 50, 'type': 'linear', 'unit': 'us/ft'},
-            'dtNormal': {'color': 'green', 'linewidth': 1.5, 'style': '-',
+            'dtNormal': {'color': 'green', 'linewidth': 1.5, 'style': '--',
             'track': 1, 'left': 300, 'right': 50, 'type': 'linear', 'unit':
             'us/ft'}, 'mudweight': {'color': 'brown', 'linewidth': 1.5,
             'style': '-', 'track': 2, 'left': 0, 'right': 3, 'type':
@@ -325,7 +325,7 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
             maxchartpressure, 'type': 'linear', 'unit': 'psi'}, 'slal': {
             'color': 'blue', 'linewidth': 1.5, 'style': '-', 'track': 4,
             'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'},
-            'shorsud': {'color': 'red', 'linewidth': 1.5, 'style': '-',
+            'ucs_horsud': {'color': 'red', 'linewidth': 1.5, 'style': '-',
             'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit':
             'MPa'}, 'GR': {'color': 'green', 'linewidth': 0.25, 'style':
             '-', 'track': 0, 'left': 0, 'right': 150, 'type': 'linear',
@@ -580,7 +580,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     ul_depth=0, a=0.63, nu=0.25, mu = 0.65, sfs=1.0, window=1, plotstart=0, plotend=6000,
     dtml=210, dtmt=60, water=1.0, underbalancereject=1, tecb=0, doi=0,
     offset=0, dip_dir=0, dip=0, mudtemp=0, res0=0.98, be=0.00014, ne=0.6,
-    dex0=0.5, de=0.00014, nde=0.5, lala=-1.0, lalb=1.0, lalm=5, lale=0.5,
+    dex0=0.5, de=0.00017, nde=0.5, lala=-1.0, lalb=1.0, lalm=5, lale=0.5,
     lall=5, horsuda=0.77, horsude=2.93, mabw=90, unitchoice=unitchoicedef,
     ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,
     0]], fracgradvals=[[0, 0]], flowpsivals=[[0, 0]], fracpsivals=[[0, 0]],
@@ -2054,7 +2054,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     sfg = fgcc
     spp = gccpp
     spsipp = psipp
-    shorsud = horsud
+    ucs_horsud = horsud
     slal = lal
     slal2 = ym
     slal3 = sm
@@ -2080,7 +2080,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         sigmahminmpa = spsifp[doiX] / 145.038
         ppmpa = spsipp[doiX] / 145.038
         bhpmpa = mudpsi[doiX] / 145.038
-        ucsmpa = shorsud[doiX]
+        ucsmpa = ucs_horsud[doiX]
         ilog_flag = ilog[doiX]
         print('nu is ', nu2[doiX]) if debug else None
         print('phi is ', np.degrees(phi[doiX])) if debug else None
@@ -2537,9 +2537,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     c0lal2mpa = Curve(slal2, mnemonic='S0_Lal_Phi', units='MPa', index=md,
         null=0)
     well.data['C0LAL2'] = c0lal2mpa
-    ucshorsudmpa = Curve(shorsud, mnemonic='UCS_Horsud', units='MPa', index
+    ucucs_horsudmpa = Curve(ucs_horsud, mnemonic='UCS_Horsud', units='MPa', index
         =md, null=0)
-    well.data['UCSHORSUD'] = ucshorsudmpa
+    well.data['UCucs_horsud'] = ucucs_horsudmpa
     ucslalmpa = Curve(slal3, mnemonic='UCS_Lal', units='MPa', index=md, null=0)
     well.data['UCSLAL'] = ucslalmpa
     poison = Curve(nu2, mnemonic='Poisson_Ratio', units='', index=md, null=nu)
@@ -2611,7 +2611,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     print(sgHMpsiL)
     print(sgHMpsiU)
     print(slal)
-    print(shorsud)"""
+    print(ucs_horsud)"""
     results = pd.DataFrame({'dalm': dalm, 'dtNormal': dtNormal,
         'lresnormal': lresnormal, 'lresdeep': lresdeep, 'Dexp': Dexp,
         'dexnormal': dexnormal, 'mudweight': mudweight * ureg.gcc, 'shmin_grad':fg.as_numpy() * ureg.gcc,'fg': 
@@ -2621,7 +2621,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'obgpsi': obgpsi * ureg.psi, 'hydropsi': hydropsi * ureg.psi,
         'pppsi': pppsi.as_numpy() * ureg.psi, 'mudpsi': mudpsi * ureg.psi,
         'sgHMpsiL': sgHMpsiL * ureg.psi, 'sgHMpsiU': sgHMpsiU * ureg.psi,
-        'slal': slal3 * ureg.MPa, 'shorsud': shorsud * ureg.MPa, 'GR': gr,
+        'slal': slal3 * ureg.MPa, 'ucs_horsud': ucs_horsud * ureg.MPa, 'GR': gr,
         'GR_CUTOFF': grcut}, index=tvdm * ureg.m)
 
     def convert_units(data, pressure_unit, gradient_unit, strength_unit,
@@ -2649,7 +2649,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             if col in converted_data.columns:
                 converted_data[col] = (converted_data[col].values * ureg.gcc
                     ).to(unit_mappings['gradient'][gradient_unit])
-        strength_columns = ['slal', 'shorsud']
+        strength_columns = ['slal', 'ucs_horsud']
         for col in strength_columns:
             if col in converted_data.columns:
                 converted_data[col] = (converted_data[col].values * ureg.MPa
@@ -2698,7 +2698,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'sgHMpsiL': sgHMpsiL,
         'sgHMpsiU': sgHMpsiU,
         'slal': slal,
-        'shorsud': shorsud,
+        'ucs_horsud': ucs_horsud,
         'GR': gr,
         'GR_CUTOFF': grcut
     }, index=tvdm)"""
