@@ -27,7 +27,7 @@ This software is meant to be used by researchers and practitioners working in th
 
 It is possible to use nothing other than a standard spreadsheet to carry out geomechanical modelling, however such a process is very tedious if iterative methods are to be used.
 
-Most software in standard use in the petroleum industry apply certain simplifying assumptions, mainly in the form of assuming that the vertical stress constitutes a principal stress. And that is usually a very good approximation, but there are situations where this is not the case, especially in regions experiencing isostatic re-adjustment or salt tectonism, among others. While there are open-source multi-physics packages, they are more suited to solving field-scale problems. Using them in a wellsite/operations sense, especially if real-time performance is required, is ill-advised. There is thus, a need for a dedicated tool for wellbore stability analysis.
+Most software in standard use in the petroleum industry apply certain simplifying assumptions, mainly in the form of assuming that the vertical stress constitutes a principal stress. And that is usually a very good approximation, but there are situations where this is not the case, especially in regions experiencing isostatic re-adjustment or salt tectonism, among others. While there are open-source multi-physics packages, using them in a wellsite/operations sense, especially if real-time performance is required, is ill-advised. There is thus, a need for a dedicated tool for wellbore stability analysis.
 
 This python package is aimed at empowering researchers with a simple to use and comprehensive 1D mechanical earth modelling tool that is freely available and which researchers can modify to apply their own methods when neccessary, while allowing practitioners to use the pre-defined algorithms to calculate solutions, iteratively process and export well log data.
 
@@ -60,17 +60,18 @@ For pre-drill forecast, the function get_analog() can be used to derive a log-pr
 # Case Study
 
 The well data from Equinor Northern Lights dataset [northernlights] has been used as the example here, to model the stress state occuring in the Lower Drake formation, in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
-![(a) Model of EOS Northern Lights Well showing the Drake I, II and IntraMarine formations (b) Fracture patterns calculated at 2624.5m and superimposed onto the image log. \label{fig:EOS_NorthernLights}](../media/EOS_NorthernLightsAandB.pdf)
+![(a) Model of EOS Northern Lights Well showing the Drake I, II and IntraMarine formations. \label{fig:EOS_NorthernLights}](../Figures/WellPlot.png)
+![(b) Fracture patterns calculated at 2624.5m and superimposed onto the image log. \label{fig:Fracture Motif}](../Figures/overlay.png)
 
 It is not being suggested that this interpretation of the data is preferred over any other, this example is merely meant to show the capability of the package.
 
 # Discussion
 
-From observations on multiple wells sampling the same stress field at different wellbore orientations, a better estimate of the stress tensor orientation is possible [@thorsen2011]. Further work in the future may help automate the process by incorporating the means to import the image log data directly, calculating a difference between the calculated image log and the imported one, and attempt to manipulate the stress orientation in an effort to minimise the difference. The current program is modular in nature, and the stability calculation subroutines in the module BoreStab.py can be re-used for this purpose.
-
-Not everyone is comfortable with python, for such users a webapp using stresslog, streamlit (and toga for offline use) is currently in development.
+From observations on multiple wells sampling the same stress field at different wellbore orientations, a better estimate of the stress tensor orientation is possible [@thorsen2011]. Further work in the future may help automate the process by incorporating the means to import the image log data directly, calculating a difference between the calculated image log and the imported one, and attempt to manipulate the stress orientation in an effort to minimise the difference. The current program is modular in nature, and the stability calculation subroutines can be re-used for this purpose.
 
 Currently there are certain aspects which are not considered by the program, which would boost usefulness and accuracy if included. These include water-shale interactions and rock strength and elastic moduli anisotropy. We hope to implement these features in the future, but as these do not detract from the usability of the program as is, (and because data for calibrating these are somewhat rare), we have chosen to omit these at the current stage of development.
+
+Not everyone is comfortable with python, for such users a webapp using stresslog, streamlit (and toga for offline use) is currently in development.
 
 # Disclosure
 No funding/financial support of any form was involved in the creation of this work.
