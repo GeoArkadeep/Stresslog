@@ -9,7 +9,7 @@ import os
 import numpy as np
 import scipy
 import matplotlib
-matplotlib.use('svg')
+#matplotlib.use('svg')
 from matplotlib import pyplot as plt
 import pandas as pd
 import lasio as laua
@@ -325,7 +325,7 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
             maxchartpressure, 'type': 'linear', 'unit': 'psi'}, 'slal': {
             'color': 'blue', 'linewidth': 1.5, 'style': '-', 'track': 4,
             'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'},
-            'ucs_horsud': {'color': 'red', 'linewidth': 1.5, 'style': '-',
+            'ucs_horsrud': {'color': 'red', 'linewidth': 1.5, 'style': '-',
             'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit':
             'MPa'}, 'GR': {'color': 'green', 'linewidth': 0.25, 'style':
             '-', 'track': 0, 'left': 0, 'right': 150, 'type': 'linear',
@@ -570,7 +570,7 @@ mnemonics_to_remove = ['ResD', 'ShaleFlag', 'RHO', 'OBG_AMOCO', 'DTCT',
     'PP_GRADIENT', 'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad',
     'FracPressure', 'GEOPRESSURE', 'SHmin_PRESSURE', 'SHmax_PRESSURE',
     'MUD_PRESSURE', 'OVERBURDEN_PRESSURE', 'HYDROSTATIC_PRESSURE',
-    'MUD_GRADIENT', 'S0_Lal', 'S0_Lal_Phi', 'UCS_Horsud', 'UCS_Lal',
+    'MUD_GRADIENT', 'S0_Lal', 'S0_Lal_Phi', 'UCS_horsrud', 'UCS_Lal',
     'Poisson_Ratio', 'ML90', 'Youngs_Modulus', 'Shear_Modulus', 'Bulk_Modulus']
 unitdictdef = {'pressure': 'psi', 'strength': 'MPa', 'gradient': 'gcc',
     'length': 'm'}
@@ -581,13 +581,13 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     dtml=210, dtmt=60, water=1.0, underbalancereject=1, tecb=0, doi=0,
     offset=0, dip_dir=0, dip=0, mudtemp=0, res0=0.98, be=0.00014, ne=0.6,
     dex0=0.5, de=0.00017, nde=0.5, lala=-1.0, lalb=1.0, lalm=5, lale=0.5,
-    lall=5, horsuda=0.77, horsude=2.93, mabw=90, unitchoice=unitchoicedef,
+    lall=5, horsruda=0.77, horsrude=2.93, mabw=90, unitchoice=unitchoicedef,
     ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,
     0]], fracgradvals=[[0, 0]], flowpsivals=[[0, 0]], fracpsivals=[[0, 0]],
     attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
     lithos=None, user_home=user_home, program_option=[300,
     4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
-    debug=False):
+    debug=False, penetration=False):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -665,10 +665,10 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Parameter for Lal's cohesion method (default is 5).
     mabw : float, optional
         Maximum Allowable Breakout Width in degrees (default is 90).
-    horsuda : float, optional
-        Parameter for Horsud's stress method (default is 0.77).
-    horsude : float, optional
-        Parameter for Horsud's stress method (default is 2.93).
+    horsruda : float, optional
+        Parameter for horsrud's stress method (default is 0.77).
+    horsrude : float, optional
+        Parameter for horsrud's stress method (default is 2.93).
     unitchoice : list, optional
         <DEPRECATED, will be removed in a future version> List specifying the unit system for file output plots (default is [0, 0, 0, 0, 0]).
     unitdict : dict, optional
@@ -1634,7 +1634,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     pnpsi = np.zeros(len(tvdf))
     psipp = np.full(len(tvdf), np.nan)
     psiftpp = np.zeros(len(tvdf))
-    horsud = np.zeros(len(tvdf))
+    horsrud = np.zeros(len(tvdf))
     lal = np.zeros(len(tvdf))
     ym = np.zeros(len(tvdf))
     sm = np.zeros(len(tvdf))
@@ -1707,11 +1707,11 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                     -dt_ncts[i] * tvdbgl[i])
                 lal3[i] = lall * (304.8 / (dalm[i] - 1))
                 lal[i] = lalm * (vp[i] + lala) / vp[i] ** lale
-                horsud[i] = horsuda * vp[i] ** horsude
+                horsrud[i] = horsruda * vp[i] ** horsrude
                 if np.isnan(ucs2[i]) or ucs2[i] == 0:
-                    ucs2[i] = horsud[i]
+                    ucs2[i] = horsrud[i]
                 phi[i] = np.arcsin(1 - 2 * nu2[i])
-                philang[i] = np.arcsin((vp[i] - 1.5) / (vp[i] + 1.5))
+                philang[i] = np.arcsin((vp[i] - 1) / (vp[i] + 1))
                 H[i] = 4 * np.tan(phi[i]) ** 2 * (9 - 7 * np.sin(phi[i])) / (
                     27 * (1 - np.sin(phi[i])))
                 K[i] = 4 * lal[i] * np.tan(phi[i]) * (9 - 7 * np.sin(phi[i])
@@ -1782,9 +1782,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                     -ct * tvdbgl[i])
                 lal3[i] = lall * (304.8 / (dalm[i] - 1))
                 lal[i] = lalm * (vp[i] + lala) / vp[i] ** lale
-                horsud[i] = horsuda * vp[i] ** horsude
+                horsrud[i] = horsruda * vp[i] ** horsrude
                 if np.isnan(ucs2[i]) or ucs2[i] == 0:
-                    ucs2[i] = horsud[i]
+                    ucs2[i] = horsrud[i]
                 phi[i] = np.arcsin(1 - 2 * nu2[i])
                 philang[i] = np.arcsin((vp[i] - 1) / (vp[i] + 1))
                 H[i] = 4 * np.tan(phi[i]) ** 2 * (9 - 7 * np.sin(phi[i])) / (
@@ -2054,7 +2054,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     sfg = fgcc
     spp = gccpp
     spsipp = psipp
-    ucs_horsud = horsud
+    ucs_horsrud = horsrud
     slal = lal
     slal2 = ym
     slal3 = sm
@@ -2080,7 +2080,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         sigmahminmpa = spsifp[doiX] / 145.038
         ppmpa = spsipp[doiX] / 145.038
         bhpmpa = mudpsi[doiX] / 145.038
-        ucsmpa = ucs_horsud[doiX]
+        ucsmpa = ucs_horsrud[doiX]
         ilog_flag = ilog[doiX]
         print('nu is ', nu2[doiX]) if debug else None
         print('phi is ', np.degrees(phi[doiX])) if debug else None
@@ -2173,7 +2173,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             sigmaHMaxmpa = sgHMpsi[i] / 145.038
             ppmpa = psipp[i] / 145.038
             bhpmpa = mudpsi[i] / 145.038
-            ucsmpa = horsud[i]
+            ucsmpa = horsrud[i]
             deltaP = bhpmpa - ppmpa
             sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
             osx, osy, osz = get_principal_stress(sigmas[0], sigmas[1], sigmas[2],
@@ -2221,7 +2221,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         sigmaHMaxmpa = sgHMpsi[i] / 145.038
         ppmpa = psipp[i] / 145.038
         bhpmpa = mudpsi[i] / 145.038
-        ucsmpa = horsud[i]
+        ucsmpa = horsrud[i]
         deltaP = bhpmpa - ppmpa
         sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
         osx, osy, osz = get_principal_stress(sigmas[0], sigmas[1], sigmas[2], alphas
@@ -2280,7 +2280,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         sigmaHMaxmpa = sgHMpsi[i] / 145.038
         ppmpa = psipp[i] / 145.038
         bhpmpa = mudpsi[i] / 145.038
-        ucsmpa = horsud[i]
+        ucsmpa = horsrud[i]
         deltaP = bhpmpa - ppmpa
         sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
         osx, osy, osz = get_principal_stress(sigmas[0], sigmas[1], sigmas[2], alphas
@@ -2308,7 +2308,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         sigmaHMaxmpa = sgHMpsi[i] / 145.038
         ppmpa = psipp[i] / 145.038
         bhpmpa = mudpsi[i] / 145.038
-        ucsmpa = horsud[i]
+        ucsmpa = horsrud[i]
         deltaP = bhpmpa - ppmpa
         sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
         osx, osy, osz = get_principal_stress(sigmas[0], sigmas[1], sigmas[2], alphas
@@ -2375,7 +2375,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     from .failure_criteria import mod_lad_cmw, mogi
     print('calculating aligned far field stresses') if debug else None
     print('Total depth-points to be calculated: ', len(tvd)) if debug else None
-    from .BoreStab import get_bhp_critical
+    from .BoreStab import get_frac_pressure
     skip = 21 if 2.0 <= window < 21 else window
     mtol = 1 - 2 * mabw / 360
     for i in range(0, len(tvd), 1):
@@ -2384,7 +2384,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         sigmaHMaxmpa = np.nanmean(sgHMpsi[i]) / 145.038
         ppmpa = np.nanmean(psipp[i]) / 145.038
         bhpmpa = np.nanmean(mudpsi[i]) / 145.038
-        ucsmpa = np.nanmean(horsud[i])
+        ucsmpa = np.nanmean(horsrud[i])
         deltaP = bhpmpa - ppmpa
         sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
         try:
@@ -2431,8 +2431,11 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             lademax[i] = np.nanpercentile(ladempa, mtol * 100)
             minthetarad = np.radians(np.nanargmin(Stmin))
             lademin[i] = np.nanmin(ladempa)
-            trufracmpa[i] = get_bhp_critical(Sb[i], ppmpa, horsud[i],
-                minthetarad, nu2[i], sigmaT)
+            if not penetration:
+                trufracmpa[i] = get_frac_pressure(Sb[i], ppmpa, horsrud[i],
+                    minthetarad, nu2[i], sigmaT)
+            else:
+                trufracmpa[i] = (3*sigmahminmpa - sigmaHMaxmpa - (biot[i]*ppmpa*((1-2*nu2[i])/(1-nu2[i]))) + sigmaT - (horsrud[i]/10))/(2-(biot[i]*((1-2*nu2[i])/(1-nu2[i]))))
         except:
             Sb[i] = np.full((3, 3), np.nan)
             SbFF[i] = np.full((3, 3), np.nan)
@@ -2478,7 +2481,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         plt.plot(hoopmin, tvd, alpha=0.5, label='hoopmin')
         plt.plot(hoopmax, tvd, alpha=0.5, label='hoopmax')
         plt.plot(interpolate_nan(inca), tvd, alpha=0.5, label='inclination')
-        plt.plot(-horsud / 10, tvd, alpha=0.5, label='tensile strength')
+        plt.plot(-horsrud / 10, tvd, alpha=0.5, label='tensile strength')
         plt.plot(tensilefracpsi / 145.038, tvd, label='fracgrad')
         #plt.plot(trufracmpa, tvd, label='trufracgrad')
         plt.plot(np.zeros(len(tvd)), tvd, alpha=0.1)
@@ -2537,11 +2540,15 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     c0lal2mpa = Curve(slal2, mnemonic='S0_Lal_Phi', units='MPa', index=md,
         null=0)
     well.data['C0LAL2'] = c0lal2mpa
-    ucucs_horsudmpa = Curve(ucs_horsud, mnemonic='UCS_Horsud', units='MPa', index
+    ucs_horsrudmpa = Curve(ucs_horsrud, mnemonic='UCS_horsrud', units='MPa', index
         =md, null=0)
-    well.data['UCucs_horsud'] = ucucs_horsudmpa
-    ucslalmpa = Curve(slal3, mnemonic='UCS_Lal', units='MPa', index=md, null=0)
-    well.data['UCSLAL'] = ucslalmpa
+    well.data['UCS_horsrud'] = ucs_horsrudmpa
+    slalmpa = Curve(slal3, mnemonic='S0 Lal', units='MPa', index=md, null=0)
+    well.data['S0_LAL'] = slalmpa
+    philal = Curve(phi, mnemonic='phi_lal', units='radians', index=md, null=0)
+    well.data['PHI_LAL'] = philal
+    phi_lang = Curve(philang, mnemonic='phi_lang', units='radians', index=md, null=0)
+    well.data['PHI_LANG'] = phi_lang
     poison = Curve(nu2, mnemonic='Poisson_Ratio', units='', index=md, null=nu)
     well.data['NU'] = poison
     modlade = Curve(ladegcc, mnemonic=f'ML{mabw}', units='g/cc', index=md,
@@ -2572,13 +2579,13 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'OVERBURDEN_PRESSURE': 'psi', 'HYDROSTATIC_PRESSURE': 'psi',
         'GEOPRESSURE': 'psi', 'FracPressure': 'psi', 'SHmin_PRESSURE':
         'psi', 'SHmax_PRESSURE': 'psi', 'MUD_PRESSURE': 'psi',
-        'MUD_GRADIENT': 'gcc', f'ML{mabw}': 'gcc', 'S0_Lal': 'mpa',
-        'S0_Lal_Phi': 'mpa', 'UCS_Horsud': 'mpa', 'UCS_Lal': 'mpa'}
+        'MUD_GRADIENT': 'gcc', f'ML{mabw}': 'gcc', 'S0_Lal': 'mpa', 'phi_lal':'radians', 'phi_lang':'radians',
+        'S0_Lal_Phi': 'mpa', 'UCS_horsrud': 'mpa', 'S0 Lal': 'mpa'}
     from .thirdparty import datasets_to_las
     category_columns = {'pressure': ['FracPressure', 'GEOPRESSURE',
         'SHmin_PRESSURE', 'SHmax_PRESSURE', 'MUD_PRESSURE',
         'OVERBURDEN_PRESSURE', 'HYDROSTATIC_PRESSURE'], 'strength': [
-        'UCS_Horsud', 'UCS_Lal'], 'gradient': ['PP_GRADIENT',
+        'UCS_horsrud', 'S0 Lal'], 'gradient': ['PP_GRADIENT',
         'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad', 'MUD_GRADIENT',
         'OBG_AMOCO', 'RHO', f'ML{mabw}'], 'length': ['DEPT', 'MD', 'TVDM']}
     from .unit_converter import convert_dataframe_units
@@ -2611,7 +2618,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     print(sgHMpsiL)
     print(sgHMpsiU)
     print(slal)
-    print(ucs_horsud)"""
+    print(ucs_horsrud)"""
     results = pd.DataFrame({'dalm': dalm, 'dtNormal': dtNormal,
         'lresnormal': lresnormal, 'lresdeep': lresdeep, 'Dexp': Dexp,
         'dexnormal': dexnormal, 'mudweight': mudweight * ureg.gcc, 'shmin_grad':fg.as_numpy() * ureg.gcc,'fg': 
@@ -2621,7 +2628,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'obgpsi': obgpsi * ureg.psi, 'hydropsi': hydropsi * ureg.psi,
         'pppsi': pppsi.as_numpy() * ureg.psi, 'mudpsi': mudpsi * ureg.psi,
         'sgHMpsiL': sgHMpsiL * ureg.psi, 'sgHMpsiU': sgHMpsiU * ureg.psi,
-        'slal': slal3 * ureg.MPa, 'ucs_horsud': ucs_horsud * ureg.MPa, 'GR': gr,
+        'slal': slal3 * ureg.MPa, 'ucs_horsrud': ucs_horsrud * ureg.MPa, 'GR': gr,
         'GR_CUTOFF': grcut}, index=tvdm * ureg.m)
 
     def convert_units(data, pressure_unit, gradient_unit, strength_unit,
@@ -2649,7 +2656,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             if col in converted_data.columns:
                 converted_data[col] = (converted_data[col].values * ureg.gcc
                     ).to(unit_mappings['gradient'][gradient_unit])
-        strength_columns = ['slal', 'ucs_horsud']
+        strength_columns = ['slal', 'ucs_horsrud']
         for col in strength_columns:
             if col in converted_data.columns:
                 converted_data[col] = (converted_data[col].values * ureg.MPa
@@ -2698,7 +2705,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'sgHMpsiL': sgHMpsiL,
         'sgHMpsiU': sgHMpsiU,
         'slal': slal,
-        'ucs_horsud': ucs_horsud,
+        'ucs_horsrud': ucs_horsrud,
         'GR': gr,
         'GR_CUTOFF': grcut
     }, index=tvdm)"""
