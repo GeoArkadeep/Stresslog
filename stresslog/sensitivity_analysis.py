@@ -45,17 +45,17 @@ num_samples = 1000
 for i in range(num_samples):
     # Generate a random substitution dictionary. Adjust ranges as needed.
     subs = {
-        pp: random.uniform(1, 10),
-        ucs: random.uniform(1, 10),
+        pp: random.uniform(1, 100),
+        ucs: random.uniform(1, 100),
         nu: random.uniform(0.2, 0.35),  # typical Poisson ratio range
-        theta: random.uniform(0, 2*np.pi),
-        Sb00: random.uniform(-10, 10),
-        Sb11: random.uniform(-10, 10),
-        Sb22: random.uniform(-10, 10),
-        Sb01: random.uniform(-10, 10),
-        Sb02: random.uniform(-10, 10),
-        Sb12: random.uniform(-10, 10),
-        sigmaT: random.uniform(-10, 10)
+        theta: random.uniform(0, 360),
+        Sb00: random.uniform(0, 100),
+        Sb11: random.uniform(0, 100),
+        Sb22: random.uniform(0, 100),
+        Sb01: random.uniform(0, 100),
+        Sb02: random.uniform(0, 100),
+        Sb12: random.uniform(0, 100),
+        sigmaT: random.uniform(0, 100)
     }
     
     # Compute the absolute value of each term
@@ -136,4 +136,45 @@ Sb22*ucs/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11
 -2.0*Sb00*nu*ucs*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.14%, Min =   0.00%, Max =   1.61%
 2.0*Sb11*nu*ucs*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.14%, Min =   0.00%, Max =   0.96%
 0.1*ucs**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.06%, Min =   0.00%, Max =   0.62%
+"""
+"""
+Average, Minimum, and Maximum percentage contributions of each term:
+-40.0*Sb12**2*cos(theta)**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   9.13%, Min =   0.00%, Max =  79.69%
+-40.0*Sb02**2*sin(theta)**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   8.73%, Min =   0.00%, Max =  67.05%
+160.0*Sb01**2*nu*sin(2.0*theta)**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   8.37%, Min =   0.00%, Max =  55.13%
+40.0*Sb02*Sb12*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   8.09%, Min =   0.00%, Max =  41.39%
+-40.0*Sb01*Sb22*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   7.31%, Min =   0.00%, Max =  35.73%
+20.0*Sb11*Sb22*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   4.18%, Min =   0.00%, Max =  25.24%
+-20.0*Sb00*Sb22*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   4.13%, Min =   0.00%, Max =  24.01%
+-80.0*Sb01*Sb11*nu*sin(4.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.90%, Min =   0.00%, Max =  18.85%
+80.0*Sb00*Sb01*nu*sin(4.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.89%, Min =   0.00%, Max =  25.32%
+-10.0*Sb22*sigmaT/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.47%, Min =   0.00%, Max =  25.61%
+-80.0*Sb00*Sb11*nu*cos(2.0*theta)**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.46%, Min =   0.00%, Max =  27.02%
+10.0*Sb22*pp/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.43%, Min =   0.00%, Max =  24.68%
+10.0*Sb00*Sb22/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.29%, Min =   0.00%, Max =  18.24%
+10.0*Sb11*Sb22/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   3.25%, Min =   0.00%, Max =  23.50%
+40.0*Sb11**2*nu*cos(2.0*theta)**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   2.56%, Min =   0.00%, Max =  22.29%
+40.0*Sb00**2*nu*cos(2.0*theta)**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   2.47%, Min =   0.00%, Max =  25.46%
+40.0*Sb01*nu*sigmaT*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   2.10%, Min =   0.00%, Max =  13.60%
+-40.0*Sb01*nu*pp*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   2.09%, Min =   0.00%, Max =  14.46%
+-40.0*Sb00*Sb01*nu*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   2.04%, Min =   0.00%, Max =  13.48%
+-40.0*Sb01*Sb11*nu*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   2.00%, Min =   0.00%, Max =  11.98%
+20.0*Sb11**2*nu*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   1.60%, Min =   0.00%, Max =  11.49%
+-20.0*Sb00**2*nu*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   1.57%, Min =   0.00%, Max =  12.73%
+-20.0*Sb00*nu*pp*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   1.26%, Min =   0.00%, Max =  12.20%
+20.0*Sb11*nu*pp*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   1.20%, Min =   0.00%, Max =  10.50%
+-20.0*Sb11*nu*sigmaT*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   1.19%, Min =   0.00%, Max =   9.94%
+20.0*Sb00*nu*sigmaT*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   1.16%, Min =   0.00%, Max =   9.49%
+-4.0*Sb01*ucs*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.84%, Min =   0.00%, Max =   6.14%
+-2.0*Sb00*ucs*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.46%, Min =   0.00%, Max =   3.82%
+2.0*Sb11*ucs*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.45%, Min =   0.00%, Max =   4.81%
+-sigmaT*ucs/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.38%, Min =   0.00%, Max =   3.90%
+pp*ucs/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.38%, Min =   0.00%, Max =   3.75%
+Sb22*ucs/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.37%, Min =   0.00%, Max =   5.59%
+Sb00*ucs/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.37%, Min =   0.00%, Max =   3.44%
+Sb11*ucs/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.35%, Min =   0.00%, Max =   3.36%
+-4.0*Sb01*nu*ucs*sin(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.23%, Min =   0.00%, Max =   1.31%
+-2.0*Sb00*nu*ucs*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.13%, Min =   0.00%, Max =   1.20%
+2.0*Sb11*nu*ucs*cos(2.0*theta)/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.12%, Min =   0.00%, Max =   1.12%
+0.1*ucs**2/(-20.0*Sb00*nu*cos(2.0*theta) - 40.0*Sb01*nu*sin(2.0*theta) + 20.0*Sb11*nu*cos(2.0*theta) + 10.0*Sb22 + ucs): Average =   0.05%, Min =   0.00%, Max =   0.59%
 """
