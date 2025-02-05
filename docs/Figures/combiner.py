@@ -1,11 +1,12 @@
 from PIL import Image
-
 def overlay_images(base_path, overlay_path, output_path, 
                   x_position=0, y_position=0,
                   x_scale=1.0, y_scale=1.0,
-                  transparency=0.75):
+                  transparency=0.75,
+                  white_threshold=15):  # New parameter for white detection
     """
     Overlay one image on top of another with transformation controls.
+    White pixels in the overlay image become completely transparent.
     
     Parameters:
     base_path (str): Path to the base image
@@ -16,6 +17,7 @@ def overlay_images(base_path, overlay_path, output_path,
     x_scale (float): X-axis scaling factor (default: 1.0)
     y_scale (float): Y-axis scaling factor (default: 1.0)
     transparency (float): Transparency level 0-1 (default: 0.75)
+    white_threshold (int): RGB difference from white to consider transparent (default: 2)
     """
     
     # Open the images
@@ -35,9 +37,16 @@ def overlay_images(base_path, overlay_path, output_path,
     transparent_overlay = []
     
     for item in overlay_data:
-        # Modify the alpha channel
-        new_alpha = int(item[3] * transparency)
-        transparent_overlay.append((item[0], item[1], item[2], new_alpha))
+        # Check if the pixel is close to white
+        is_white = all(abs(255 - x) <= white_threshold for x in item[:3])
+        
+        if is_white:
+            # Make white pixels completely transparent
+            transparent_overlay.append((255, 255, 255, 0))
+        else:
+            # Apply normal transparency to non-white pixels
+            new_alpha = int(item[3] * transparency)
+            transparent_overlay.append((item[0], item[1], item[2], new_alpha))
     
     overlay_img.putdata(transparent_overlay)
     

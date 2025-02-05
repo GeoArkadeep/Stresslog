@@ -33,7 +33,7 @@ This python package is aimed at empowering researchers with a simple to use and 
 
 # Methodology
 
-Overburden gradient [@traugott1997], pore pressure [@Zhang20132] [@Flemings2021], minimum horizontal stress [@Daines1982] [zobackbook], rock strength [@lal1999] [@horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
+Overburden gradient [@traugott1997], pore pressure [@Zhang20132] [@Flemings2021], minimum horizontal stress [@Daines1982] [@zoback1992], rock strength [@lal1999] [@horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
 
 The calculation of tilted stress states using the given methodology requires the Euler angles Alpha, Beta and Gamma. However this is not immediately apparent from a geological perspective. We therefore calculate the Euler angles from geological data in terms of dip angle and dip azimuth.
 
@@ -63,7 +63,7 @@ The well data from Equinor Northern Lights dataset [northernlights] has been use
 ![(a) Model of EOS Northern Lights Well showing the Drake I, II and IntraMarine formations. \label{fig:EOS_NorthernLights}](../Figures/WellPlot.png)
 ![(b) Fracture patterns calculated at 2624.5m and superimposed onto the image log. \label{fig:Fracture Motif}](../Figures/overlay.png)
 
-It is not being suggested that this interpretation of the data is preferred over any other, this example is merely meant to show the capability of the package.
+It is not being suggested that this interpretation of the data is preferred over any other, this example is merely meant to show the capability of the package. In particular, the analysis by [@Thompson2022] likely offers a better explanation of simultaneous en-echelon breakouts and induced fractures as it is a far more detailed analysis than the example here.
 
 # Discussion
 
