@@ -64,11 +64,11 @@ In the technique proposed by [@pevska1995], they start with good estimates of th
 For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value (thus if upto 90 degree width breakouts are tolerable then we take the 50 percentile value, the acceptable width of breakouts in degrees is set by the 'mabw' parameter). The upper critical mudweight (fracture gradient) can be calculated by itertatively minimising the difference between the sigma-theta-minimum (the minimum principal stress as resolved on the hole wall) and the tensile strength (here taken to be -UCS/10). Considering that the minimum principal stress along the wellbore wall is a function of pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, euler angles alpha, beta and gamma, and wellbore inclination and azimuth, as well as the mud pressure at the given depth (providing the radial stress), we can express this as follows:
 
 $$
-\Delta P = mud_pressure - pore_pressure
+\Delta P = mud pressure - pore pressure
 $$
 
 $$
-\sigma_\Delta T = someshit i dunno
+\sigma_\Delta_T = someshit i dunno
 $$
 
 $$
