@@ -96,7 +96,7 @@ $$
 f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, alpha, beta, gamma, inclination, azimuth, critical mud weight)-g(UCS) = 0
 From this, knowing the exact expression of f and g, we solved for critical mud weight using sympy to arrive at a closed-form solution.
 
-$$$
+$$
 \begin{align}
 mud pressure_{critical} &= \frac{
     -4 Sb_{00}^2 \nu \cos^2(2\theta) + 2 Sb_{00}^2 \nu \cos(2\theta) 
@@ -120,7 +120,7 @@ mud pressure_{critical} &= \frac{
     2 Sb_{00} \nu \cos(2\theta) + 4 Sb_{01} \nu \sin(2\theta) - 2 Sb_{11} \nu \cos(2\theta) - Sb_{22} + TS
     }
 \end{align}
-$$$
+$$
 
 This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
 
