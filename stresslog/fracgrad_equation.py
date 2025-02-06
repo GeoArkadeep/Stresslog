@@ -1,13 +1,13 @@
 from sympy import symbols, Eq, cos, sin, sqrt, solve
 
 # Define variables
-bhp, pp, ucs, nu, theta = symbols("bhp pp ucs nu theta")
+bhp, pp, tns, nu, theta = symbols("bhp pp tns nu theta")
 Sb00, Sb11, Sb22, Sb01, Sb02, Sb12 = symbols("Sb00 Sb11 Sb22 Sb01 Sb02 Sb12")
 
 # Derived variables
 deltaP = bhp - pp
 sigmaT = symbols("sigmaT")  # to be defined later
-tensile_strength = -ucs / 10
+tensile_strength = tns
 
 # Expressions for Szz, Stt, and Ttz
 Szz = Sb22 - 2 * nu * (Sb00 - Sb11) * cos(2 * theta) - 4 * nu * Sb01 * sin(2 * theta)

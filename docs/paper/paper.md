@@ -80,7 +80,7 @@ $$
 $$
 
 $$
-\sigma_{t_{strength}} = -\frac{UCS}{10}
+\frac{1}{2}(\sigma_{zz} + \sigma_{tt} - \sqrt{(\sigma_{zz} - \sigma_{tt})^2 + 4\tau_{tz}^2}) - tensile strength = 0
 $$
 
 f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, alpha, beta, gamma, inclination, azimuth, critical mud weight)-g(UCS) = 0
