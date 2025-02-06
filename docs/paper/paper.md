@@ -40,11 +40,11 @@ The calculation of tilted stress states using the given methodology requires the
 The tilt of the stress tensor is calculated from dip angle and dip azimuth as follows:
 
 $$
-\text{Tilt Direction} = \tan^{-1}\left(\frac{R_s[2][1]}{R_s[2][0]}\right)
+\text{Tilt Direction} = \tan^{-1}\left(\frac{R_s(3,2)}{R_s(3,1)}\right)
 $$
 
 $$
-\text{Tilt Angle} = \cos^{-1}(R_s[2][2])
+\text{Tilt Angle} = \cos^{-1}(R_s(3,3))
 $$
 
 Where $R_s$ is the rotation matrix defined by Euler angles $\alpha$, $\beta$ and $\gamma$, in the NED reference frame:
