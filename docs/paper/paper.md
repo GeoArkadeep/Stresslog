@@ -1,20 +1,22 @@
 ---
-title: 'Stresslog: A python package for modelling wellbore stability in inclined stress states'
+title: "Stresslog: A python package for modelling wellbore stability in inclined stress states"
 tags:
-    - Python
-    - Drilling
-    - Geomechanics
-    - Pore pressure
-    - Mud loss
-    - Wellbore stability
+  - Python
+  - Drilling
+  - Geomechanics
+  - Pore pressure
+  - Mud loss
+  - Wellbore stability
 authors:
-    - name: Arkadeep Ghosh
-    - orcid: 0009-0008-3209-8125
+  - name: Arkadeep Ghosh
+    orcid: 0009-0008-3209-8125
     corresponding: true
     affiliation: 1
+
 affiliations:
-    - name: Rock Lab Private Limited, India
+  - name: Rock Lab Private Limited, India
     index: 1
+
 date: 31 January 2025
 bibliography: paper.bib
 ---
