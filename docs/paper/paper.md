@@ -68,7 +68,7 @@ $$
 $$
 
 $$
-\sigma_\Delta_T = someshit i dunno
+\sigma_{\Delta T} = someshit idunno
 $$
 
 $$
