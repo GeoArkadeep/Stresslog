@@ -13,7 +13,7 @@ authors:
     corresponding: true
     affiliation: 1
 affiliations:
-    -name: Rock Lab Private Limited, India
+    - name: Rock Lab Private Limited, India
     index: 1
 date: 31 January 2025
 bibliography: paper.bib
