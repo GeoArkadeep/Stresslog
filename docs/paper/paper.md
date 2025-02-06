@@ -97,30 +97,20 @@ f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburde
 From this, knowing the exact expression of f and g, we solved for critical mud weight using sympy to arrive at a closed-form solution.
 
 $$
-\begin{equation}
-\begin{split}
-mud pressure_{critical} &= \frac{
-    -4 Sb_{00}^2 \nu \cos^2(2\theta) + 2 Sb_{00}^2 \nu \cos(2\theta) 
-    + 4 Sb_{00} Sb_{01} \nu \sin(2\theta) \\
-    &\quad - 8 Sb_{00} Sb_{01} \nu \sin(4\theta) + 8 Sb_{00} Sb_{11} \nu \cos^2(2\theta) 
-    + 2 Sb_{00} Sb_{22} \cos(2\theta) \\
-    &\quad - Sb_{00} Sb_{22} + 2 Sb_{00} \nu pp \cos(2\theta) 
-    - 2 Sb_{00} \nu \sigma_T \cos(2\theta) - 2 Sb_{00} \nu TS \cos(2\theta) \\
-    &\quad - 2 Sb_{00} TS \cos(2\theta) + Sb_{00} TS - 16 Sb_{01}^2 \nu \sin^2(2\theta) 
-    + 4 Sb_{01} Sb_{11} \nu \sin(2\theta) \\
-    &\quad + 8 Sb_{01} Sb_{11} \nu \sin(4\theta) + 4 Sb_{01} Sb_{22} \sin(2\theta) 
-    + 4 Sb_{01} \nu pp \sin(2\theta) - 4 Sb_{01} \nu \sigma_T \sin(2\theta) \\
-    &\quad - 4 Sb_{01} \nu TS \sin(2\theta) - 4 Sb_{01} TS \sin(2\theta) 
-    + 4 Sb_{02}^2 \sin^2(\theta) - 4 Sb_{02} Sb_{12} \sin(2\theta) \\
-    &\quad - 4 Sb_{11}^2 \nu \cos^2(2\theta) - 2 Sb_{11}^2 \nu \cos(2\theta) 
-    - 2 Sb_{11} Sb_{22} \cos(2\theta) - Sb_{11} Sb_{22} \\
-    &\quad - 2 Sb_{11} \nu pp \cos(2\theta) + 2 Sb_{11} \nu \sigma_T \cos(2\theta) 
-    + 2 Sb_{11} \nu TS \cos(2\theta) + 2 Sb_{11} TS \cos(2\theta) \\
-    &\quad + Sb_{11} TS + 4 Sb_{12}^2 \cos^2(\theta) - Sb_{22} pp + Sb_{22} \sigma_T 
-    + Sb_{22} TS + pp TS - \sigma_T TS - TS^2
+\begin{align}
+mud\ pressure_{critical} &= \frac{
+-4 Sb_{00}^2 \nu \cos^2(2\theta) + 2 Sb_{00}^2 \nu \cos(2\theta) + 4 Sb_{00} Sb_{01} \nu \sin(2\theta) \\
+&\quad - 8 Sb_{00} Sb_{01} \nu \sin(4\theta) + 8 Sb_{00} Sb_{11} \nu \cos^2(2\theta) + 2 Sb_{00} Sb_{22} \cos(2\theta) \\
+&\quad - Sb_{00} Sb_{22} + 2 Sb_{00} \nu pp \cos(2\theta) - 2 Sb_{00} \nu \sigma_T \cos(2\theta) - 2 Sb_{00} \nu TS \cos(2\theta) \\
+&\quad - 2 Sb_{00} TS \cos(2\theta) + Sb_{00} TS - 16 Sb_{01}^2 \nu \sin^2(2\theta) + 4 Sb_{01} Sb_{11} \nu \sin(2\theta) \\
+&\quad + 8 Sb_{01} Sb_{11} \nu \sin(4\theta) + 4 Sb_{01} Sb_{22} \sin(2\theta) + 4 Sb_{01} \nu pp \sin(2\theta) \\
+&\quad - 4 Sb_{01} \nu \sigma_T \sin(2\theta) - 4 Sb_{01} \nu TS \sin(2\theta) - 4 Sb_{01} TS \sin(2\theta) \\
+&\quad + 4 Sb_{02}^2 \sin^2(\theta) - 4 Sb_{02} Sb_{12} \sin(2\theta) - 4 Sb_{11}^2 \nu \cos^2(2\theta) - 2 Sb_{11}^2 \nu \cos(2\theta) \\
+&\quad - 2 Sb_{11} Sb_{22} \cos(2\theta) - Sb_{11} Sb_{22} - 2 Sb_{11} \nu pp \cos(2\theta) + 2 Sb_{11} \nu \sigma_T \cos(2\theta) \\
+&\quad + 2 Sb_{11} \nu TS \cos(2\theta) + 2 Sb_{11} TS \cos(2\theta) + Sb_{11} TS + 4 Sb_{12}^2 \cos^2(\theta) \\
+&\quad - Sb_{22} pp + Sb_{22} \sigma_T + Sb_{22} TS + pp TS - \sigma_T TS - TS^2
 }{2 Sb_{00} \nu \cos(2\theta) + 4 Sb_{01} \nu \sin(2\theta) - 2 Sb_{11} \nu \cos(2\theta) - Sb_{22} + TS}
-\end{split}
-\end{equation}
+\end{align}
 $$
 
 This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
