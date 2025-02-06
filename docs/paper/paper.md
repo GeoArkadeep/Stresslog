@@ -92,7 +92,60 @@ $$
 $$
 
 f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, alpha, beta, gamma, inclination, azimuth, critical mud weight)-g(UCS) = 0
-From this, knowing the exact expression of f and g, we solved for critical mud weight using sympy to arrive at a closed-form solution. This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
+From this, knowing the exact expression of f and g, we solved for critical mud weight using sympy to arrive at a closed-form solution.
+
+$$
+mud pressure_{critical} = \[
+\frac{
+-4 Sb_{00}^2 \nu \cos^2(2\theta) 
++ 2 Sb_{00}^2 \nu \cos(2\theta) 
++ 4 Sb_{00} Sb_{01} \nu \sin(2\theta) 
+- 8 Sb_{00} Sb_{01} \nu \sin(4\theta) 
++ 8 Sb_{00} Sb_{11} \nu \cos^2(2\theta) 
++ 2 Sb_{00} Sb_{22} \cos(2\theta) 
+- Sb_{00} Sb_{22} 
++ 2 Sb_{00} \nu pp \cos(2\theta) 
+- 2 Sb_{00} \nu \sigma_T \cos(2\theta) 
+- 2 Sb_{00} \nu t_{ns} \cos(2\theta) 
+- 2 Sb_{00} t_{ns} \cos(2\theta) 
++ Sb_{00} t_{ns} 
+- 16 Sb_{01}^2 \nu \sin^2(2\theta) 
++ 4 Sb_{01} Sb_{11} \nu \sin(2\theta) 
++ 8 Sb_{01} Sb_{11} \nu \sin(4\theta) 
++ 4 Sb_{01} Sb_{22} \sin(2\theta) 
++ 4 Sb_{01} \nu pp \sin(2\theta) 
+- 4 Sb_{01} \nu \sigma_T \sin(2\theta) 
+- 4 Sb_{01} \nu t_{ns} \sin(2\theta) 
+- 4 Sb_{01} t_{ns} \sin(2\theta) 
++ 4 Sb_{02}^2 \sin^2(\theta) 
+- 4 Sb_{02} Sb_{12} \sin(2\theta) 
+- 4 Sb_{11}^2 \nu \cos^2(2\theta) 
+- 2 Sb_{11}^2 \nu \cos(2\theta) 
+- 2 Sb_{11} Sb_{22} \cos(2\theta) 
+- Sb_{11} Sb_{22} 
+- 2 Sb_{11} \nu pp \cos(2\theta) 
++ 2 Sb_{11} \nu \sigma_T \cos(2\theta) 
++ 2 Sb_{11} \nu t_{ns} \cos(2\theta) 
++ 2 Sb_{11} t_{ns} \cos(2\theta) 
++ Sb_{11} t_{ns} 
++ 4 Sb_{12}^2 \cos^2(\theta) 
+- Sb_{22} pp 
++ Sb_{22} \sigma_T 
++ Sb_{22} t_{ns} 
++ pp t_{ns} 
+- \sigma_T t_{ns} 
+- t_{ns}^2
+}{
+2 Sb_{00} \nu \cos(2\theta) 
++ 4 Sb_{01} \nu \sin(2\theta) 
+- 2 Sb_{11} \nu \cos(2\theta) 
+- Sb_{22} 
++ t_{ns}
+}
+\]
+$$
+
+This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
 
 If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth, given the mud weight, stresses and pore pressure, as well as uniaxial compressive strength, poisson's ratio, temperature difference between borehole wall and circualting fluid, coefficient of thermal expansion and biot's poroelastic constant. Mohr-Coloumb failure criteria is used to predict compressive failures (borehole breakouts). For tensile failure, a simplified Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres above and below the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
 
