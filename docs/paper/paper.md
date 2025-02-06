@@ -39,15 +39,25 @@ The calculation of tilted stress states using the given methodology requires the
 
 The tilt of the stress tensor is calculated from dip angle and dip azimuth as follows:
 
-Tilt Direction=arctan(Rs​[2][0]Rs​[2][1]​)
-Tilt Angle=arccos⁡(Rs[2][2])\text{Tilt Angle} = \arccos(R_s[2][2])Tilt Angle=arccos(Rs​[2][2])
+$$
+\text{Tilt Direction} = \arctan\left(\frac{R_s[2][1]}{R_s[2][0]}\right)
+$$
 
-Where Rs is the rotation matrix defined by Euler angles Alpha, Beta and Gamma, in the NED reference frame. In particular,
-Rs = [[math.cos(alpha)*math.cos(beta), math.sin(alpha)*math.cos(beta), (-1)*math.sin(beta)] ,
-                   [(math.cos(alpha)*math.sin(beta)*math.sin(gamma))-(math.sin(alpha)*math.cos(gamma)), (math.sin(alpha)*math.sin(beta)*math.sin(gamma))+(math.cos(alpha)*math.cos(gamma)), math.cos(beta)*math.sin(gamma)],
-                   [(math.cos(alpha)*math.sin(beta)*math.cos(gamma))+(math.sin(alpha)*math.sin(gamma)), (math.sin(alpha)*math.sin(beta)*math.cos(gamma))-(math.cos(alpha)*math.sin(gamma)), math.cos(beta)*math.cos(gamma)]]
+$$
+\text{Tilt Angle} = \arccos(R_s[2][2])
+$$
 
-To get the dip direction of the plane perpendicular to the tilt pole, we add 180 degrees to the tilt direction. In the program, the azimuth of maximum principal stress is specified, and the plane perpendicular to the tilt pole is specified using dip azimuth and dip angle. Then considering the azimuth of maximum principal stress as Alpha, the above relations are used to optimise for the angles Beta and Gamma. The Euler angles are then used for further stress transformations as required. Nelder Mead algorithm is used, taking care to avoid local minima.
+Where $R_s$ is the rotation matrix defined by Euler angles $\alpha$, $\beta$ and $\gamma$, in the NED reference frame:
+
+$$
+R_s = \begin{bmatrix} 
+\cos\alpha\cos\beta & \sin\alpha\cos\beta & -\sin\beta \\
+\cos\alpha\sin\beta\sin\gamma - \sin\alpha\cos\gamma & \sin\alpha\sin\beta\sin\gamma + \cos\alpha\cos\gamma & \cos\beta\sin\gamma \\
+\cos\alpha\sin\beta\cos\gamma + \sin\alpha\sin\gamma & \sin\alpha\sin\beta\cos\gamma - \cos\alpha\sin\gamma & \cos\beta\cos\gamma
+\end{bmatrix}
+$$
+
+To get the dip direction of the plane perpendicular to the tilt pole, we add 180 degrees to the tilt direction. In the program, the azimuth of maximum principal stress is specified, and the plane perpendicular to the tilt pole is specified using dip azimuth and dip angle. Then considering the azimuth of maximum principal stress as $\alpha$, the above relations are used to optimise for the angles $\beta$ and $\gamma$. The Euler angles are then used for further stress transformations as required. Nelder Mead algorithm is used, taking care to avoid local minima.
 
 In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, Sigma1, Sigma2 and Sigma3, already rotated by the Euler Angles Alpha, Beta and Gamma. During usual modelling however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress (Sv, from overburden gradient), and perhaps an estimate of maximum horizontal stress. Given this situation, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses (sigma 1, sigma 2 and sigma 3) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses. L-BFGS-B is used as the algorithm for the minimisation. The optimized values are then used as the far field stress tensor after rotation by alpha, beta and gamma, for stability calculations.
 
