@@ -587,7 +587,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
     lithos=None, user_home=user_home, program_option=[300,
     4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
-    debug=False, penetration=False):
+    debug=False, penetration=False, ten_fac = 10):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -1095,6 +1095,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     dex_ncts = np.full(len(tvd), de)
     dex_zeros = np.full(len(tvd), dex0)
     dex_exp = np.full(len(tvd), nde)
+    arr_ten_fac = np.full(len(tvd), ten_fac)
     if float(attrib[5]) == 0:
         bht_point[-1][0] = tvdbgl[-1] / 1000 * 30
     i = 0
@@ -1140,7 +1141,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         goclist = np.transpose(formlist)[8]
         goclist = np.append(0, goclist)
         btlist = np.transpose(formlist)[9]
-        btlist = np.append(btlist, btlist[-1])
+        btlist = np.append(0,btlist)
+        #btlist = np.append(btlist, btlist[-1])
         strucbotlist = np.transpose(formlist)[5]
         strucbotlist = np.append(ttvdlist[1], strucbotlist)
         logtoplist = np.append(0, ftvdlist)
@@ -1306,6 +1308,10 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                         ucs2[i] = lithot[k - 1][4]
                     except:
                         pass
+                    try:
+                        arr_ten_fac[i] = lithot[k - 1][5]
+                    except:
+                        pass
                 else:
                     nu2[i] = float(numodel[int(lithotype[i] - 1)])
             else:
@@ -1321,6 +1327,10 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                     pass
                 try:
                     ucs2[i] = float(lithot[k][4])
+                except:
+                    pass
+                try:
+                    arr_ten_fac[i] = float(lithot[k][5])
                 except:
                     pass
                 k += 1
@@ -2142,7 +2152,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 draw(tvd[doiX], osx, osy, osz, sigmas[3], sigmas[4], ucsmpa,
                     alphas[doiX], betas[doiX], gammas[doiX], 0, nu2[doiX],
                     azmdoi, incdoi, bt[doiX], ym[doiX], delTempC[doiX],
-                    path=output_fileS)
+                    path=output_fileS,ten_fac=arr_ten_fac[i])
             except:
                 pass
         else:
@@ -2150,7 +2160,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 rv3 = plot_to_base64_png(draw(tvd[doiX], osx, osy, osz,
                     sigmas[3], sigmas[4], ucsmpa, alphas[doiX], betas[doiX],
                     gammas[doiX], 0, nu2[doiX], azmdoi, incdoi, bt[doiX],
-                    ym[doiX], delTempC[doiX]))
+                    ym[doiX], delTempC[doiX],ten_fac=arr_ten_fac[i]))
             except:
                 rv3 = None
     from .BoreStab import getHoop, getAlignedStress
@@ -2206,7 +2216,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             cr, fr, minazi, maxazi, minangle, maxangle, angles, noplot = (
                 getHoop(incdoi, azmdoi, sigmas[0], sigmas[1], sigmas[2],
                 deltaP, ppmpa, ucsmpa, alphas[i], betas[i], gammas[i], nu2[
-                i], bt[i], ym[i], delTempC[i]))
+                i], bt[i], ym[i], delTempC[i],ten_fac=arr_ten_fac[i]))
             crush[j] = cr
             frac[j] = fr
             if np.max(frac[j]) > 0:
@@ -2233,7 +2243,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         cr, fr, minazi, maxazi, minangle, maxangle, angles, noplot = getHoop(
             incdoi, azmdoi, sigmas[0], sigmas[1], sigmas[2], deltaP, ppmpa,
             ucsmpa, alphas[i], betas[i], gammas[i], nu2[i], bt[i], ym[i],
-            delTempC[i])
+            delTempC[i],ten_fac=arr_ten_fac[i])
         fr = np.array(fr)
         angles = np.array(angles)
         data2 = j, fr, angles, minazi, maxazi
@@ -2292,11 +2302,11 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         if writeFile:
             getHoop(incdoi, azmdoi, sigmas[0], sigmas[1], sigmas[2], deltaP,
                 ppmpa, ucsmpa, alphas[i], betas[i], gammas[i], nu2[i], bt[i
-                ], ym[i], delTempC[i], output_fileHoop)
+                ], ym[i], delTempC[i], output_fileHoop,ten_fac=arr_ten_fac[i])
         else:
             return plot_to_base64_png(getHoop(incdoi, azmdoi, sigmas[0],
                 sigmas[1], sigmas[2], deltaP, ppmpa, ucsmpa, alphas[i],
-                betas[i], gammas[i], nu2[i], bt[i], ym[i], delTempC[i])[-1])
+                betas[i], gammas[i], nu2[i], bt[i], ym[i], delTempC[i],ten_fac=arr_ten_fac[i])[-1])
 
     def drawSand(doi, writeFile=True):
         doiactual = find_nearest_depth(tvdm, doi)
@@ -2363,6 +2373,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         find_nearest_depth(tvd, plotend)[0]])
     maxchartpressure = 1000 * math.ceil(max(mogu1, mogu2) / 1000)
     minpressure = round(mogu3)
+    
     Sb = np.full((len(tvd), 3, 3), np.nan)
     SbFF = np.full((len(tvd), 3, 3), np.nan)
     hoopmax = np.full(len(tvd), np.nan)
@@ -2432,10 +2443,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             minthetarad = np.radians(np.nanargmin(Stmin))
             lademin[i] = np.nanmin(ladempa)
             if not penetration:
-                trufracmpa[i] = get_frac_pressure(Sb[i], ppmpa, -horsrud[i]/10,
-                    minthetarad, nu2[i], sigmaT)[0]
+                trufracmpa[i] = get_frac_pressure(Sb[i], ppmpa, -horsrud[i]/arr_ten_fac[i], minthetarad, nu2[i], sigmaT) if arr_ten_fac[i]>0 else get_frac_pressure(Sb[i], ppmpa, 0, minthetarad, nu2[i], sigmaT)
             else:
-                trufracmpa[i] = (3*sigmahminmpa - sigmaHMaxmpa - (biot[i]*ppmpa*((1-2*nu2[i])/(1-nu2[i]))) + sigmaT - (horsrud[i]/10))/(2-(biot[i]*((1-2*nu2[i])/(1-nu2[i]))))
+                trufracmpa[i] = (3*sigmahminmpa - sigmaHMaxmpa - (biot[i]*ppmpa*((1-2*nu2[i])/(1-nu2[i]))) + sigmaT - (horsrud[i]/arr_ten_fac[i]))/(2-(biot[i]*((1-2*nu2[i])/(1-nu2[i])))) if arr_ten_fac[i]>0 else (3*sigmahminmpa - sigmaHMaxmpa - (biot[i]*ppmpa*((1-2*nu2[i])/(1-nu2[i]))) + sigmaT -0)/(2-(biot[i]*((1-2*nu2[i])/(1-nu2[i]))))
         except:
             Sb[i] = np.full((3, 3), np.nan)
             SbFF[i] = np.full((3, 3), np.nan)

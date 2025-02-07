@@ -705,7 +705,7 @@ def getSigmaTT(s1,s2,s3,alpha,beta,gamma,azim,inc,theta,deltaP,Pp,nu=0.35,bt=0,y
     return Stt,Szz,Ttz,STMax,Stmin,omega,orit
 
 
-def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=0,ym=0,delT=0,path=None):
+def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=0,ym=0,delT=0,path=None,ten_fac=10):
     """Calculate and plot hoop stresses around a wellbore circumference.
 
     This function computes various stress components around the wellbore wall and generates
@@ -804,7 +804,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
     frac = np.zeros(360)
     crush = np.zeros(360)
     widthR = np.zeros(360)
-    ts = -ucs/10
+    ts = -ucs/ten_fac if ten_fac>0 else 0
     while pointer<360+alpha:
         STT,SZZ,TTZ,STM,stm,omega,orit = getSigmaTT(s1,s2,s3, alpha,beta,gamma, azim, inc, pointer, deltaP,Pp,nu,bt,ym,delT)
         line[round(pointer%360)] = stm
@@ -851,7 +851,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
     else:
         return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,plt2
 
-def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None):
+def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None,ten_fac=10):
     """Generate wellbore stability plots showing mud weight headroom and breakout widths.
 
     This function creates two polar projection plots:
@@ -932,7 +932,7 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
     inclination = np.zeros((10,37))
     azimuth = np.zeros((10,37))
     inc = 0
-    TS = -UCS/10
+    TS = -UCS/ten_fac if ten_fac>0 else 0
     #TS = 0
     while inc<10:
         azim = 0
@@ -1184,4 +1184,4 @@ def get_frac_pressure(Sb, pp, tns, theta, nu=0.25, sigmaT=0):
     Sb10, Sb11, Sb12 = Sb[1, 0], Sb[1, 1], Sb[1, 2]
     Sb20, Sb21, Sb22 = Sb[2, 0], Sb[2, 1], Sb[2, 2]
     
-    return [(-4.0*Sb00**2*nu*np.cos(2.0*theta)**2 + 2.0*Sb00**2*nu*np.cos(2.0*theta) + 4.0*Sb00*Sb01*nu*np.sin(2.0*theta) - 8.0*Sb00*Sb01*nu*np.sin(4.0*theta) + 8.0*Sb00*Sb11*nu*np.cos(2.0*theta)**2 + 2.0*Sb00*Sb22*np.cos(2.0*theta) - Sb00*Sb22 + 2.0*Sb00*nu*pp*np.cos(2.0*theta) - 2.0*Sb00*nu*sigmaT*np.cos(2.0*theta) - 2.0*Sb00*nu*tns*np.cos(2.0*theta) - 2.0*Sb00*tns*np.cos(2.0*theta) + Sb00*tns - 16.0*Sb01**2*nu*np.sin(2.0*theta)**2 + 4.0*Sb01*Sb11*nu*np.sin(2.0*theta) + 8.0*Sb01*Sb11*nu*np.sin(4.0*theta) + 4.0*Sb01*Sb22*np.sin(2.0*theta) + 4.0*Sb01*nu*pp*np.sin(2.0*theta) - 4.0*Sb01*nu*sigmaT*np.sin(2.0*theta) - 4.0*Sb01*nu*tns*np.sin(2.0*theta) - 4.0*Sb01*tns*np.sin(2.0*theta) + 4.0*Sb02**2*np.sin(theta)**2 - 4.0*Sb02*Sb12*np.sin(2.0*theta) - 4.0*Sb11**2*nu*np.cos(2.0*theta)**2 - 2.0*Sb11**2*nu*np.cos(2.0*theta) - 2.0*Sb11*Sb22*np.cos(2.0*theta) - Sb11*Sb22 - 2.0*Sb11*nu*pp*np.cos(2.0*theta) + 2.0*Sb11*nu*sigmaT*np.cos(2.0*theta) + 2.0*Sb11*nu*tns*np.cos(2.0*theta) + 2.0*Sb11*tns*np.cos(2.0*theta) + Sb11*tns + 4.0*Sb12**2*np.cos(theta)**2 - Sb22*pp + Sb22*sigmaT + Sb22*tns + pp*tns - sigmaT*tns - tns**2)/(2.0*Sb00*nu*np.cos(2.0*theta) + 4.0*Sb01*nu*np.sin(2.0*theta) - 2.0*Sb11*nu*np.cos(2.0*theta) - Sb22 + tns)]
+    return (-4.0*Sb00**2*nu*np.cos(2.0*theta)**2 + 2.0*Sb00**2*nu*np.cos(2.0*theta) + 4.0*Sb00*Sb01*nu*np.sin(2.0*theta) - 8.0*Sb00*Sb01*nu*np.sin(4.0*theta) + 8.0*Sb00*Sb11*nu*np.cos(2.0*theta)**2 + 2.0*Sb00*Sb22*np.cos(2.0*theta) - Sb00*Sb22 + 2.0*Sb00*nu*pp*np.cos(2.0*theta) - 2.0*Sb00*nu*sigmaT*np.cos(2.0*theta) - 2.0*Sb00*nu*tns*np.cos(2.0*theta) - 2.0*Sb00*tns*np.cos(2.0*theta) + Sb00*tns - 16.0*Sb01**2*nu*np.sin(2.0*theta)**2 + 4.0*Sb01*Sb11*nu*np.sin(2.0*theta) + 8.0*Sb01*Sb11*nu*np.sin(4.0*theta) + 4.0*Sb01*Sb22*np.sin(2.0*theta) + 4.0*Sb01*nu*pp*np.sin(2.0*theta) - 4.0*Sb01*nu*sigmaT*np.sin(2.0*theta) - 4.0*Sb01*nu*tns*np.sin(2.0*theta) - 4.0*Sb01*tns*np.sin(2.0*theta) + 4.0*Sb02**2*np.sin(theta)**2 - 4.0*Sb02*Sb12*np.sin(2.0*theta) - 4.0*Sb11**2*nu*np.cos(2.0*theta)**2 - 2.0*Sb11**2*nu*np.cos(2.0*theta) - 2.0*Sb11*Sb22*np.cos(2.0*theta) - Sb11*Sb22 - 2.0*Sb11*nu*pp*np.cos(2.0*theta) + 2.0*Sb11*nu*sigmaT*np.cos(2.0*theta) + 2.0*Sb11*nu*tns*np.cos(2.0*theta) + 2.0*Sb11*tns*np.cos(2.0*theta) + Sb11*tns + 4.0*Sb12**2*np.cos(theta)**2 - Sb22*pp + Sb22*sigmaT + Sb22*tns + pp*tns - sigmaT*tns - tns**2)/(2.0*Sb00*nu*np.cos(2.0*theta) + 4.0*Sb01*nu*np.sin(2.0*theta) - 2.0*Sb11*nu*np.cos(2.0*theta) - Sb22 + tns)

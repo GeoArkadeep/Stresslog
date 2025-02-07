@@ -3,7 +3,7 @@ def overlay_images(base_path, overlay_path, output_path,
                   x_position=0, y_position=0,
                   x_scale=1.0, y_scale=1.0,
                   transparency=0.75,
-                  white_threshold=15):  # New parameter for white detection
+                  white_threshold=45):  # New parameter for white detection
     """
     Overlay one image on top of another with transformation controls.
     White pixels in the overlay image become completely transparent.
