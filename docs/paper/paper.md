@@ -74,8 +74,10 @@ For pre-drill forecast, the function get_analog() can be used to derive a log-pr
 # Case Study
 
 The well data from Equinor Northern Lights dataset [northernlights] has been used as the example here, to model the stress state occuring in the Lower Drake formation, in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
-![(a) Model of EOS Northern Lights Well showing the Drake I, II and IntraMarine formations. \label{fig:EOS_NorthernLights}](../Figures/WellPlot.png)
-![(b) Fracture patterns calculated at 2624.5m and superimposed onto the image log. \label{fig:Fracture Motif}](../Figures/overlay.png)
+
+![Model of EOS Northern Lights Well showing the Drake I, II and IntraMarine formations.](../Figures/WellPlot.png)
+
+![Fracture patterns calculated at 2624.5m and superimposed onto the image log.](../Figures/overlay.png)
 
 It is not being suggested that this interpretation of the data is preferred over any other, this example is merely meant to show the capability of the package. In particular, we checked three cases, one without the deviation data but with tilted stress tensor (presented here), one with the deviation data but without the tilted stress tennsor, and one with both deviation data as well as the stress tensor. It was seen that the case with only the deviation data and no tensor tilt was not able to recreate the fracture motif (the motif was found to be closing upward), while the case considering both the effects did have the correct closure direction, however the alignment of the induced fractures was incorrect (to bring it to the correct azimuth requires maximum horizontal stress azimuth not compatible with existing literature). The analysis by [@Thompson2022] likely offers a better explanation of simultaneous en-echelon breakouts and induced fractures as it is a far more detailed analysis integrating a lot more data than the example here.
 
