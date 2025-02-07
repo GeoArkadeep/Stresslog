@@ -2432,8 +2432,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             minthetarad = np.radians(np.nanargmin(Stmin))
             lademin[i] = np.nanmin(ladempa)
             if not penetration:
-                trufracmpa[i] = get_frac_pressure(Sb[i], ppmpa, horsrud[i],
-                    minthetarad, nu2[i], sigmaT)
+                trufracmpa[i] = get_frac_pressure(Sb[i], ppmpa, -horsrud[i]/10,
+                    minthetarad, nu2[i], sigmaT)[0]
             else:
                 trufracmpa[i] = (3*sigmahminmpa - sigmaHMaxmpa - (biot[i]*ppmpa*((1-2*nu2[i])/(1-nu2[i]))) + sigmaT - (horsrud[i]/10))/(2-(biot[i]*((1-2*nu2[i])/(1-nu2[i]))))
         except:

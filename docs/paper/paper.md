@@ -64,43 +64,8 @@ To get the dip direction of the plane perpendicular to the tilt pole, we add 180
 In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, Sigma1, Sigma2 and Sigma3, already rotated by the Euler Angles Alpha, Beta and Gamma. During usual modelling however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress (Sv, from overburden gradient), and perhaps an estimate of maximum horizontal stress. Given this situation, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses (sigma 1, sigma 2 and sigma 3) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses. L-BFGS-B is used as the algorithm for the minimisation. The optimized values are then used as the far field stress tensor after rotation by alpha, beta and gamma, for stability calculations.
 
 For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value (thus if upto 90 degree width breakouts are tolerable then we take the 50 percentile value, the acceptable width of breakouts in degrees is set by the 'mabw' parameter). The upper critical mudweight (fracture gradient) can be calculated by itertatively minimising the difference between the sigma-theta-minimum (the minimum principal stress as resolved on the hole wall) and the tensile strength (here taken to be -UCS/10). Considering that the minimum principal stress along the wellbore wall is a function of pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, euler angles alpha, beta and gamma, and wellbore inclination and azimuth, as well as the mud pressure at the given depth (providing the radial stress), we can express this as follows:
-
-$$
-\Delta P = mud pressure_{critical} - pore pressure
-$$
-
-$$
-\sigma_{\Delta T} = someshit idunno
-$$
-
-$$
-\sigma_{zz} = S_{b_{33}} - 2\nu(S_{b_{11}} - S_{b_{22}})\cos(2\theta) - 4\nu S_{b_{12}}\sin(2\theta)
-$$
-
-$$
-\sigma_{tt} = S_{b_{11}} + S_{b_{22}} - 2(S_{b_{11}} - S_{b_{22}})\cos(2\theta) - 4S_{b_{12}}\sin(2\theta) - \Delta P - \sigma_T
-$$
-
-$$
-\tau_{tz} = 2(S_{b_{23}}\cos(\theta) - S_{b_{13}}\sin(\theta))
-$$
-
-$$
-\sigma_{t_{min}} = \frac{1}{2}(\sigma_{zz} + \sigma_{tt} - \sqrt{(\sigma_{zz} - \sigma_{tt})^2 + 4\tau_{tz}^2})
-$$
-
-$$
-\frac{1}{2}(\sigma_{zz} + \sigma_{tt} - \sqrt{(\sigma_{zz} - \sigma_{tt})^2 + 4\tau_{tz}^2}) - tensile strength = 0
-$$
-
-f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, alpha, beta, gamma, inclination, azimuth, critical mud weight)-g(UCS) = 0
-From this, knowing the exact expression of f and g, we solved for critical mud weight using sympy to arrive at a closed-form solution.
-
-$$
-mud pressure_{critical} = \frac{-4 Sb_{00}^2 \nu \cos^2(2\theta) + 2 Sb_{00}^2 \nu \cos(2\theta) + 4 Sb_{00} Sb_{01} \nu \sin(2\theta) - 8 Sb_{00} Sb_{01} \nu \sin(4\theta) + 8 Sb_{00} Sb_{11} \nu \cos^2(2\theta) + 2 Sb_{00} Sb_{22} \cos(2\theta) - Sb_{00} Sb_{22} + 2 Sb_{00} \nu pp \cos(2\theta) - 2 Sb_{00} \nu \sigma_T \cos(2\theta) - 2 Sb_{00} \nu TS \cos(2\theta) - 2 Sb_{00} TS \cos(2\theta) + Sb_{00} TS - 16 Sb_{01}^2 \nu \sin^2(2\theta) + 4 Sb_{01} Sb_{11} \nu \sin(2\theta) + 8 Sb_{01} Sb_{11} \nu \sin(4\theta) + 4 Sb_{01} Sb_{22} \sin(2\theta) + 4 Sb_{01} \nu pp \sin(2\theta) - 4 Sb_{01} \nu \sigma_T \sin(2\theta) - 4 Sb_{01} \nu TS \sin(2\theta) - 4 Sb_{01} TS \sin(2\theta) + 4 Sb_{02}^2 \sin^2(\theta) - 4 Sb_{02} Sb_{12} \sin(2\theta) - 4 Sb_{11}^2 \nu \cos^2(2\theta) - 2 Sb_{11}^2 \nu \cos(2\theta) - 2 Sb_{11} Sb_{22} \cos(2\theta) - Sb_{11} Sb_{22} - 2 Sb_{11} \nu pp \cos(2\theta) + 2 Sb_{11} \nu \sigma_T \cos(2\theta) + 2 Sb_{11} \nu TS \cos(2\theta) + 2 Sb_{11} TS \cos(2\theta) + Sb_{11} TS + 4 Sb_{12}^2 \cos^2(\theta) - Sb_{22} pp + Sb_{22} \sigma_T + Sb_{22} TS + pp TS - \sigma_T TS - TS^2}{2 Sb_{00} \nu \cos(2\theta) + 4 Sb_{01} \nu \sin(2\theta) - 2 Sb_{11} \nu \cos(2\theta) - Sb_{22} + TS}
-$$
-
-This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
+f(pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, alpha, beta, gamma, inclination, azimuth, critical mud weight)- tensile strength = 0
+From this, knowing the exact expression of f [@pevska1995], we solved for critical mud weight using sympy to arrive at a closed-form solution. This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
 
 If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth, given the mud weight, stresses and pore pressure, as well as uniaxial compressive strength, poisson's ratio, temperature difference between borehole wall and circualting fluid, coefficient of thermal expansion and biot's poroelastic constant. Mohr-Coloumb failure criteria is used to predict compressive failures (borehole breakouts). For tensile failure, a simplified Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres above and below the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
 
