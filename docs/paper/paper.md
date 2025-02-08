@@ -23,26 +23,22 @@ bibliography: paper.bib
 
 # Summary
 
-This software is meant to be used by researchers and practitioners working in the field of geomechanics. It is a python library that uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log in las format. The algorithms used are compatible with each other, and have been chosen to be applicable as universally as possible. The computations use full 6 component stress tensor (as calculated using [@pevska1995]) which allows modelling inclined wellbores as well as inclined states of stress. The program estimates, among other things, pore pressure (with and without unloading effects) from sonic, resistivity and d-exponent, principal stresses, hoop stresses, compressive strength, tensile strength, the three moduli of elasticity and sanding tendency. The D-exponent itself is calculated based on drilling data if available.
+This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use full 6 component stress tensor (as calculated using [@pevska1995]) which allows modelling inclined wellbores as well as inclined states of stress. The program estimates, among other things, pore pressure (with and without unloading effects) from sonic, resistivity and d-exponent, principal stresses, hoop stresses, compressive strength, tensile strength, the three moduli of elasticity and sanding tendency. The D-exponent itself is calculated based on drilling data if available.
 
 # Statement of need
 
-It is possible to use nothing other than a standard spreadsheet to carry out geomechanical modelling, however such a process is very tedious if iterative methods are to be used.
-
-Most software in standard use in the petroleum industry apply certain simplifying assumptions, mainly in the form of assuming that the vertical stress constitutes a principal stress. And that is usually a very good approximation, but there are situations where this is not the case, especially in regions experiencing isostatic re-adjustment or salt tectonism, among others. While there are open-source multi-physics packages, using them in a wellsite/operations sense, especially if real-time performance is required, is ill-advised. There is thus, a need for a dedicated tool for wellbore stability analysis.
-
-This python package is aimed at empowering researchers with a simple to use and comprehensive 1D mechanical earth modelling tool that is freely available and which researchers can modify to apply their own methods when neccessary, while allowing practitioners to use the pre-defined algorithms to calculate solutions, iteratively process and export well log data.
+It is often assumed that the vertical stress constitutes a principal stress which is usually a very good approximation. There are situations where this is not the case, especially in regions experiencing isostatic re-adjustment or salt tectonism, among others. This python package is aimed at empowering researchers with a simple to use and comprehensive 1D mechanical earth modelling tool that is freely available and which researchers can modify to apply their own methods when neccessary, while allowing practitioners to use the pre-defined algorithms to calculate solutions, iteratively process and export well log data.
 
 # Methodology
 
 Overburden gradient [@traugott1997], pore pressure [@Zhang20132] [@Flemings2021], minimum horizontal stress [@Daines1982] [@zoback1992], rock strength [@lal1999] [@horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
 
-The calculation of tilted stress states using the given methodology requires the Euler angles Alpha, Beta and Gamma. However this is not immediately apparent from a geological perspective. We therefore calculate the Euler angles from geological data in terms of dip angle and dip azimuth.
+The calculation of tilted stress states using the given methodology requires the Euler angles Alpha, Beta and Gamma. However this is not immediately apparent from a geological perspective. We therefore calculate the Euler angles from geological data in terms of tilt azimuth and tilt angle of the stress tensor.
 
 The tilt of the stress tensor is calculated from dip angle and dip azimuth as follows:
 
 $$
-\text{Tilt Direction} = \tan^{-1}\left(\frac{R_{s_{3,2}}}{R_{s_{3,1}}}\right)
+\text{Tilt Azimuth} = \tan^{-1}\left(\frac{R_{s_{3,2}}}{R_{s_{3,1}}}\right)
 $$
 
 $$
@@ -59,39 +55,82 @@ R_s = \begin{bmatrix}
 \end{bmatrix}
 $$
 
-To get the dip direction of the plane perpendicular to the tilt pole, we add 180 degrees to the tilt direction. In the program, the azimuth of maximum principal stress is specified, and the plane perpendicular to the tilt pole is specified using dip azimuth and dip angle. Then considering the azimuth of maximum principal stress as $\alpha$, the above relations are used to optimise for the angles $\beta$ and $\gamma$. The Euler angles are then used for further stress transformations as required. Nelder Mead algorithm is used, taking care to avoid local minima.
+In the program, the azimuth of maximum principal stress is specified, and the plane perpendicular to the tilt pole is specified using dip azimuth and dip angle. Then considering the azimuth of maximum principal stress as $\alpha$, the above relations are used to optimise for the angles $\beta$ and $\gamma$. The Euler angles are then used for further stress transformations as required.
 
-In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, $\sigma_1$, $\sigma_2$ and $\sigma_3$, already rotated by the Euler Angles $\alpha$, $\beta$ and $\gamma$. During usual modelling however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress ($\sigma_V$, from overburden gradient), and perhaps an estimate of maximum horizontal stress. Given this situation, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses ($\sigma_1$, $\sigma_2$ and $\sigma_3$) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses. L-BFGS-B is used as the algorithm for the minimisation. The optimized values are then used as the far field stress tensor for stability calculations.
+In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, $\sigma_1$, $\sigma_2$ and $\sigma_3$, already rotated by the Euler Angles $\alpha$, $\beta$ and $\gamma$. Usually, however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress, and an estimate of maximum horizontal stress. Given this, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses ($\sigma_1$, $\sigma_2$ and $\sigma_3$) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses.
 
-For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value (thus if upto 90 degree width breakouts are tolerable then we take the 50 percentile value, the acceptable width of breakouts in degrees is set by the 'mabw' parameter). The upper critical mudweight (fracture gradient) can be calculated by itertatively minimising the difference between the ${\sigma_\theta}_{minimum}$ (the minimum principal stress as resolved on the hole wall) and the tensile strength. Considering that the minimum principal stress along the wellbore wall is a function of pore pressure, minimum horizontal stress, maximum horizontal stress, overburden stress, thermal stress, euler angles $\alpha$, $\beta$ and $\gamma$, and wellbore inclination and azimuth, as well as the mud pressure at the given depth (providing the radial stress), we can express this as follows:
+For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution is derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this using sympy for the upper critical mudweight.
 
 $$
-\frac{1}{2}(\sigma_{zz} + \sigma_{\theta\theta} - \sqrt{(\sigma_{zz} - \sigma_{\theta\theta})^2 + 4\tau_{tz}^2}) - tensile strength = 0
+\frac{
+  \left(
+  \begin{aligned}
+    &\quad +2\, S_{B_{1,1}}^2\, \nu\, \cos(2\theta_{min})
+      - 4\, S_{B_{1,1}}^2\, \nu\, \cos(2\theta_{min})^2
+      + 4\, S_{B_{1,1}}\, S_{B_{1,2}}\, \nu\, \sin(2\theta_{min})\\[1mm]
+    &\quad - 8\, S_{B_{1,1}}\, S_{B_{1,2}}\, \nu\, \sin(4\theta_{min})
+      + 8\, S_{B_{1,1}}\, S_{B_{2,2}}\, \nu\, \cos(2\theta_{min})^2
+      + 2\, S_{B_{1,1}}\, S_{B_{3,3}}\, \cos(2\theta_{min})\\[1mm]
+    &\quad - S_{B_{1,1}}\, S_{B_{3,3}}
+      + 2\, S_{B_{1,1}}\, \nu\, PP\, \cos(2\theta_{min})
+      - 2\, S_{B_{1,1}}\, \nu\, \sigma_T\, \cos(2\theta_{min})\\[1mm]
+    &\quad - 2\, S_{B_{1,1}}\, \nu\, TS\, \cos(2\theta_{min})
+      - 2\, S_{B_{1,1}}\, TS\, \cos(2\theta_{min})
+      + S_{B_{1,1}}\, TS\\[1mm]
+    &\quad - 16\, S_{B_{1,2}}^2\, \nu\, \sin(2\theta_{min})^2
+      + 4\, S_{B_{1,2}}\, S_{B_{2,2}}\, \nu\, \sin(2\theta_{min})
+      + 8\, S_{B_{1,2}}\, S_{B_{2,2}}\, \nu\, \sin(4\theta_{min})\\[1mm]
+    &\quad + 4\, S_{B_{1,2}}\, S_{B_{3,3}}\, \sin(2\theta_{min})
+      + 4\, S_{B_{1,2}}\, \nu\, PP\, \sin(2\theta_{min})
+      - 4\, S_{B_{1,2}}\, \nu\, \sigma_T\, \sin(2\theta_{min})\\[1mm]
+    &\quad - 4\, S_{B_{1,2}}\, \nu\, TS\, \sin(2\theta_{min})
+      - 4\, S_{B_{1,2}}\, TS\, \sin(2\theta_{min})
+      + 4\, S_{B_{1,3}}^2\, \sin(\theta_{min})^2\\[1mm]
+    &\quad - 4\, S_{B_{1,3}}\, S_{B_{2,3}}\, \sin(2\theta_{min})
+      - 4\, S_{B_{2,2}}^2\, \nu\, \cos(2\theta_{min})^2
+      - 2\, S_{B_{2,2}}^2\, \nu\, \cos(2\theta_{min})\\[1mm]
+    &\quad - 2\, S_{B_{2,2}}\, S_{B_{3,3}}\, \cos(2\theta_{min})
+      - S_{B_{2,2}}\, S_{B_{3,3}}
+      - 2\, S_{B_{2,2}}\, \nu\, PP\, \cos(2\theta_{min})\\[1mm]
+    &\quad + 2\, S_{B_{2,2}}\, \nu\, \sigma_T\, \cos(2\theta_{min})
+      + 2\, S_{B_{2,2}}\, \nu\, TS\, \cos(2\theta_{min})
+      + 2\, S_{B_{2,2}}\, TS\, \cos(2\theta_{min})\\[1mm]
+    &\quad + S_{B_{2,2}}\, TS
+      + 4\, S_{B_{2,3}}^2\, \cos(\theta_{min})^2
+      - S_{B_{3,3}}\, PP\\[1mm]
+    &\quad + S_{B_{3,3}}\, \sigma_T
+      + S_{B_{3,3}}\, TS
+      + PP\, TS
+      - \sigma_T\, TS
+      - TS^2
+  \end{aligned}
+  \right)
+}{
+  2\, S_{B_{1,1}}\, \nu\, \cos(2\theta_{min})
+  + 4\, S_{B_{1,2}}\, \nu\, \sin(2\theta_{min})
+  - 2\, S_{B_{2,2}}\, \nu\, \cos(2\theta_{min})
+  - S_{B_{3,3}}
+  + TS
+}
 $$
 
-A closed-form solution is derived by solving this using sympy for the critical mudweight. This technique is faster than the minimization approach, and more robust in the sense that problems of local minima and numerical instability are avoided.
+![The generalised solution to fracture pressure for deviated well in any state of stress. $S_b$ is the stress tensor in the borehole frame of reference, PP is pore pressure, TS is tensile strength, $\nu$ is Poisson's ratio and $\theta$ is the circumferential angle corresponding to minimum hoop stress.](figures/equation.png)
 
-![The generalised solution to fracture gradient for deviated well](../Figures/equation.jpeg)
-
-If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth, given the mud weight, stresses and pore pressure, as well as uniaxial compressive strength, poisson's ratio, temperature difference between borehole wall and circualting fluid, coefficient of thermal expansion and biot's poroelastic constant. Mohr-Coloumb failure criteria is used to predict compressive failures (borehole breakouts). For tensile failure, a simplified Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres above and below the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
+If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth. Mohr-Coloumb failure criteria is used to predict compressive failures. For tensile failure, Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres around the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
 
 For pre-drill forecast, the function get_analog() can be used to derive a log-prediction from nearby post-drill well given the welly.Well object representing the post-drill well, formation tops for the post-drill well and predicted formation tops as well as deviation data for the pre-drill well. The new logs are derived by depth-shift processing the post-drill logs as per the change in formation tops. The returned object can then be used for estimating the geomechanical properties in the regular manner.
 
+From observations on multiple wells sampling the same stress field at different wellbore orientations, a better estimate of the stress tensor orientation is possible [@thorsen2011].
+
 # Case Study
 
-The well data from Equinor Northern Lights dataset [northernlights] has been used as the example here, to model the stress state occuring in the Lower Drake formation, in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
+The well data from Equinor Northern Lights dataset [northernlights] has been used as the example here, to model the stress state occuring in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
 
 ![Model of Northern Lights Eos Well showing the Drake I, II and IntraMarine formations. The sharp change at 2638m is due to thermal stresses not being considered below this depth.](../Figures/WellPlot.png)
 
-![Fracture patterns calculated at 2624.5m and superimposed onto the image log. A perfectly vertical wellbore has been assumed in this example.](../Figures/overlay.png)
+![Fracture motifs calculated at 2624.5m and superimposed onto the image log. A perfectly vertical wellbore has been assumed in this example.](../Figures/overlay.png)
 
-It is not being suggested that this interpretation of the data is preferred over any other, this example is merely meant to show the capability of the package. In particular, we checked three cases, one without the deviation data but with tilted stress tensor (presented here), one with the deviation data but without the tilted stress tennsor, and one with both deviation data as well as the stress tensor. It was seen that the case with only the deviation data and no tensor tilt was not able to recreate the fracture motif (the motif was found to be closing upward), while the case considering both the effects did have the correct closure direction, however the alignment of the induced fractures was incorrect (to bring it to the correct azimuth requires maximum horizontal stress azimuth not compatible with existing literature). The analysis by [@Thompson2022] likely offers a better explanation of simultaneous en-echelon breakouts and induced fractures as it is a far more detailed analysis integrating a lot more data than the example here.
-
-# Discussion
-
-From observations on multiple wells sampling the same stress field at different wellbore orientations, a better estimate of the stress tensor orientation is possible [@thorsen2011]. Further work in the future may help automate the process by incorporating the means to import the image log data directly, calculating a difference between the calculated image log and the imported one, and attempt to manipulate the stress orientation in an effort to minimise the difference. The current program is modular in nature, and the stability calculation subroutines can be re-used for this purpose.
-
-Currently there are certain aspects which are not considered by the program, which would boost usefulness and accuracy if included. These include water-shale interactions and rock strength and elastic moduli anisotropy. We hope to implement these features in the future, but as these do not detract from the usability of the program as is, (and because data for calibrating these are somewhat rare), we have chosen to omit these at the current stage of development.
+It is not being suggested that this interpretation of the data is preferred over any other, the analysis by [@Thompson2022] is much more comprehensive.
 
 # Disclosure
 No funding/financial support of any form was involved in the creation of this work.
