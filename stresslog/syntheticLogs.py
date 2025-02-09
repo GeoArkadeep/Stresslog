@@ -841,9 +841,6 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
 
 def get_las_from_dlis(path,aliases,depthunit='m',step=0.15):
     y = get_dlis_data('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS',aliases,resample_interval=step)
-    print(y[0])
-    print(y[1])
-    print(y[2].to_string())
     return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
 # Example usage

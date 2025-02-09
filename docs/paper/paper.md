@@ -17,7 +17,7 @@ affiliations:
   - name: Rock Lab Private Limited, India
     index: 1
 
-date: 31 January 2025
+date: 10 February 2025
 bibliography: paper.bib
 ---
 
@@ -55,7 +55,7 @@ R_s = \begin{bmatrix}
 \end{bmatrix}
 $$
 
-In the program, the azimuth of maximum principal stress is specified, and the plane perpendicular to the tilt pole is specified using dip azimuth and dip angle. Then considering the azimuth of maximum principal stress as $\alpha$, the above relations are used to optimise for the angles $\beta$ and $\gamma$. The Euler angles are then used for further stress transformations as required.
+Considering the azimuth of maximum principal stress as $\alpha$, the above relations are used to optimise for the angles $\beta$ and $\gamma$. The Euler angles are then used for further stress transformations.
 
 In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, $\sigma_1$, $\sigma_2$ and $\sigma_3$, already rotated by the Euler Angles $\alpha$, $\beta$ and $\gamma$. Usually, however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress, and an estimate of maximum horizontal stress. Given this, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses ($\sigma_1$, $\sigma_2$ and $\sigma_3$) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses.
 
