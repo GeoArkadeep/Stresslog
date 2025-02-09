@@ -402,8 +402,7 @@ def create_random_las(
             plt.show()
     
     # Convert to LAS file
-    las_string = datasets_to_las(None, {'Curves': df, 'Header': hdf}, 
-                                 {'DEPT': 'm', 'DTCO': 'us/f', 'RHOB': 'g/cc', 'GR': 'gAPI', 'DTS': 'us/f'})
+    las_string = datasets_to_las(None, {'Curves': df, 'Header': hdf}, {'DEPT': 'm', 'DTCO': 'us/f', 'RHOB': 'g/cc', 'GR': 'gAPI', 'DTS': 'us/f'})
     
     if writeFile:
         # Write LAS file to disk
@@ -553,6 +552,299 @@ def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15,starter=0,stopper=5500
     string_data = string_buffer.getvalue()
     return Well.from_las(string_data)
 
+
+import dlisio
+dlisio.common.set_encodings(['utf-8','latin-1'])
+from dlisio import dlis
+
+def get_dlis_header(path):
+    """
+    Extract header information from a DLIS file.
+
+    Parameters
+    ----------
+    path : str
+        Path to the DLIS file.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A DataFrame containing two columns:
+        - Mnemonic: Channel names from the DLIS file
+        - Description: Long names/descriptions of the channels
+    """
+    
+    # Load the DLIS file
+    f, *tail = dlis.load(path)
+    # Get the list of frames
+    frames = f.frames
+    
+    chnames = []
+    description = []
+    for ch in f.channels:
+        chnames.append(ch.name)
+        description.append(ch.long_name)
+    return pd.DataFrame(list(zip(chnames,description)),columns =['Mnemonic', 'Description'])
+
+
+def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, flatten=False):
+    """
+    Extract data from a DLIS file with unit conversion and header processing.
+
+    [Rest of the docstring remains unchanged]
+    """
+    if resample_interval < 0.15:
+        resample_interval = 0.15
+    
+    f, *tail = dlis.load(path)
+    origin, *origin_tail = f.origins
+    
+    dataframes = {}
+    c_units = {}
+    parameters = {}
+    long_names = {}
+    p_units = {}
+    p_section = {}
+    
+    conversion_factors = {
+        'ft': 0.3048,
+        'f': 0.3048,
+        'feet': 0.3048,
+        '0.1in': 0.00254,
+        'inches': 0.0254,
+        'in': 0.0254
+    }
+
+    for param in f.parameters:
+        try:
+            if hasattr(param, 'values') and param.values is not None:
+                if len(param.values) == 1:
+                    value = str(param.values[0])
+                else:
+                    value = str(list(param.values))
+                
+                if value != "-999.25" and value != "" and value != "0" and len(value) < 100:
+                    parameters[param.name] = value
+                    long_names[param.name] = param.long_name
+                    
+                    try:
+                        p_units[param.name] = param.attic['VALUES'].units
+                    except (KeyError, AttributeError):
+                        p_units[param.name] = ''
+                        
+                    p_section[param.name] = "Parameter"
+        except (ValueError, AttributeError) as e:
+            print(f"Warning: Skipping parameter {param.name} due to error: {str(e)}")
+            continue
+
+    header_df = pd.DataFrame([
+        {
+            'original_mnemonic': param,
+            'mnemonic': param,
+            'unit': p_units.get(param, ''),
+            'value': value,
+            'descr': long_names.get(param, ''),
+            'section': p_section.get(param, 'Parameter')
+        }
+        for param, value in parameters.items()
+    ])
+
+    header_df = header_df[['original_mnemonic', 'mnemonic', 'unit', 'value', 'descr', 'section']]
+    
+    all_curves = set()
+    skipped_curves = set()
+
+    for frame in f.frames:
+        curves = frame.curves(strict=False)
+        all_curves.update(curves.dtype.names)
+        
+        extracted_curves = {}
+        
+        index_channel = frame.index
+        if index_channel:
+            tdep_channel = next((ch for ch in frame.channels if ch.name == index_channel), None)
+            if tdep_channel:
+                tdep_unit = tdep_channel.units.lower()
+                conversion_factor = conversion_factors.get(tdep_unit, 1)
+                index_data = curves[index_channel]
+                if len(index_data.shape) == 1:
+                    extracted_curves[index_channel] = index_data * conversion_factor
+                    if index_channel not in c_units:
+                        c_units[index_channel] = tdep_unit
+                else:
+                    print(f"Warning: Index channel {index_channel} is multi-dimensional and will be skipped")
+                    continue
+
+        found_useful_data = False
+        if aliases is None:
+            for curve_name in curves.dtype.names:
+                if curve_name != index_channel:
+                    curve_data = curves[curve_name]
+                    if len(curve_data.shape) == 1:
+                        extracted_curves[curve_name] = curve_data
+                        found_useful_data = True
+                        curve_channel = next((ch for ch in frame.channels if ch.name == curve_name), None)
+                        if curve_channel and curve_name not in c_units:
+                            c_units[curve_name] = curve_channel.units
+                    else:
+                        if flatten:
+                            print(f"Flattening multi-dimensional curve: {curve_name} with shape {curve_data.shape}")
+                            for i in range(curve_data.shape[1]):
+                                sub_curve_name = f"{curve_name}_{i+1}"
+                                sub_curve_data = curve_data[:, i]
+                                if len(sub_curve_data.shape) == 1:
+                                    extracted_curves[sub_curve_name] = sub_curve_data
+                                    found_useful_data = True
+                                    curve_channel = next((ch for ch in frame.channels if ch.name == curve_name), None)
+                                    if curve_channel and sub_curve_name not in c_units:
+                                        c_units[sub_curve_name] = curve_channel.units
+                        else:
+                            print(f"Skipping multi-dimensional curve: {curve_name}")
+                            skipped_curves.add(curve_name)
+        else:
+            for alias, mnemonics in aliases.items():
+                for mnemonic in mnemonics:
+                    if mnemonic in curves.dtype.names:
+                        curve_data = curves[mnemonic]
+                        if len(curve_data.shape) == 1:
+                            extracted_curves[mnemonic] = curve_data
+                            found_useful_data = True
+                            curve_channel = next((ch for ch in frame.channels if ch.name == mnemonic), None)
+                            if curve_channel and mnemonic not in c_units:
+                                c_units[mnemonic] = curve_channel.units
+                            break
+                        elif flatten:
+                            print(f"Flattening multi-dimensional curve: {mnemonic} with shape {curve_data.shape}")
+                            for i in range(curve_data.shape[1]):
+                                sub_curve_name = f"{mnemonic}_{i+1}"
+                                sub_curve_data = curve_data[:, i]
+                                if len(sub_curve_data.shape) == 1:
+                                    extracted_curves[sub_curve_name] = sub_curve_data
+                                    found_useful_data = True
+                                    curve_channel = next((ch for ch in frame.channels if ch.name == mnemonic), None)
+                                    if curve_channel and sub_curve_name not in c_units:
+                                        c_units[sub_curve_name] = curve_channel.units
+                            break
+                        else:
+                            print(f"Skipping multi-dimensional curve: {mnemonic}")
+                            skipped_curves.add(mnemonic)
+                            continue
+
+        if found_useful_data:
+            try:
+                frame_df = pd.DataFrame(extracted_curves)
+                if index_channel and index_channel in frame_df.columns:
+                    frame_df.set_index(index_channel, inplace=True)
+                if not frame_df.empty:
+                    dataframes[frame.name] = frame_df
+            except ValueError as e:
+                print(f"Warning: Error creating DataFrame for frame {frame.name}: {str(e)}")
+                continue
+
+    print("All encountered curves:")
+    print(", ".join(sorted(all_curves)))
+    if skipped_curves:
+        print("\nSkipped multi-dimensional curves:")
+        print(", ".join(sorted(skipped_curves)))
+
+    if not dataframes:
+        raise ValueError("No valid data frames could be created from the DLIS file")
+    
+    combined_df = pd.concat(dataframes.values(), axis=1, join='outer').sort_index()
+    # Remove duplicate columns after initial concatenation
+    combined_df = combined_df.loc[:, ~combined_df.columns.duplicated(keep='first')]
+    combined_df.replace(-999.25, float("nan"), inplace=True)
+    
+    if depthunits == 'm':
+        combined_df.index = combined_df.index * 0.00245
+    elif depthunits == 'f':
+        combined_df.index = combined_df.index * 0.00833
+    combined_df.sort_index(inplace=True)
+    c_units[index_channel] = depthunits
+    
+    if resample_interval is not None:
+        min_depth = combined_df.index.min()
+        max_depth = combined_df.index.max()
+
+        start = np.floor(min_depth / resample_interval) * resample_interval
+        end = np.ceil(max_depth / resample_interval) * resample_interval
+        bins = np.arange(start, end + resample_interval, resample_interval)
+        labels = bins[:-1]
+
+        combined_df['depth_bin'] = pd.cut(
+            combined_df.index, 
+            bins=bins, 
+            labels=labels, 
+            include_lowest=True, 
+            right=False
+        )
+        resampled_df = combined_df.groupby('depth_bin', observed=False).mean()
+        resampled_df = resampled_df.reindex(labels)
+        resampled_df.index.name = combined_df.index.name
+        resampled_df.sort_index(inplace=True)
+        combined_df = resampled_df
+
+    aux_header = {
+        'STRT': combined_df.index.min(),
+        'STOP': combined_df.index.max(),
+        'STEP': np.mean(np.diff(combined_df.index)),
+        'NULL': -999.25,
+        'UWI': origin.well_id,
+        'WELL': origin.well_name,
+        'SRVC': origin.producer_name,
+        'COMP': origin.company,
+        'FLD': origin.field_name
+    }
+    
+    aux_units = {
+        'STRT': 'M',
+        'STOP': 'M',
+        'STEP': 'M',
+        'NULL': '',
+        'UWI': '',
+        'WELL': '',
+        'SRVC': '',
+        'COMP': '',
+        'FLD': ''
+    }
+
+    aux_df = pd.DataFrame([
+        {
+            'original_mnemonic': k,
+            'mnemonic': k,
+            'unit': aux_units[k],
+            'value': v,
+            'descr': '',
+            'section': 'Well'
+        }
+        for k, v in aux_header.items()
+    ])
+
+    header_df = pd.concat([aux_df, header_df], ignore_index=True)
+    
+    index_name = combined_df.index.name or 'DEPTH'
+    combined_df = combined_df.copy()
+    combined_df[index_name] = combined_df.index
+    columns = combined_df.columns.tolist()
+    columns.insert(0, columns.pop(columns.index(index_name)))
+    combined_df = combined_df[columns]
+    combined_df.index.name = index_name
+
+    # Final deduplication of columns after all processing
+    combined_df = combined_df.loc[:, ~combined_df.columns.duplicated(keep='first')]
+    # Update c_units to include only remaining columns
+    existing_columns = combined_df.columns
+    c_units = {k: v for k, v in c_units.items() if k in existing_columns}
+
+    return combined_df, c_units, header_df, parameters
+
+
+def get_las_from_dlis(path,aliases,depthunit='m',step=0.15):
+    y = get_dlis_data('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS',aliases,resample_interval=step)
+    print(y[0])
+    print(y[1])
+    print(y[2].to_string())
+    return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
 # Example usage
 if __name__ == "__main__":
