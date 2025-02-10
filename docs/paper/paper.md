@@ -118,7 +118,7 @@ $$
 \]
 $$
 
-where $\sigma'_B$ is the effective stress tensor in the borehole frame of reference, PP is pore pressure, TS is tensile strength, $\nu$ is Poisson's ratio and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
+
 
 If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth. Mohr-Coloumb failure criteria is used to predict compressive failures. For tensile failure, Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres around the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
 
