@@ -62,8 +62,9 @@ In the technique proposed by [@pevska1995], they start with good estimates of th
 
 For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution has been derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this for the upper critical mud pressure, as follows:
 
+$\text{FracturePressure}_{\text{non-penetrating}} =$
+
 $$
-\text{FP}_{\text{np}} =
 \frac{
   \left(
   \begin{aligned}
