@@ -63,7 +63,6 @@ In the technique proposed by [@pevska1995], they start with good estimates of th
 For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution has been derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this for the upper critical mud pressure, as follows:
 
 $$
-\[
 \text{FP}_{\text{np}} =
 \frac{
   \left(
@@ -115,10 +114,9 @@ $$
   - \sigma_{B_{3,3}}'
   + TS
 }
-\]
 $$
 
-
+where $\sigma'_B$ is the effective stress tensor in the borehole frame of reference, PP is pore pressure, TS is tensile strength, $\nu$ is Poisson's ratio and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
 
 If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth. Mohr-Coloumb failure criteria is used to predict compressive failures. For tensile failure, Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres around the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
 
