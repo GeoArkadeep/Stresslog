@@ -23,11 +23,12 @@ bibliography: paper.bib
 
 # Summary
 
-This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use full 6 component stress tensor (as calculated using [@pevska1995]) which allows modelling inclined wellbores as well as inclined states of stress. The program estimates, among other things, pore pressure (with and without unloading effects) from sonic, resistivity and d-exponent, principal stresses, hoop stresses, compressive strength, tensile strength, the three moduli of elasticity and sanding tendency. The D-exponent itself is calculated based on drilling data if available.
+This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use full 6 component stress tensor (as calculated using [@pevska1995]) which allows modelling inclined wellbores as well as inclined states of stress. Stresslog estimates, among other things, pore pressure (with and without unloading effects) from sonic, resistivity and d-exponent, principal stresses, hoop stresses, compressive strength, tensile strength, the three moduli of elasticity and sanding tendency.
 
 # Statement of need
 
-It is often assumed that the vertical stress constitutes a principal stress which is usually a very good approximation. There are situations where this is not the case, especially in regions experiencing isostatic re-adjustment or salt tectonism, among others. This python package is aimed at empowering researchers with a simple to use and comprehensive 1D mechanical earth modelling tool that is freely available and which researchers can modify to apply their own methods when neccessary, while allowing practitioners to use the pre-defined algorithms to calculate solutions, iteratively process and export well log data.
+Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations.
+It is often assumed that the vertical stress constitutes a principal stress which is usually a very good approximation. There are situations where this is not the case, especially in regions experiencing isostatic re-adjustment or salt tectonism, among others. Stresslog is aimed at empowering researchers with a simple to use and comprehensive 1D mechanical earth modelling tool that is freely available and which researchers can modify to apply their own methods when neccessary, while allowing practitioners to use the pre-defined algorithms to calculate solutions, iteratively process and export well log data.
 
 # Methodology
 
@@ -59,62 +60,65 @@ Considering the azimuth of maximum principal stress as $\alpha$, the above relat
 
 In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, $\sigma_1$, $\sigma_2$ and $\sigma_3$, already rotated by the Euler Angles $\alpha$, $\beta$ and $\gamma$. Usually, however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress, and an estimate of maximum horizontal stress. Given this, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses ($\sigma_1$, $\sigma_2$ and $\sigma_3$) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses.
 
-For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution is derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this using sympy for the upper critical mudweight.
+For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution has been derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this for the upper critical mud pressure, as follows:
 
 $$
+\[
+\text{FP}_{\text{np}} =
 \frac{
   \left(
   \begin{aligned}
-    &\quad +2\, S_{B_{1,1}}^2\, \nu\, \cos(2\theta_{min})
-      - 4\, S_{B_{1,1}}^2\, \nu\, \cos(2\theta_{min})^2
-      + 4\, S_{B_{1,1}}\, S_{B_{1,2}}\, \nu\, \sin(2\theta_{min})\\[1mm]
-    &\quad - 8\, S_{B_{1,1}}\, S_{B_{1,2}}\, \nu\, \sin(4\theta_{min})
-      + 8\, S_{B_{1,1}}\, S_{B_{2,2}}\, \nu\, \cos(2\theta_{min})^2
-      + 2\, S_{B_{1,1}}\, S_{B_{3,3}}\, \cos(2\theta_{min})\\[1mm]
-    &\quad - S_{B_{1,1}}\, S_{B_{3,3}}
-      + 2\, S_{B_{1,1}}\, \nu\, PP\, \cos(2\theta_{min})
-      - 2\, S_{B_{1,1}}\, \nu\, \sigma_T\, \cos(2\theta_{min})\\[1mm]
-    &\quad - 2\, S_{B_{1,1}}\, \nu\, TS\, \cos(2\theta_{min})
-      - 2\, S_{B_{1,1}}\, TS\, \cos(2\theta_{min})
-      + S_{B_{1,1}}\, TS\\[1mm]
-    &\quad - 16\, S_{B_{1,2}}^2\, \nu\, \sin(2\theta_{min})^2
-      + 4\, S_{B_{1,2}}\, S_{B_{2,2}}\, \nu\, \sin(2\theta_{min})
-      + 8\, S_{B_{1,2}}\, S_{B_{2,2}}\, \nu\, \sin(4\theta_{min})\\[1mm]
-    &\quad + 4\, S_{B_{1,2}}\, S_{B_{3,3}}\, \sin(2\theta_{min})
-      + 4\, S_{B_{1,2}}\, \nu\, PP\, \sin(2\theta_{min})
-      - 4\, S_{B_{1,2}}\, \nu\, \sigma_T\, \sin(2\theta_{min})\\[1mm]
-    &\quad - 4\, S_{B_{1,2}}\, \nu\, TS\, \sin(2\theta_{min})
-      - 4\, S_{B_{1,2}}\, TS\, \sin(2\theta_{min})
-      + 4\, S_{B_{1,3}}^2\, \sin(\theta_{min})^2\\[1mm]
-    &\quad - 4\, S_{B_{1,3}}\, S_{B_{2,3}}\, \sin(2\theta_{min})
-      - 4\, S_{B_{2,2}}^2\, \nu\, \cos(2\theta_{min})^2
-      - 2\, S_{B_{2,2}}^2\, \nu\, \cos(2\theta_{min})\\[1mm]
-    &\quad - 2\, S_{B_{2,2}}\, S_{B_{3,3}}\, \cos(2\theta_{min})
-      - S_{B_{2,2}}\, S_{B_{3,3}}
-      - 2\, S_{B_{2,2}}\, \nu\, PP\, \cos(2\theta_{min})\\[1mm]
-    &\quad + 2\, S_{B_{2,2}}\, \nu\, \sigma_T\, \cos(2\theta_{min})
-      + 2\, S_{B_{2,2}}\, \nu\, TS\, \cos(2\theta_{min})
-      + 2\, S_{B_{2,2}}\, TS\, \cos(2\theta_{min})\\[1mm]
-    &\quad + S_{B_{2,2}}\, TS
-      + 4\, S_{B_{2,3}}^2\, \cos(\theta_{min})^2
-      - S_{B_{3,3}}\, PP\\[1mm]
-    &\quad + S_{B_{3,3}}\, \sigma_T
-      + S_{B_{3,3}}\, TS
+    &\quad +2\, \sigma_{B_{1,1}}'^2\, \nu\, \cos(2\theta_{min})
+      - 4\, \sigma_{B_{1,1}}'^2\, \nu\, \cos(2\theta_{min})^2
+      + 4\, \sigma_{B_{1,1}}'\, \sigma_{B_{1,2}}'\, \nu\, \sin(2\theta_{min})\\[1mm]
+    &\quad - 8\, \sigma_{B_{1,1}}'\, \sigma_{B_{1,2}}'\, \nu\, \sin(4\theta_{min})
+      + 8\, \sigma_{B_{1,1}}'\, \sigma_{B_{2,2}}'\, \nu\, \cos(2\theta_{min})^2
+      + 2\, \sigma_{B_{1,1}}'\, \sigma_{B_{3,3}}'\, \cos(2\theta_{min})\\[1mm]
+    &\quad - \sigma_{B_{1,1}}'\, \sigma_{B_{3,3}}'
+      + 2\, \sigma_{B_{1,1}}'\, \nu\, PP\, \cos(2\theta_{min})
+      - 2\, \sigma_{B_{1,1}}'\, \nu\, \sigma_T\, \cos(2\theta_{min})\\[1mm]
+    &\quad - 2\, \sigma_{B_{1,1}}'\, \nu\, TS\, \cos(2\theta_{min})
+      - 2\, \sigma_{B_{1,1}}'\, TS\, \cos(2\theta_{min})
+      + \sigma_{B_{1,1}}'\, TS\\[1mm]
+    &\quad - 16\, \sigma_{B_{1,2}}'^2\, \nu\, \sin(2\theta_{min})^2
+      + 4\, \sigma_{B_{1,2}}'\, \sigma_{B_{2,2}}'\, \nu\, \sin(2\theta_{min})
+      + 8\, \sigma_{B_{1,2}}'\, \sigma_{B_{2,2}}'\, \nu\, \sin(4\theta_{min})\\[1mm]
+    &\quad + 4\, \sigma_{B_{1,2}}'\, \sigma_{B_{3,3}}'\, \sin(2\theta_{min})
+      + 4\, \sigma_{B_{1,2}}'\, \nu\, PP\, \sin(2\theta_{min})
+      - 4\, \sigma_{B_{1,2}}'\, \nu\, \sigma_T\, \sin(2\theta_{min})\\[1mm]
+    &\quad - 4\, \sigma_{B_{1,2}}'\, \nu\, TS\, \sin(2\theta_{min})
+      - 4\, \sigma_{B_{1,2}}'\, TS\, \sin(2\theta_{min})
+      + 4\, \sigma_{B_{1,3}}'^2\, \sin(\theta_{min})^2\\[1mm]
+    &\quad - 4\, \sigma_{B_{1,3}}'\, \sigma_{B_{2,3}}'\, \sin(2\theta_{min})
+      - 4\, \sigma_{B_{2,2}}'^2\, \nu\, \cos(2\theta_{min})^2
+      - 2\, \sigma_{B_{2,2}}'^2\, \nu\, \cos(2\theta_{min})\\[1mm]
+    &\quad - 2\, \sigma_{B_{2,2}}'\, \sigma_{B_{3,3}}'\, \cos(2\theta_{min})
+      - \sigma_{B_{2,2}}'\, \sigma_{B_{3,3}}'
+      - 2\, \sigma_{B_{2,2}}'\, \nu\, PP\, \cos(2\theta_{min})\\[1mm]
+    &\quad + 2\, \sigma_{B_{2,2}}'\, \nu\, \sigma_T\, \cos(2\theta_{min})
+      + 2\, \sigma_{B_{2,2}}'\, \nu\, TS\, \cos(2\theta_{min})
+      + 2\, \sigma_{B_{2,2}}'\, TS\, \cos(2\theta_{min})\\[1mm]
+    &\quad + \sigma_{B_{2,2}}'\, TS
+      + 4\, \sigma_{B_{2,3}}'^2\, \cos(\theta_{min})^2
+      - \sigma_{B_{3,3}}'\, PP\\[1mm]
+    &\quad + \sigma_{B_{3,3}}'\, \sigma_T
+      + \sigma_{B_{3,3}}'\, TS
       + PP\, TS
       - \sigma_T\, TS
       - TS^2
   \end{aligned}
   \right)
 }{
-  2\, S_{B_{1,1}}\, \nu\, \cos(2\theta_{min})
-  + 4\, S_{B_{1,2}}\, \nu\, \sin(2\theta_{min})
-  - 2\, S_{B_{2,2}}\, \nu\, \cos(2\theta_{min})
-  - S_{B_{3,3}}
+  2\, \sigma_{B_{1,1}}'\, \nu\, \cos(2\theta_{min})
+  + 4\, \sigma_{B_{1,2}}'\, \nu\, \sin(2\theta_{min})
+  - 2\, \sigma_{B_{2,2}}'\, \nu\, \cos(2\theta_{min})
+  - \sigma_{B_{3,3}}'
   + TS
 }
+\]
 $$
 
-where $S_b$ is the stress tensor in the borehole frame of reference, PP is pore pressure, TS is tensile strength, $\nu$ is Poisson's ratio and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
+where $\sigma'_B$ is the effective stress tensor in the borehole frame of reference, PP is pore pressure, TS is tensile strength, $\nu$ is Poisson's ratio and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
 
 If the user specifies an analysis depth, then a orientation-stability plot is calculated for that depth. Mohr-Coloumb failure criteria is used to predict compressive failures. For tensile failure, Griffith failure criteria is used. A synthetic image of the wellbore wall is prepared for 5 metres around the analysis depth. By comparing the output(s) with recorded well data, the user may change the model parameters to achieve better agreement between observed and calculated values. Other plots are also calculated for the analysis depth, including sanding prediction using [@willson2002] and [@Zhang2007].
 
