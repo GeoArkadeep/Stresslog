@@ -38,11 +38,11 @@ A package to calculate and plot pore pressure and other geomechanical data from 
 ````
 pip install stresslog
 ````
-Consult the documentation for more help.
+Consult the documentation at https://stresslog.readthedocs.io/ for more help.
 
 ## Contributing
 
-First things first: **Open source does not mean open contribution.** While this project is public, we reserve the right to accept or reject contributions at our discretion. That said, we **welcome contributions**—feel free to submit a pull request!  
+First things first: **Open source does not mean open contribution.** While this project is open source, we reserve the right to accept or reject contributions at our discretion. That said, we **welcome contributions**—feel free to submit a pull request!  
 
 ### Guidelines for Contributions  
 ✅ **Pull Requests are Welcome:** If you have an improvement, bug fix, or feature, send a PR.  
@@ -56,7 +56,6 @@ First things first: **Open source does not mean open contribution.** While this 
 🔄 **Trademark Protection:** The name, branding, and trademarks of **ROCK LAB PRIVATE LIMITED** are **not included in the license** and **may not be used without explicit permission**.  
 📜 **Additional Licensing Restrictions:** If you wish to use this project **outside AGPL terms**, a **commercial license** must be obtained from **ROCK LAB PRIVATE LIMITED**.  
 
----
 
 ## Code of Conduct  
 
@@ -78,7 +77,7 @@ Jon Jincai Zhang, for his awesome work on pore pressure prediction, and geomecha
 In more detail:
 The Stability Analysis Plots are after [Peska and Zoback, 1995](https://doi.org/10.1029/95JB00319). The Stress Polygon Technique for constraining SHMax is after [Zoback et al., 2003](https://doi.org/10.1029/95JB00319) The Pore Pressure equation is from [Zhang, 2011](https://doi.org/10.1016/j.earscirev.2011.06.001) The shmin is calculated in accordance with [Dianes, 1982](https://doi.org/10.2118/9254-PA), as well as [Zoback and Healy,1992](https://doi.org/10.1029/91JB02175)
 
-This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. The GUI is written using Toga, and built using Briefcase, which are both components of the BeeWare Project. Other libraries used include Pandas, Numpy, Matplotlib and PIL.
+This software is written in Python, using the python library Welly by Agile Scientific, Canada. Welly itself uses the Lasio library to handle the las files. Dlis files are handles using dlisio package by Equinor. Other libraries used include Pandas, Numpy, Matplotlib, Plotly and Scipy.
 
 ## Disclaimer
 
