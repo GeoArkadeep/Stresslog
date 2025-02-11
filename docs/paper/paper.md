@@ -60,7 +60,7 @@ Considering the azimuth of maximum principal stress as $\alpha$, the above relat
 
 In the technique proposed by [@pevska1995], they start with good estimates of the far field principal stresses, $\sigma_1$, $\sigma_2$ and $\sigma_3$, already rotated by the Euler Angles $\alpha$, $\beta$ and $\gamma$. Usually, however, what is available is an estimate of minimum horizontal stress, an estimate of the vertical stress, and an estimate of maximum horizontal stress. Given this, it is insufficient to simply rotate the tensor, as the rotated tensor will not have the correct vertical component. To remedy this, we optimise the principal stresses ($\sigma_1$, $\sigma_2$ and $\sigma_3$) such that the vertical and horizontal components of the tensor match the specified horizontal and vertical stresses.
 
-For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution has been derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this for the upper critical mud pressure, as follows:
+For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference at 10 degree intervals. The lower critical mudweight is calculated by using the modified Lade formula [@ewy1999] for critical mudweight during this process, the value for each sample is calculated from this array by taking a percentile value. A closed-form solution has been derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this for the upper critical mud pressure, as follows:
 
 $\text{FracturePressure}_{\text{non-penetrating}} =$
 $$
@@ -126,7 +126,7 @@ From observations on multiple wells sampling the same stress field at different 
 
 # Case Study
 
-The well data from Equinor Northern Lights dataset [northernlights] has been used as the example here, to model the stress state occuring in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
+The well data from Equinor Northern Lights dataset has been used as the example here, to model the stress state occuring in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
 
 ![Model of Northern Lights Eos Well showing the Drake I, II and IntraMarine formations. The sharp change at 2638m is due to thermal stresses not being considered below this depth.](../Figures/WellPlot.png)
 
