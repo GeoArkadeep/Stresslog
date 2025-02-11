@@ -12,15 +12,17 @@ A package to calculate and plot pore pressure and other geomechanical data from 
 
 * Pad log data all the way to surface, using appropriate KB, GL or WD values (Option to specify these and correct these in the Log Header)
 
-* Auto export the well data as .csv, so you can run your own plots and calculations in your software of choice
+* Calculate geomechanical properties using 6 component stress tensor 
 
-* Calculate Pore Pressure, Shmin, SHMax, Sv and UCS from DT
+* Calculate Pore Pressure, Shmin, SHMax, Sv and UCS and more
 
 * Plot Stress Polygon, Wellbore Stability and more at drainhole analysis depth
 
 * Plot the data in user configurable intervals
 
 * Option to save Plots at custom DPI
+
+* Export the well data as .csv, so you can run your own plots and calculations in your software of choice
 
 * Output Las Files (with updated header and new data columns)
 
