@@ -587,7 +587,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
     lithos=None, user_home=user_home, program_option=[300,
     4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
-    debug=False, penetration=False, ten_fac = 10):
+    debug=False, penetration=False, ten_fac = 10, ehmin = None, ehmax= None):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -1910,7 +1910,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 dynmu[i] = 0.65 # change with the actual coefficient of internal friction calculated from logs please.
                 mufgppg[i] = 1 / ((mu ** 2 + 1) ** 0.5 + mu) ** 2 * (ObgTppg[i] - ppgpp[i]) + ppgpp[i]
                 dmufgppg[i] = 1 / ((dynmu[i] ** 2 + 1) ** 0.5 + dynmu[i]) ** 2 * (ObgTppg[i] - ppgpp[i]) + ppgpp[i]
-                fgppg[i] = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i] if program_option[2] == 0 else mufgppg[i] if program_option[2] == 1 else dmufgppg[i] if program_option[2] == 2 else np.nan
+                daines = nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + (ym[i]/(1-(nu2[i]**2)))*(ehmin + (nu2[i]*ehmax)) if ehmin is not None and ehmax is not None else (nu2[i] / (1 - nu2[i]) * (ObgTppg[i] - biot[i] * ppgpp[i]) + biot[i] * ppgpp[i] + tecB[i] * ObgTppg[i])
+                fgppg[i] =  daines if program_option[2] == 0 else mufgppg[i] if program_option[2] == 1 else dmufgppg[i] if program_option[2] == 2 else np.nan
             else:
                 fgppg[i] = np.nan
                 mufgppg[i] = np.nan
