@@ -40,6 +40,36 @@ pip install stresslog
 ````
 Consult the documentation for more help.
 
+## Contributing
+
+First things first: **Open source does not mean open contribution.** While this project is public, we reserve the right to accept or reject contributions at our discretion. That said, we **welcome contributions**—feel free to submit a pull request!  
+
+### Guidelines for Contributions  
+✅ **Pull Requests are Welcome:** If you have an improvement, bug fix, or feature, send a PR.  
+❌ **No Code-Style Requirements:** We don’t enforce a specific coding style—if the tests pass, your code is valid.  
+👑 **Review is at Our Discretion:** We will review PRs **if we feel like it**. If we don’t, well… we won’t.  
+🚫 **Rejections are Absolute:** If your PR gets the reply **"rejected by royal decree,"** that’s it—no further discussion.  
+⚖ **Copyright Stays with Us:**  
+   - Contributions do not confer copyright. Everything in this repo remains the property of **ROCK LAB PRIVATE LIMITED**.  
+   - **Forking Does Not Grant Ownership:** This project is licensed under **AGPL**, meaning modifications and forks **must remain AGPL-compliant**.  
+   - **All forks and derivative works must retain the original copyright notices in every file.** This is a condition of using this codebase under AGPL Section 7.  
+🔄 **Trademark Protection:** The name, branding, and trademarks of **ROCK LAB PRIVATE LIMITED** are **not included in the license** and **may not be used without explicit permission**.  
+📜 **Additional Licensing Restrictions:** If you wish to use this project **outside AGPL terms**, a **commercial license** must be obtained from **ROCK LAB PRIVATE LIMITED**.  
+
+---
+
+## Code of Conduct  
+
+This project follows a simple rule: **Don’t be an ass.**  
+
+- Be respectful when engaging with maintainers and other contributors.  
+- Don't spam issues or PRs asking for approvals. We review things at our own pace.  
+- No entitled behavior—contributing is a privilege, not a right.  
+- **Forking this repo does not grant ownership.** All forks must comply with AGPL, and **the original copyright notices must be retained in all files**.  
+
+That’s it. Play nice, write good code, and we’ll all get along fine. 🚀  
+
+
 
 ## Acknowledgements
 
