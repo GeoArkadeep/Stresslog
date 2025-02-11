@@ -6,7 +6,7 @@ A package to calculate and plot pore pressure and other geomechanical data from 
 
 ## Features
 
-* Import las files, deviation files, ucs and lithology files
+* Import las files, dlis files, deviation files, ucs and lithology files
 
 * Alias logs using user modifiable alias file
 
@@ -16,21 +16,19 @@ A package to calculate and plot pore pressure and other geomechanical data from 
 
 * Calculate Pore Pressure, Shmin, SHMax, Sv and UCS from DT
 
-* Model saved to and read from model.csv, calibrate model on analog well and run it on current well using sonic velocity from seismic and/or LWD/MWD data 
-
-* Plot Stress Polygon, Wellbore Stability ~~and Kirsch Plots~~ at drainhole analysis depth
+* Plot Stress Polygon, Wellbore Stability and more at drainhole analysis depth
 
 * Plot the data in user configurable intervals
 
-* Option to save Plots ~~at custom DPI~~ at 1200 dpi
+* Option to save Plots at custom DPI
 
-* Option to output Las Files (with updated header and new data columns)
+* Output Las Files (with updated header and new data columns)
 
-* Fields for adding mud data, loss/gain data and other data interpreted from drilling and testing history, these are plotted over the calculated data to help visually constrain the model
+* Parameters for adding mud data, loss/gain data and other data interpreted from drilling and testing history, these are plotted over the calculated data to help visually constrain the model
 
 * Option to include ascii file with observations from resistivity image logs (or others like ultrasonic calipers) to include tensile fractures and breakouts, which are then used internally to better constrain SHMax
 
-* Override nu, mu, and UCS from the lithology file 
+* Override nu, mu, and UCS and tensile strength from the lithology file 
 
 ## Installation
 
