@@ -57,7 +57,7 @@ First things first: **Open source does not mean open contribution.** While this 
 
 ## Code of Conduct  
 
-This project follows a simple rule: **Don’t be an ass.**  
+This project follows a simple rule: **Don’t be evil.**  
 
 - Be respectful when engaging with maintainers and other contributors.  
 - Don't spam issues or PRs asking for approvals. We review things at our own pace.  
