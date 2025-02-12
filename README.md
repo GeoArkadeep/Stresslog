@@ -50,8 +50,6 @@ First things first: **Open source does not mean open contribution.** While this 
 👑 **Review is at Our Discretion:** We will review PRs **if we feel like it**. If we don’t, well… we won’t.  
 🚫 **Rejections are Absolute:** If your PR gets the reply **"rejected by royal decree,"** that’s it—no further discussion.  
 ⚖ **Copyright Stays with Us:**  
-   - Contributions do not confer copyright. Everything in this repo remains the property of **ROCK LAB PRIVATE LIMITED**.  
-   - **Forking Does Not Grant Ownership:** This project is licensed under **AGPL**, meaning modifications and forks **must remain AGPL-compliant**.  
    - **All forks and derivative works must retain the original copyright notices in every file.** This is a condition of using this codebase under AGPL Section 7.
 
 
