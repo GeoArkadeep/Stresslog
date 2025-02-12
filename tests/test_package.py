@@ -30,14 +30,19 @@ def test_integration_doi():
 
 def test_integration_advanced():
     # Test case 3: Shallow angle well and custom TECB
+    test_m_depth=2000
     attrib = [10, -200, 0, 0, 0, 0, 0, 0]
-    well = lst.create_random_well(kb=35, gl=-200, step=4)
+    well = lst.create_random_well(kb=35, gl=-200, step=4, seed=33)
     dev = lst.getwelldev(wella=well, kickoffpoint=300, final_angle=10, rateofbuild=0.2, azimuth=270)
     output = lst.compute_geomech(dev, attrib=attrib, doi=2625, tecb=0.55, writeFile=False)
-
-    assert output is not None, "plotPPzhang for shallow angle well did not return an output"
-
-    print("All tests passed!")
+    
+    index = lst.find_nearest_depth(output[0]['MD'].to_numpy(),test_m_depth)[0]
+    
+    assert abs(output[0]['OVERBURDEN_PRESSURE'].to_numpy()[index] - 5309.732562366982) < 0.001, f"Overburden check fail: {output[0]['OVERBURDEN_PRESSURE'].to_numpy()[index]}"
+    print(f"Overburden check passed: {output[0]['OVERBURDEN_PRESSURE'].to_numpy()[index]}psi")
+    
+    assert abs(output[0]['FracPressure'].to_numpy()[index] - 9402.524110909559) < 0.001, f"Frac Pressure check fail: {output[0]['FracPressure'].to_numpy()[index]}"
+    print(f"Frac Pressure check passed: {output[0]['FracPressure'].to_numpy()[index]}psi")
 
 #if __name__=="__main__":
 #    integrationTest()

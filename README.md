@@ -2,7 +2,7 @@
 ![BG1](https://github.com/GeoArkadeep/WellMasterGeoMech/assets/160126374/27efa304-817d-4520-a5f5-65e63e679c15)
 # Stresslog
 
-A package to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for rudimentary realtime stress prediction.
+A package to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for limited realtime stress prediction.
 
 ## Features
 
@@ -59,7 +59,6 @@ This project follows a simple rule: **Don’t be evil.**
 
 - Be respectful when engaging with maintainers and other contributors.  
 - Don't spam issues or PRs asking for approvals. We review things at our own pace.  
-- No entitled behavior—contributing is a privilege, not a right.  
 - **Forking this repo does not grant ownership.** All forks must comply with AGPL, and **the original copyright notices must be retained in all files**.  
 
 That’s it. Play nice, write good code, and we’ll all get along fine. 🚀  

@@ -44,7 +44,7 @@ from .failure_criteria import (
 from .forecast import convert_df_tvd, get_analog
 
 # geomechanics.py
-from .geomechanics import compute_geomech, remove_curves, add_curves, find_TVD
+from .geomechanics import compute_geomech, remove_curves, add_curves, find_TVD, find_nearest_depth
 
 # hydraulics.py
 from .hydraulics import (

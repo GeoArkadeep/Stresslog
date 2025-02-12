@@ -606,7 +606,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     ul_depth : float, optional
         Depth where unloading starts, in feet (default is 0).
     a : float, optional
-        Daines' exponent for Shmin calculations (default is 0.630).
+        Density compaction exponent for overburden calculations (default is 0.630).
     nu : float, optional
         Poisson's ratio, used in stress calculations (default is 0.4).
     sfs : float, optional
@@ -710,6 +710,12 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Whether to write results to files in the specified paths (default is True).
     aliasdict : dict, optional
         Dictionary mapping curve mnemonics to standardized aliases (default is None).
+    ten_fac : float, optional
+        Parameter defining scaling factor from compressive to tensile strength (default 10) can be over-ridden from the lithology input.
+    ehmin : float, optional
+        Strain in direction of minimum horizontal stress, in absolute or microstrains (default None) if provided overrides the tecb parameter in shmin calculation.
+    ehmax : float, optional
+        Strain in direction of maximum horizontal stress, in absolute or microstrains (default None) if provided overrides the tecb parameter in shmin calculation.
 
     Returns
     -------
@@ -750,6 +756,16 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     """
     print('Starting Geomech Calculation...') if debug else None
     numodel = [0.35, 0.26, 0.23, 0.25]
+    try:
+        if ehmin>1:
+            ehmin *= 1/1000000
+    except:
+        pass
+    try:
+        if ehmax>1:
+            ehmax *= 1/1000000
+    except:
+        pass
     
     paths = get_path_dict(user_home)
     output_dir = paths['output_dir']
