@@ -32,7 +32,7 @@ It is often assumed that the vertical stress constitutes a principal stress whic
 
 # Methodology
 
-Overburden gradient [@traugott1997], pore pressure [@Zhang20132] [@Flemings2021], minimum horizontal stress [@Daines1982] [@zoback1992], rock strength [@lal1999] [@horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
+Overburden gradient [@traugott1997], pore pressure [@Zhang20132; @Flemings2021], minimum horizontal stress [@Daines1982; @zoback1992], rock strength [@lal1999; @horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress polygon results if available.
 
 The calculation of tilted stress states using the given methodology requires the Euler angles Alpha, Beta and Gamma. However this is not immediately apparent from a geological perspective. We therefore calculate the Euler angles from geological data in terms of tilt azimuth and tilt angle of the stress tensor.
 
