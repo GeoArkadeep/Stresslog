@@ -23,4 +23,4 @@ We hope that this becomes *the* python package for geomechanics.
    
    Introduction
    Examples
-   modules
+   APIdocs
