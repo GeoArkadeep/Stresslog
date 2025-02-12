@@ -591,7 +591,30 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
     """
     Extract data from a DLIS file with unit conversion and header processing.
 
-    [Rest of the docstring remains unchanged]
+    Parameters
+    ----------
+    path : str
+        Path to the DLIS file.
+    aliases : dict or None
+        Dictionary mapping alias names to lists of possible mnemonics.
+        If None, all 1-dimensional curves present in the DLIS file will be extracted.
+        Multi-dimensional curves will be flattened into individual sub-curves.
+    depthunits : str, optional
+        Desired depth units for output. Options are 'm' (meters) or 'f' (feet).
+        Default is 'm'.
+
+    Returns
+    -------
+    combined_df : pandas.DataFrame
+        Combined data from all frames with depth as index and specified curves as columns.
+        When aliases is None, includes all 1-dimensional curves found in the DLIS file.
+        Depth values are converted according to depthunits parameter.
+    c_units : dict
+        Dictionary mapping curve names to their units.
+    header_df : pandas.DataFrame
+        DataFrame containing header information.
+    parameters : dict
+        Dictionary containing raw parameter values from the DLIS file.
     """
     if resample_interval < 0.15:
         resample_interval = 0.15

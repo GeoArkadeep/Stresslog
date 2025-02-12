@@ -128,9 +128,9 @@ From observations on multiple wells sampling the same stress field at different 
 
 The well data from Equinor Northern Lights dataset has been used as the example here, to model the stress state occuring in the depth interval of 2600 to 2630m. The resistivity image log shows the occurance of en-echelon fractures in a vertical wellbore. The model applied here uses parameters very similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
 
-![Model of Northern Lights Eos Well showing the Drake I, II and IntraMarine formations. The sharp change at 2638m is due to thermal stresses not being considered below this depth.](../Figures/WellPlot.png)
+![Model of Northern Lights Eos Well showing the Drake I, II and IntraMarine formations. The sharp change at 2638m is due to thermal stresses not being considered below this depth.](./figures/WellPlot.png)
 
-![Fracture motifs calculated at 2624.5m and superimposed onto the image log. A perfectly vertical wellbore has been assumed in this example.](../Figures/overlay.png)
+![Fracture motifs calculated at 2624.5m and superimposed onto the image log. A perfectly vertical wellbore has been assumed in this example.](./figures/overlay.png)
 
 It is not being suggested that this interpretation of the data is preferred over any other, the analysis by [@Thompson2022] is much more comprehensive.
 

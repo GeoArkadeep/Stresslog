@@ -22,7 +22,7 @@ from .BoreStab import (
 
 from .thirdparty import datasets_to_las
 
-from .syntheticLogs import create_random_las, getwelldev, create_random_well, create_header, get_las_from_dlis
+from .syntheticLogs import create_random_las, getwelldev, create_random_well, create_header, get_las_from_dlis, get_dlis_data, get_dlis_header
 
 # DrawSP.py
 from .DrawSP import drawSP, getSP
@@ -108,7 +108,7 @@ __all__ = [
     # plotangle
     "plotfrac",
     # Misc.
-    "getwelldev","create_random_well","find_TVD","add_curves","remove_curves","create_header","datasets_to_las",
+    "getwelldev","create_random_well","find_TVD","add_curves","remove_curves","create_header","datasets_to_las","get_las_from_dlis","get_dlis_data", "get_dlis_header",
     # forecast
     "get_analog", "convert_df_tvd",
     # Plotter
