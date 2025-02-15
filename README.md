@@ -41,15 +41,11 @@ Consult the documentation at https://stresslog.readthedocs.io/ for more help.
 
 ## Contributing
 
-First things first: **Open source does not mean open contribution.** While this project is open source, we reserve the right to accept or reject contributions at our discretion. That said, we **welcome contributions**—feel free to submit a pull request!  
+We **welcome contributions**—feel free to submit a pull request!  
 
 ### Guidelines for Contributions  
 ✅ **Pull Requests are Welcome:** If you have an improvement, bug fix, or feature, send a PR.  
-❌ **No Code-Style Requirements:** We don’t enforce a specific coding style—if the tests pass, your code is valid.  
-👑 **Review is at Our Discretion:** We will review PRs **if we feel like it**. If we don’t, well… we won’t.  
-🚫 **Rejections are Absolute:** If your PR gets the reply **"rejected by royal decree,"** that’s it—no further discussion.  
-⚖ **Copyright Stays with Us:**  
-   - **All forks and derivative works must retain the original copyright notices in every file.** This is a condition of using this codebase under AGPL Section 7.
+❌ **No Code-Style Requirements:** We don’t enforce a specific coding style—if the tests pass, your code is valid. 
 
 
 ## Code of Conduct  
