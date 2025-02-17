@@ -3,7 +3,8 @@ Real World Example: Eos Well
 
 This case study demonstrates the iterative process of geomechanical analysis using the Northern Lights dataset (courtesy of Equinor). We'll explore how different modeling assumptions affect our results and show the importance of calibrating models with observed data.
 
-#Initial Setup
+Initial Setup
+-------------
 
 First, let's explore the necessary environment setup and data structures:
 
@@ -13,7 +14,8 @@ First, let's explore the necessary environment setup and data structures:
     from welly import Well
     import pandas as pd
 
-#Loading Well Data
+Loading Well Data
+-----------------
 
 Here's how we load our well data and supporting datasets:
 
@@ -38,6 +40,15 @@ Here's how we load our well data and supporting datasets:
     survey = pd.read_csv('Deviation.csv')
     formations = pd.read_csv('NorthernLights-31_5-7.csv')
     ucs = pd.read_csv('UCSdata.csv')
+    print(ucs.head())
+    """
+      2643.08  35
+    0  2644.02  34
+    1  2645.02  35
+    2  2646.25  31
+    3  2647.50  37
+    4  2648.55  34
+    """
 
 Analysis Iteration 1: Perfect Vertical Well
 -----------------------------------------
