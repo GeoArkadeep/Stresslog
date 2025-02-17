@@ -233,7 +233,7 @@ Looking at the survey data, we notice that the well isn't perfectly vertical. At
 
 We observe that this model produces fractures with closure directions opposite to what we see in the actual image logs. This suggests our assumption about well deviation being the primary factor might be incorrect.
 
-.. image:: ../Figures/PlotBHI 1.png
+.. image:: ../Figures/resized/PlotBHI1.png
    :alt: BHI Plot
    :width: 600px
    :align: center
@@ -267,7 +267,7 @@ Let's try reintroducing the stress tensor tilt while keeping the well deviation:
 
 This corrects the closure direction, but now the fracture alignment is incorrect. The results suggest we need an SHmax azimuth above 100°, closer to 120°.
 
-.. image:: ../Figures/PlotBHI 2.png
+.. image:: ../Figures/resized/PlotBHI2.png
    :alt: BHI Plot
    :width: 600px
    :align: center
@@ -314,7 +314,7 @@ The log data suggests values around 114°. Let's incorporate this into our model
         ten_fac=0
     )
 
-.. image:: ../Figures/PlotBHI 3.png
+.. image:: ../Figures/resized/PlotBHI3.png
    :alt: BHI Plot
    :width: 600px
    :align: center
