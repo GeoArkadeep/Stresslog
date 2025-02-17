@@ -39,6 +39,7 @@ Here's how we load our well data and supporting datasets:
    # Load supporting data
    survey = pd.read_csv('Deviation.csv')
    formations = pd.read_csv('NorthernLights-31_5-7.csv')
+   
    print(formations.head())
    print(list(formations))
 
