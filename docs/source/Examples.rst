@@ -190,15 +190,16 @@ The results can be found in the ./output/Stresslog_Plots directory, where PlotAl
    :width: 600px
    :align: center
 
+.. image:: ../Figures/resized/PlotAll.png
+   :alt: Stability Plot
+   :width: 600px
+   :align: center
+
 .. image:: ../Figures/overlay.png
    :alt: Overlay Plot
    :width: 600px
    :align: center
 
-.. image:: ../Figures/resized/PLotAll.png
-   :alt: Stability Plot
-   :width: 600px
-   :align: center
 
 Iteration 2: Incorporating Well Deviation
 -----------------------------------------------
