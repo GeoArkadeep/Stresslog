@@ -82,6 +82,8 @@ In this first run, we've made several key assumptions:
 
 The results can be found in the ./output/Stresslog_Plots directory, where PlotAll.png shows the Zobackogram, stability plot, sanding risk plot, and synthetic borehole image.
 
+![Well Plot](../Figures/WellPlot.png)
+
 Analysis Iteration 2: Incorporating Well Deviation
 -----------------------------------------------
 
