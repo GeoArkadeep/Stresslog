@@ -1,9 +1,4 @@
-Let me help format the case study in the requested style.
-
-
-
-```
-Geomechanical Analysis Case Study: Northern Lights Well
+Real World Example: Eos Well
 -----------------------------------------------------
 
 This case study demonstrates the iterative process of geomechanical analysis using the Northern Lights dataset (courtesy of Equinor). We'll explore how different modeling assumptions affect our results and show the importance of calibrating models with observed data.
