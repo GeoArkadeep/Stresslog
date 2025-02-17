@@ -190,7 +190,7 @@ The results can be found in the ./output/Stresslog_Plots directory, where PlotAl
    :width: 600px
    :align: center
 
-.. image:: ../Figures/resized/PLotAll.png
+.. image:: ../Figures/resized/PLotll.png
    :alt: Stability Plot
    :width: 600px
    :align: center
