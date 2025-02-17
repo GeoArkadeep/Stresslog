@@ -45,17 +45,7 @@ We **welcome contributions**—feel free to submit a pull request!
 
 ### Guidelines for Contributions  
 ✅ **Pull Requests are Welcome:** If you have an improvement, bug fix, or feature, send a PR.  
-❌ **No Code-Style Requirements:** We don’t enforce a specific coding style—if the tests pass, your code is valid. 
-
-
-## Code of Conduct  
-
-This project follows a simple rule: **Don’t be evil.**  
-
-- Be respectful when engaging with maintainers and other contributors.
-
-That’s it. Play nice, write good code, and we’ll all get along fine. 🚀  
-
+❌ **No Code-Style Requirements:** We don’t enforce a specific coding style—if the tests pass, your code is valid.
 
 
 ## Acknowledgements
