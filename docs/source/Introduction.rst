@@ -86,7 +86,7 @@ Standalone Functions
 While the package is mainly designed to perform complete calculations on entire wells, there are some functions which can be called independently to help with geomechanics in general.
 These include:
 
-- getSP
+- drawSP
 
 .. code-block:: python
 
@@ -97,11 +97,13 @@ These include:
    :width: 600px
    :align: center
 
-- drawsSP
+- getSP
 
 .. code-block:: python
-    lst.getSP(56,26,29,40,UCS=45)
 
+    x = lst.getSP(56,26,29,40,UCS=45)
+    print(x)
+    
 [40, 69.6719983666802, 54.8359991833401]
 
 - plot_sanding

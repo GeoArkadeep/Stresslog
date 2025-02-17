@@ -733,12 +733,10 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     - The following dataframes must have fixed formats for their respective columns:
       
       - **forms**: Must contain columns in this order:
-        ['Formation Top Measured Depth', 'Formation Number', 'Formation Name', 'GR Cutoff', 'Structural Top', 'Structural Bottom', 'Centroid Ratio', 'OWC Depth', 'GOC Depth', 
-         'Coefficient of thermal expansion bulk', 'Alpha', 'Beta', 'Gamma', 'Tectonic Factor', 'SH/SV Ratio', 
-         'Biot Coefficient', 'DT Normal', 'Resistivity Normal', 'DEX Normal']
+         'Formation Top Measured Depth', 'Formation Number', 'Formation Name', 'GR Cutoff', 'Structural Top', 'Structural Bottom', 'Centroid Ratio', 'OWC Depth', 'GOC Depth',  'Coefficient of thermal expansion bulk', 'Alpha', 'Beta', 'Gamma', 'Tectonic Factor', 'SH/SV Ratio',  'Biot Coefficient', 'DT Normal', 'Resistivity Normal', 'DEX Normal'
       
       - **lithos**: Must contain columns in this order:
-        ['Measured Depth', 'Lithology Code', 'Poisson Ratio', 'Friction Coefficient', 'UCS']
+        'Measured Depth', 'Lithology Code', 'Poisson Ratio', 'Friction Coefficient', 'UCS'
       
       - **flags**: Must contain columns in this order:
         ['Measured Depth', 'Condition Code']
