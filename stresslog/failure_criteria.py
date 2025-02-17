@@ -425,7 +425,7 @@ def plot_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1, path=N
     plt.title('Sanding Analysis')
     plt.xlim(0,pp+50)
     plt.ylim(0,pp+50)
-    plt.legend()
+    plt.legend(frameon=False, facecolor='none')
     plt.grid(False)
     if path is not None:
         plt.savefig(path)

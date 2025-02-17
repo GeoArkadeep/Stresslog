@@ -326,6 +326,7 @@ Discussion and Limitations
 --------------------------
 
 There are some important caveats to consider:
+
 - The SHmax_Azim values in the log actually range from 90° to 125° in the interval containing the fractures.
 - If these varying azimuths were accurate, we would expect to see considerable variation in fracture position, which is not observed in the data.
 

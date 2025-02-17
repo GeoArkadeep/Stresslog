@@ -1,11 +1,5 @@
-Key Features
-------------
-
-- **Comprehensive Calculations**: Computes a wide range of geomechanical parameters, including stress tensors, pore pressure, and fracture gradients.
-
-- **Customization**: Allows users to input specific well attributes and deviation data to tailor the analysis to their datasets.
-
-- **Integration with Welly**: Utilizes the `welly` library for seamless handling of LAS files and well data.
+Turorial
+========
 
 Installation
 ------------
@@ -86,3 +80,39 @@ In this example:
 - For a comprehensive list of parameters for 'compute_geomech', please refer to the API documentation.
 
 
+Standalone Functions
+--------------------
+
+While the package is mainly designed to perform complete calculations on entire wells, there are some functions which can be called independently to help with geomechanics in general.
+These include:
+
+- getSP
+
+.. code-block:: python
+
+    lst.drawSP(56,26,29,40,UCS=45,path="polygon.png")
+
+.. image:: ../Figures/polygon.png
+   :alt: Overlay Plot
+   :width: 600px
+   :align: center
+
+- drawsSP
+
+.. code-block:: python
+    lst.getSP(56,26,29,40,UCS=45)
+
+[40, 69.6719983666802, 54.8359991833401]
+
+- plot_sanding
+
+.. code-block:: python
+
+    lst.plot_sanding(sigmamax=60, sigmamin=25,sigma_axial=55, pp=50, ucs=45, k0=1.2, nu=0.25, biot=1, path="sanding.png")
+
+.. image:: ../Figures/sanding.png
+   :alt: Overlay Plot
+   :width: 600px
+   :align: center
+
+- and many more (refer to API documentation for more)
