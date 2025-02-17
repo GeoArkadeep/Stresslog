@@ -21,34 +21,53 @@ Here's how we load our well data and supporting datasets:
 
 .. code-block:: python
 
-    alias = {
-        "sonic": ["none", "DTC", "DT24", "DTCO", "DT", "AC", "AAC", "DTHM"],
-        "ssonic": ["none", "DTSM","DTSH_FINAL"],
-        "gr": ["none", "GR", "GRD", "CGR", "GRR", "GRCFM","GR_EDTC"],
-        "resdeep": ["none", "HDRS", "LLD", "M2RX", "MLR4C", "RD", "RT90", "RLA1", "RDEP", "RLLD", "RILD", "ILD", "RT_HRLT", "RACELM"],
-        "resshal": ["none", "LLS", "HMRS", "M2R1", "RS", "RFOC", "ILM", "RSFL", "RMED", "RACEHM", "RXO_HRLT"],
-        "density": ["none", "ZDEN", "RHOB", "RHOZ", "RHO", "DEN", "RHO8", "BDCFM"],
-        "neutron": ["none", "CNCF", "NPHI", "NEU", "TNPH", "NPHI_LIM"],
-        "pe": ["none", "PEFLA", "PEF8", "PE"]
-    }
+   alias = {
+      "sonic": ["none", "DTC", "DT24", "DTCO", "DT", "AC", "AAC", "DTHM"],
+      "ssonic": ["none", "DTSM","DTSH_FINAL"],
+      "gr": ["none", "GR", "GRD", "CGR", "GRR", "GRCFM","GR_EDTC"],
+      "resdeep": ["none", "HDRS", "LLD", "M2RX", "MLR4C", "RD", "RT90", "RLA1", "RDEP", "RLLD", "RILD", "ILD", "RT_HRLT", "RACELM"],
+      "resshal": ["none", "LLS", "HMRS", "M2R1", "RS", "RFOC", "ILM", "RSFL", "RMED", "RACEHM", "RXO_HRLT"],
+      "density": ["none", "ZDEN", "RHOB", "RHOZ", "RHO", "DEN", "RHO8", "BDCFM"],
+      "neutron": ["none", "CNCF", "NPHI", "NEU", "TNPH", "NPHI_LIM"],
+      "pe": ["none", "PEFLA", "PEF8", "PE"]
+   }
 
-    # Load well log data
-    string_las1 = lst.get_las_from_dlis('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS', aliases=alias, step=0.147)
-    # we could have used aliases=None (which is the default) but that would have returned ALL the channels in the dlis creating a huge las file which slows the analysis somewhat.
-    vertwell = Well.from_las(string_las1)
-    # Load supporting data
-    survey = pd.read_csv('Deviation.csv')
-    formations = pd.read_csv('NorthernLights-31_5-7.csv')
-    ucs = pd.read_csv('UCSdata.csv')
-    print(ucs.head())
-    """
+   # Load well log data
+   string_las1 = lst.get_las_from_dlis('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS', aliases=alias, step=0.147)
+   # we could have used aliases=None (which is the default) but that would have returned ALL the channels in the dlis creating a huge las file which slows the analysis somewhat.
+   vertwell = Well.from_las(string_las1)
+   # Load supporting data
+   survey = pd.read_csv('Deviation.csv')
+   formations = pd.read_csv('NorthernLights-31_5-7.csv')
+   print(formations.head())
+   print(list(formations))
+
+   """
+      Top TVD  Number                  Formation Name  ...  DXP_NCT  DXP_exp  DXP_ML
+   0      488       1  URU(Upperregionalunconformity)  ...      NaN      NaN     NaN
+   1      772       2                           Skade  ...      NaN      NaN     NaN
+   2     1144       3              HordalandGreenClay  ...      NaN      NaN     NaN
+   3     1442       4                          Balder  ...      NaN      NaN     NaN
+   4     1530       5                            Sele  ...      NaN      NaN     NaN
+
+   [5 rows x 24 columns]
+   ['Top TVD', 'Number', 'Formation Name', 'GR Cut', 'Struc.Top', 'Struc.Bottom', 'CentroidRatio',
+   'OWC', 'GOC', 'Coeff.Vol.Therm.Exp.', 'SHMax Azim.', 'SVDip', 'SVDipAzim', 'Tectonic Factor',
+   'InterpretedSH/Sh', 'Biot', 'Dt_NCT', 'Dt_ML', 'Res_NCT', 'Res_Exp', 'Res_ML', 'DXP_NCT', 'DXP_exp', 'DXP_ML']
+   """
+   # The formations data, if provided, must contain 24 columns in this exact order.
+   # If values are unavailable or we wish to use the defaults/constant values, it is fine to leave them blank
+
+   ucs = pd.read_csv('UCSdata.csv')
+   print(ucs.head())
+   """
       2643.08  35
-    0  2644.02  34
-    1  2645.02  35
-    2  2646.25  31
-    3  2647.50  37
-    4  2648.55  34
-    """
+   0  2644.02  34
+   1  2645.02  35
+   2  2646.25  31
+   3  2647.50  37
+   4  2648.55  34
+   """
 
 Iteration 1: Vertical Well
 -----------------------------------------
@@ -360,7 +379,7 @@ Discussion
 There are some important caveats to consider:
 
 - The SHmax_Azim values in the log actually range from 90° to 125° in the interval containing the fractures.
-- If these varying azimuths were accurate, we would expect to see considerable variation in fracture position, which is not observed in the data.
+- If these varying azimuths (as seen at the log scale) were indeed effecting the fracture pattern, we would expect to see considerable variation in fracture position, which is not observed in the data.
 
 This case study illustrates the complexity of real-world geomechanical analysis.
 Which model (if any) better describes reality is left upto the geological sensibility of the reader.

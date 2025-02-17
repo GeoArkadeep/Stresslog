@@ -833,23 +833,47 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
     minstress2 = minstress+180
     maxstress2 = maxstress+180
     
-    #print("Width = ",width/20,", omega =",np.max(angle), " at inclination = ",inc, " and azimuth= ",azim)
-    #plt2.scatter(np.array(range(0,360)),frac)
-    plt2.title("Hoop Stresses and Principal Stress Angles")
-    plt2.plot(angle)
-    plt2.plot(eline)
-    plt2.plot(eline2)
-    plt2.plot(line1)
-    #plt2.plot(frac)
-    #plt2.plot(crush)
-    #plt2.xlim((0,0.67827))
-    #plt2.ylim((1,151))
+    # Plotting
+    fig, ax1 = plt2.subplots(figsize=(8, 6))
+    ax2 = ax1.twinx()  # Secondary y-axis for angle
+
+    # Primary y-axis: hoop, axial, shear stresses (auto-scaled)
+    l1, = ax1.plot(eline, label="Hoop Stress", color="b")
+    l2, = ax1.plot(eline2, label="Axial Stress", color="g")
+    l3, = ax1.plot(line1, label="Shear Stress", color="r")
+    ax1.set_xlabel("Circumferential Angle (degrees)")
+    ax1.set_ylabel("Stress (MPa)")
+    #ax1.legend(loc="upper left")
+
+    # Secondary y-axis: principal angles (-180 to 180 degrees)
+    l4, = ax2.plot(angle, label="Principal Angle", color="purple", linestyle="dashed")
+    ax2.set_ylim(-90, 90)
+    ax2.set_xlim(0, 360)
+    ax2.set_ylabel("Angle w.r.t bore-axis (degrees)")
+    #ax2.legend(loc="upper right")
+
+    # Adjust the position of both axes to make space for the legend
+    box1 = ax1.get_position()
+    ax1.set_position([box1.x0, box1.y0 + box1.height * 0.1, box1.width, box1.height * 0.9])
+
+    box2 = ax2.get_position()
+    ax2.set_position([box2.x0, box2.y0 + box2.height * 0.1, box2.width, box2.height * 0.9])
+
+    # Shared legend between the plot and title
+    fig.legend(handles=[l1, l2, l3, l4], loc=8, bbox_to_anchor=(0.5125, 0.88), ncol=4)
+
+    # Title with padding to avoid overlap
+    size = fig.get_size_inches()*fig.dpi # get fig size in pixels
+    plt2.title("Hoop Stresses and Principal Stress Angles", pad=30)
+
     if path is not None:
         plt2.savefig(path)
         plt2.close()
         return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle
     else:
-        return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,plt2
+        b64png = plot_to_base64_png(plt2)
+        plt2.close()
+        return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,b64png
 
 def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None,ten_fac=10):
     """Generate wellbore stability plots showing mud weight headroom and breakout widths.
@@ -1185,3 +1209,20 @@ def get_frac_pressure(Sb, pp, tns, theta, nu=0.25, sigmaT=0):
     Sb20, Sb21, Sb22 = Sb[2, 0], Sb[2, 1], Sb[2, 2]
     
     return (-4.0*Sb00**2*nu*np.cos(2.0*theta)**2 + 2.0*Sb00**2*nu*np.cos(2.0*theta) + 4.0*Sb00*Sb01*nu*np.sin(2.0*theta) - 8.0*Sb00*Sb01*nu*np.sin(4.0*theta) + 8.0*Sb00*Sb11*nu*np.cos(2.0*theta)**2 + 2.0*Sb00*Sb22*np.cos(2.0*theta) - Sb00*Sb22 + 2.0*Sb00*nu*pp*np.cos(2.0*theta) - 2.0*Sb00*nu*sigmaT*np.cos(2.0*theta) - 2.0*Sb00*nu*tns*np.cos(2.0*theta) - 2.0*Sb00*tns*np.cos(2.0*theta) + Sb00*tns - 16.0*Sb01**2*nu*np.sin(2.0*theta)**2 + 4.0*Sb01*Sb11*nu*np.sin(2.0*theta) + 8.0*Sb01*Sb11*nu*np.sin(4.0*theta) + 4.0*Sb01*Sb22*np.sin(2.0*theta) + 4.0*Sb01*nu*pp*np.sin(2.0*theta) - 4.0*Sb01*nu*sigmaT*np.sin(2.0*theta) - 4.0*Sb01*nu*tns*np.sin(2.0*theta) - 4.0*Sb01*tns*np.sin(2.0*theta) + 4.0*Sb02**2*np.sin(theta)**2 - 4.0*Sb02*Sb12*np.sin(2.0*theta) - 4.0*Sb11**2*nu*np.cos(2.0*theta)**2 - 2.0*Sb11**2*nu*np.cos(2.0*theta) - 2.0*Sb11*Sb22*np.cos(2.0*theta) - Sb11*Sb22 - 2.0*Sb11*nu*pp*np.cos(2.0*theta) + 2.0*Sb11*nu*sigmaT*np.cos(2.0*theta) + 2.0*Sb11*nu*tns*np.cos(2.0*theta) + 2.0*Sb11*tns*np.cos(2.0*theta) + Sb11*tns + 4.0*Sb12**2*np.cos(theta)**2 - Sb22*pp + Sb22*sigmaT + Sb22*tns + pp*tns - sigmaT*tns - tns**2)/(2.0*Sb00*nu*np.cos(2.0*theta) + 4.0*Sb01*nu*np.sin(2.0*theta) - 2.0*Sb11*nu*np.cos(2.0*theta) - Sb22 + tns)
+
+from io import BytesIO
+import base64
+def plot_to_base64_png(matplot, dpi=300) ->str:
+    """
+    Saves the last plot made using ``matplotlib.pyplot`` to a base64-encoded PNG string.
+    
+    Returns:
+        The corresponding base64 PNG string.
+    """
+    buf = BytesIO()
+    matplot.savefig(buf, format='png')
+    buf.seek(0)
+    png_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+    matplot.close()
+    return png_base64

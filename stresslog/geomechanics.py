@@ -111,26 +111,6 @@ def plot_to_svg(matplot) ->str:
     return s.getvalue()
 
 
-from io import BytesIO
-import base64
-
-
-def plot_to_base64_png(matplot, dpi=300) ->str:
-    """
-    Saves the last plot made using ``matplotlib.pyplot`` to a base64-encoded PNG string.
-    
-    Returns:
-        The corresponding base64 PNG string.
-    """
-    buf = BytesIO()
-    matplot.savefig(buf, format='png')
-    buf.seek(0)
-    png_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-    buf.close()
-    matplot.close()
-    return png_base64
-
-
 def polynomial(x, *coeffs):
     return sum(c * x ** i for i, c in enumerate(coeffs))
 
@@ -720,16 +700,16 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     Returns
     -------
     tuple
-        Outputs vary depending on program options, but typically include processed well data, 
-        calculated pore pressure gradients, and stress analysis results. If `writeFile` is True, 
-        outputs are saved as files.
+        The tuple contains the following:
+        0 : Well log DataFrame (original and computed values) with mnemonics as headers
+        1 : LAS file as StringIO object containing original and computed values
+        2 : Base64 encoded plot strings for properties calculated at depth of interest (or None if written to files or not calculated at doi=0)
+        3 : Depth of Interest as specified (in meters)
+        4 : Welly object containing all data
 
     Notes
     -----
-    - This function integrates geomechanical calculations with well log data processing.
-    - It performs pore pressure estimation, stress analysis, and cohesion calculations.
-    - Extensive customization is available through the numerous optional parameters.
-    - If `writeFile` is True, all generated plots and data will be saved in the specified paths.
+    - If `writeFile` is True, all generated plots and data will be saved to disk.
     - The following dataframes must have fixed formats for their respective columns:
       
       - **forms**: Must contain columns in this order:
@@ -2074,7 +2054,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     if np.nanargmin(abs(tvdbgl)) > 0:
         sgHMpsi[0:np.nanargmin(abs(tvdbgl))] = np.nan
     from .BoreStab import get_principal_stress
-    from .BoreStab import draw
+    from .BoreStab import draw, plot_to_base64_png
     i = window
     sfg = fgcc
     spp = gccpp
@@ -2319,9 +2299,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 ppmpa, ucsmpa, alphas[i], betas[i], gammas[i], nu2[i], bt[i
                 ], ym[i], delTempC[i], output_fileHoop,ten_fac=arr_ten_fac[i])
         else:
-            return plot_to_base64_png(getHoop(incdoi, azmdoi, sigmas[0],
+            return getHoop(incdoi, azmdoi, sigmas[0],
                 sigmas[1], sigmas[2], deltaP, ppmpa, ucsmpa, alphas[i],
-                betas[i], gammas[i], nu2[i], bt[i], ym[i], delTempC[i],ten_fac=arr_ten_fac[i])[-1])
+                betas[i], gammas[i], nu2[i], bt[i], ym[i], delTempC[i],ten_fac=arr_ten_fac[i])[-1]
 
     def drawSand(doi, writeFile=True):
         doiactual = find_nearest_depth(tvdm, doi)
@@ -2497,6 +2477,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     ladegcc = interpolate_nan(ladegcc)
     ladegcc = np.where(ladegcc < spp, spp, ladegcc)
     if writeFile:
+        plt.close()
         plt.plot(interpolate_nan(SbFF[:, 0, 0]), tvd, label='aligned sx')
         plt.plot(interpolate_nan(SbFF[:, 1, 1]), tvd, label='aligned sy')
         plt.plot(interpolate_nan(SbFF[:, 2, 2]), tvd, label='aligned sz')
