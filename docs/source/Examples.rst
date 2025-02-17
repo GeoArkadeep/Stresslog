@@ -1,5 +1,5 @@
 Real World Example: Eos Well
-----------------------------
+============================
 
 This case study demonstrates the iterative process of geomechanical analysis using the Northern Lights dataset (courtesy of Equinor). We'll explore how different modeling assumptions affect our results and show the importance of calibrating models with observed data.
 
@@ -294,8 +294,8 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
    :width: 600px
    :align: center
 
-   
 .. code-block:: python
+
     # Final analysis with updated parameters
     output = lst.compute_geomech(
         wellwithdeviation,
@@ -318,7 +318,7 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
         ten_fac=0
     )
 
-.. image:: ../Figures/overlay.png
+.. image:: ../Figures/overlay2.png
    :alt: Overlay Plot
    :width: 600px
    :align: center
