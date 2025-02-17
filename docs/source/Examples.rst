@@ -190,7 +190,7 @@ The results can be found in the ./output/Stresslog_Plots directory, where PlotAl
    :width: 600px
    :align: center
 
-.. image:: ../Figures/resized/PLotll.png
+.. image:: ../Figures/resized/PLotAll.png
    :alt: Stability Plot
    :width: 600px
    :align: center
@@ -289,8 +289,12 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
     plt.plot(unwrapped_z)
     plt.savefig('SHmax_Azim.png')
 
-The log data suggests values around 114°. Let's incorporate this into our model:
+.. image:: ../Figures/SHmax_Azim.png
+   :alt: Overlay Plot
+   :width: 600px
+   :align: center
 
+   
 .. code-block:: python
     # Final analysis with updated parameters
     output = lst.compute_geomech(
@@ -314,8 +318,8 @@ The log data suggests values around 114°. Let's incorporate this into our model
         ten_fac=0
     )
 
-.. image:: ../Figures/resized/PlotBHI3.png
-   :alt: BHI Plot
+.. image:: ../Figures/overlay.png
+   :alt: Overlay Plot
    :width: 600px
    :align: center
 

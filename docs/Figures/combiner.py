@@ -66,8 +66,8 @@ def overlay_images(base_path, overlay_path, output_path,
 # Use the function
 result = overlay_images(
     'FMI-2630.png',        # Base image path
-    'PlotBHI.png',       # Overlay image path
-    'overlay.png',         # Output path
+    'PlotBHI 3.png',       # Overlay image path
+    'overlay2.png',         # Output path
     x_position=-168,       # Move overlay 100 pixels right
     y_position=-57,        # Move overlay 50 pixels down
     x_scale=0.157,         # Stretch horizontally by 50%
