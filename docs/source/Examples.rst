@@ -50,10 +50,10 @@ Here's how we load our well data and supporting datasets:
     4  2648.55  34
     """
 
-Analysis Iteration 1: Perfect Vertical Well
+Iteration 1: Vertical Well
 -----------------------------------------
 
-Our first analysis assumes a perfectly vertical well:
+Our first analysis assumes a vertical well:
 
 .. code-block:: python
 
@@ -201,7 +201,7 @@ The results can be found in the ./output/Stresslog_Plots directory, where PlotAl
    :align: center
 
 
-Analysis Iteration 2: Incorporating Well Deviation
+Iteration 2: Incorporating Well Deviation
 -----------------------------------------------
 
 Looking at the survey data, we notice that the well isn't perfectly vertical. At 2621.97m, there's a slight deviation with an inclination of 0.60° at an azimuth of 40.11°. Could this slight departure from verticality explain the en-echelon fractures we observe?
@@ -231,14 +231,14 @@ Looking at the survey data, we notice that the well isn't perfectly vertical. At
         fracgradvals=xlot
     )
 
-We observe that this model produces fractures with closure directions opposite to what we see in the actual image logs. This suggests our assumption about well deviation being the primary factor might be incorrect.
-
 .. image:: ../Figures/resized/PlotBHI1.png
    :alt: BHI Plot
    :width: 600px
    :align: center
 
-Analysis Iteration 3: Reintroducing Stress Tensor Tilt
+We observe that this model produces fractures with closure directions opposite to what we see in the actual image logs. This suggests our assumption about well deviation being the primary factor might be incorrect.
+
+Iteration 3: Reintroducing Stress Tensor Tilt
 ------------------------------------------------------
 
 Let's try reintroducing the stress tensor tilt while keeping the well deviation:
@@ -265,14 +265,14 @@ Let's try reintroducing the stress tensor tilt while keeping the well deviation:
         fracgradvals=xlot
     )
 
-This corrects the closure direction, but now the fracture alignment is incorrect. The results suggest we need an SHmax azimuth above 100°, closer to 120°.
-
 .. image:: ../Figures/resized/PlotBHI2.png
    :alt: BHI Plot
    :width: 600px
    :align: center
 
-Analysis Iteration 4: Using Log-Derived SHmax Azimuth
+This corrects the closure direction, but now the fracture alignment is incorrect. The results suggest we need an SHmax azimuth above 100°, closer to 120°.
+
+Iteration 4: Using Log-Derived SHmax Azimuth
 -----------------------------------------------------
 
 Digging deeper into the log data, we discover there's actually a proxy for SHmax azimuth in the log itself:
@@ -296,7 +296,6 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
 
 .. code-block:: python
 
-    # Final analysis with updated parameters
     output = lst.compute_geomech(
         wellwithdeviation,
         attrib=attrib,
@@ -326,10 +325,9 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
 Discussion and Limitations
 --------------------------
 
-This final model provides a much better match with the recorded data. However, there are some important caveats to consider:
-
-The SHmax_Azim values in the log actually range from 90° to 125° in the interval containing the fractures.
-If these varying azimuths were accurate, we would expect to see considerable variation in fracture position, which is not observed in the data.
+There are some important caveats to consider:
+- The SHmax_Azim values in the log actually range from 90° to 125° in the interval containing the fractures.
+- If these varying azimuths were accurate, we would expect to see considerable variation in fracture position, which is not observed in the data.
 
 This case study illustrates the complexity of real-world geomechanical analysis.
 Which model (if any) better describes reality is left upto the geological sensibility of the reader.
