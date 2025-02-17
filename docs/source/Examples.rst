@@ -294,6 +294,8 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
    :width: 600px
    :align: center
 
+These values are significantly different from the regional database values. Nevertheless, let us try the indicated value 114°:
+
 .. code-block:: python
 
     output = lst.compute_geomech(
@@ -317,12 +319,42 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
         ten_fac=0
     )
 
+.. image:: ../Figures/resized/PlotBHI3.png
+   :alt: BHI Plot
+   :width: 600px
+   :align: center
+
+How about the maximum value of 124°? Clearly this is stretching things quite some, totally unrealistic I think. Here goes:
+
+.. code-block:: python
+
+    output = lst.compute_geomech(
+        wellwithdeviation,
+        attrib=attrib,
+        rhoappg=17.33,
+        lamb=0.00075,
+        forms=formations,
+        UCSs=ucs,
+        writeFile=True,
+        user_home="./output2",
+        offset=124,
+        dip_dir=180,
+        dip=2,
+        doi=2627.5,
+        mwvalues=[[1.26, 0.0, 0.0, 0.0, 0.0, 0]],
+        plotstart=2560,
+        plotend=2660,
+        mudtemp=35,
+        fracgradvals=xlot,
+        ten_fac=0
+    )
+
 .. image:: ../Figures/overlay2.png
    :alt: Overlay Plot
    :width: 600px
    :align: center
 
-Discussion and Limitations
+Discussion
 --------------------------
 
 There are some important caveats to consider:
