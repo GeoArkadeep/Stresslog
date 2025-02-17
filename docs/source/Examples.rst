@@ -80,9 +80,8 @@ Our first analysis assumes a perfectly vertical well:
       mwvalues=[[1.26, 0.0, 0.0, 0.0, 0.0, 0]],
       plotstart=2560,
       plotend=2660,
-      mudtemp=50,
+      mudtemp=35,
       fracgradvals=xlot,
-      ten_fac=2000
    )
 
    # Let's check the "PlotAll.png" in the output/Stresslog_Plots to see the zobackogram, stability plot, sanding risk plot and synthetic borehole image
@@ -191,6 +190,16 @@ The results can be found in the ./output/Stresslog_Plots directory, where PlotAl
    :width: 600px
    :align: center
 
+.. image:: ../Figures/PLotAll.png
+   :alt: Stability Plot
+   :width: 600px
+   :align: center
+
+.. image:: ../Figures/overlay.png
+   :alt: Overlay Plot
+   :width: 600px
+   :align: center
+
 
 Analysis Iteration 2: Incorporating Well Deviation
 -----------------------------------------------
@@ -224,6 +233,11 @@ Looking at the survey data, we notice that the well isn't perfectly vertical. At
 
 We observe that this model produces fractures with closure directions opposite to what we see in the actual image logs. This suggests our assumption about well deviation being the primary factor might be incorrect.
 
+.. image:: ../Figures/PlotBHI 1.png
+   :alt: BHI Plot
+   :width: 600px
+   :align: center
+
 Analysis Iteration 3: Reintroducing Stress Tensor Tilt
 ------------------------------------------------------
 
@@ -252,6 +266,11 @@ Let's try reintroducing the stress tensor tilt while keeping the well deviation:
     )
 
 This corrects the closure direction, but now the fracture alignment is incorrect. The results suggest we need an SHmax azimuth above 100°, closer to 120°.
+
+.. image:: ../Figures/PlotBHI 2.png
+   :alt: BHI Plot
+   :width: 600px
+   :align: center
 
 Analysis Iteration 4: Using Log-Derived SHmax Azimuth
 -----------------------------------------------------
@@ -295,6 +314,11 @@ The log data suggests values around 114°. Let's incorporate this into our model
         ten_fac=0
     )
 
+.. image:: ../Figures/PlotBHI 3.png
+   :alt: BHI Plot
+   :width: 600px
+   :align: center
+
 Discussion and Limitations
 --------------------------
 
@@ -303,13 +327,5 @@ This final model provides a much better match with the recorded data. However, t
 The SHmax_Azim values in the log actually range from 90° to 125° in the interval containing the fractures.
 If these varying azimuths were accurate, we would expect to see considerable variation in fracture position, which is not observed in the data.
 
-This case study illustrates the complexity of real-world geomechanical analysis. Different models can provide reasonable fits to the data, and choosing between them often requires careful consideration of geological context and the relative importance of different observations.
-The final choice of model parameters should be based on:
-
-- Match to observed fracture patterns
-- Consistency with regional stress patterns
-- Geological reasonableness
-- Understanding of measurement uncertainties
-
-Remember that in real-world applications, the "correct" model may not be immediately obvious, and multiple interpretations might be equally valid given the available data.
-```
+This case study illustrates the complexity of real-world geomechanical analysis.
+Which model (if any) better describes reality is left upto the geological sensibility of the reader.
