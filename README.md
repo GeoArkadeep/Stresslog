@@ -44,8 +44,8 @@ Consult the documentation at https://stresslog.readthedocs.io/ for more help.
 We **welcome contributions**—feel free to submit a pull request!  
 
 ### Guidelines for Contributions  
-✅ **Pull Requests are Welcome:** If you have an improvement, bug fix, or feature, send a PR.  
-❌ **No Code-Style Requirements:** We don’t enforce a specific coding style—if the tests pass, your code is valid.
+* Pull Requests are Welcome: If you have an improvement, bug fix, or feature, send a PR.  
+* No Code-Style Requirements: We don’t enforce a specific coding style — if the tests pass, your code is valid.
 
 
 ## Acknowledgements
