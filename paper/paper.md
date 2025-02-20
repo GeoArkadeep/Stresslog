@@ -35,7 +35,7 @@ Overburden gradient [@traugott1997], pore pressure [@Zhang20132; @Flemings2021],
 
 The calculation of tilted stress states using the given methodology requires the Euler angles $\alpha$, $\beta$ and $\gamma$. We calculate the Euler angles from geological data in terms of tilt azimuth and tilt angle of the stress tensor.
 
-The tilt of the stress tensor is calculated from dip angle and dip azimuth as follows:
+The tilt of the stress tensor is calculated as follows:
 
 $$
 \text{Tilt Azimuth} = \tan^{-1}\left(\frac{R_{s_{3,2}}}{R_{s_{3,1}}}\right)
