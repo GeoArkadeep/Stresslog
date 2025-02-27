@@ -3,6 +3,86 @@ Real World Example: Eos Well
 
 This case study demonstrates the iterative process of geomechanical analysis using the Northern Lights dataset (courtesy of Equinor). We'll explore how different modeling assumptions affect our results and show the importance of calibrating models with observed data.
 
+Downloading the Data
+--------------------
+
+Some extra packages are required to download using python, else we can use Azure Storage explorer to get the data using the shared access signature URI.
+
+.. code-block:: bash
+   
+   pip install azure-storage-blob tqdm
+
+.. code-block:: python
+
+   from azure.storage.blob import ContainerClient
+   import os
+   from tqdm import tqdm
+
+   # use the shared access signature URI from EquiNor data sharing website after signing in
+   # To create this token, go to https://data.equinor.com, and log in (either as employee or as b2c) (ensure pop-ups are allowed)
+   # You can create your account at this stage using your mail ID
+   # Then browse to the dataset in question, in this case Northern Lights (https://data.equinor.com/dataset/NorthernLights)
+   # The token ("shared access signature URI") will be found at the bottom of the page, in the "Data links" section
+   # The token's validity is of limited time (a month or so), you can get a new token by following the steps above once the token expires
+
+   # Initialize the ContainerClient
+   container_client = ContainerClient.from_container_url("your/shared/access/signature/uri/here")
+
+   # List blobs in the container
+   print("\nBlobs in the container:")
+   blobs = container_client.list_blobs()
+   for blob in blobs:
+      print(blob.name)
+      
+   # List of files to download
+   files_to_download = [
+      "31_5-7 Eos/06.Wireline_Log_Data/WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS",
+      "31_5-7 Eos/02.Drilling_and_Completion/CORING_2020-01-14_REPORT_1.PDF",
+      "31_5-7 Eos/03.Directional_Surveys/WELLPATH_COMPUTED_1.ASC",
+      "31_5-7 Eos/03.Directional_Surveys/WELLPATH_ORIGINAL_SURVEY_POINTS_1.ASC", 
+      "31_5-7 Eos/11.Core_Data/CORE_CONV_2020-05-25_REPORT_1.PDF", 
+      "31_5-7 Eos/12.Geology_Data_and_Evaluations/31_5-7_Formation_Tops_FWR_Sept2020.xlsx"
+   ]
+
+   # Specify output directory with a separate variable
+   output_path = "./EOSdata"  # Relative to where the script is run from
+
+   # Create output directory if it doesn't exist
+   if not os.path.exists(output_path):
+      os.makedirs(output_path)
+      print(f"\nCreated output directory: {output_path}")
+
+   # Download each selected file
+   for blob_path in files_to_download:
+      # Extract just the filename for local saving
+      local_filename = os.path.join(output_path, os.path.basename(blob_path))
+      
+      # Get blob client and properties
+      blob_client = container_client.get_blob_client(blob_path)
+      properties = blob_client.get_blob_properties()
+      file_size = properties.size
+      
+      print(f"\nDownloading {os.path.basename(blob_path)} ({file_size/1024/1024:.2f} MB)...")
+      
+      # Download with progress bar
+      with open(local_filename, "wb") as download_file:
+         download_stream = blob_client.download_blob()
+         
+         # Using tqdm for progress reporting
+         progress_bar = tqdm(total=file_size, unit='B', unit_scale=True)
+         
+         # Download in chunks to show progress
+         chunk_size = 1024 * 1024  # 1MB chunks
+         for chunk in download_stream.chunks():
+               download_file.write(chunk)
+               progress_bar.update(len(chunk))
+         
+         progress_bar.close()
+      
+      print(f"Successfully downloaded {os.path.basename(blob_path)}")
+
+   print("\nAll files downloaded successfully!")
+
 Initial Setup
 -------------
 
