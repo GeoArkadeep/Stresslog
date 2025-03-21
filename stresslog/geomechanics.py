@@ -588,7 +588,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     a : float, optional
         Density compaction exponent for overburden calculations (default is 0.630).
     nu : float, optional
-        Poisson's ratio, used in stress calculations (default is 0.4).
+        Poisson's ratio, used in stress calculations (default is 0.25).
+    mu : float, optional
+        Coefficient of sliding friction, used in shmin (zoback) calculation (default is 0.65).
     sfs : float, optional
         Shale flag resistivity or GR cutoff, representing the difference between deep and shallow 
         resistivity in ohm.m (default is 1.0).
