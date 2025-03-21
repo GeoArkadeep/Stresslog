@@ -584,7 +584,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     ul_exp : float, optional
         Compaction exponent for regions with unloading (default is 0.0008).
     ul_depth : float, optional
-        Depth where unloading starts, in feet (default is 0).
+        Depth where unloading starts, in metres (default is 0).
     a : float, optional
         Density compaction exponent for overburden calculations (default is 0.630).
     nu : float, optional
@@ -620,11 +620,11 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     water : float, optional
         Water density in g/cc (default is 1.0).
     underbalancereject : int, optional
-        Minimum pore pressure gradient below which underbalanced data is rejected (default is 1).
+        Minimum pore pressure gradient (in g/cc) below which underbalanced data is rejected (default is 1).
     tecb : int, optional
-        Daines' parameter related to tectonic stress (default is 0).
+        Daines' parameter related to tectonic stress, used to calculate shmin (default is 0).
     doi : int, optional
-        Depth of interest for calculations, in feet (default is 0).
+        Depth of interest for detailed calculations, in metres (default is 0).
     offset : int, optional
         Azimuth of the maximum horizontal stress (SHMax) in degrees (default is 0).
     dip_dir : int, optional
@@ -668,7 +668,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     fracpsivals : list of lists, optional
         Fracture pressure values for different depths (default is [[0, 0]]).
     attrib : list, optional
-        Well attributes list. The fields correspond to KB, GL/WD, WL, Latitude, Longitude, BHT, Mud Resistance, Mud filtrate Resistance
+        Well attributes list. The fields correspond to KB, GL/WD, WL, Latitude, Longitude, BHT, Mud Resistance, Mud filtrate Resistance (Note: the water level parameter will be implemented fully in the future)
         (default is [1, 0, 0, 0, 0, 0, 0, 0]).
     flags : pandas.DataFrame, optional
         Dataframe containing depths and conditions identified from image logs, such as 
@@ -684,7 +684,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     user_home : str, optional
         Path to the root of output directories (default is `~/Documents`).
     program_option : list, optional
-        List controlling algorithm behavior, including resolution, algorithm choices, and more 
+        List controlling algorithm behavior. The entries are: dpi (of the saved plots), choice of pore pressure algorithm (0 is sonic, 1 is resistivity, 2 is dexp, 4-9 are best available with the priorities changing), choice of shmin algorithm (0 is daines, 1 is zoback), the last two parameters are reserved for future use.
         (default is [300, 4, 0, 0, 0]).
     writeFile : bool, optional
         Whether to write results to files in the specified paths (default is True).
@@ -721,7 +721,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
       - **flags**: Must contain columns in this order:
         ['Measured Depth', 'Condition Code']
         - 'Condition Code' integer, allowed values:
-            0 :	No Image log exists
+            0 : No Image log exists
             1 : Image log exists, No observations
             2 : DITF observed on image log
             3 : Breakouts observed on image log
@@ -1591,6 +1591,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     lresnormal = np.log10(resnormal)
     dalmflag = np.full(len(tvdf), 1.0)
     resdflag = np.full(len(tvdf), 1.0)
+    dtNormal = np.full(len(tvdf),910.0)
+
     i = 0
     while i < len(dalm):
         matrix[i] = matrick + dt_ncts[i] * i
@@ -1607,6 +1609,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             if np.isnan(resdeep[i]):
                 resdeep[i] = res0 * np.exp(res_ncts[i] * tvdbgl[i])
                 resdflag[i] = np.nan
+        else:
+            dtNormal[i] = 210.0 if glwd<0 and tvdmsl[i]>0 else 910.0 #Seawater and free air sonic speeds
         i += 1
     import math
     print(dalm) if debug else None
@@ -1649,8 +1653,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     philang = np.zeros(len(tvdf))
     H = np.zeros(len(tvdf))
     K = np.zeros(len(tvdf))
-    dtNormal = np.zeros(len(tvdf))
-    dtNormal[:] = matrick
+
     print('ObgTppg:', ObgTppg) if debug else None
     print('Reject Subhydrostatic below ', underbalancereject
         ) if debug else None

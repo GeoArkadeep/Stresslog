@@ -12,18 +12,20 @@ Some extra packages are required to download using python, else we can use Azure
    
    pip install azure-storage-blob tqdm
 
+Now we can use the following python script to download the data to be used in this example.
+
 .. code-block:: python
 
    from azure.storage.blob import ContainerClient
    import os
    from tqdm import tqdm
 
-   # use the shared access signature URI from EquiNor data sharing website after signing in
-   # To create this token, go to https://data.equinor.com, and log in (either as employee or as b2c) (ensure pop-ups are allowed)
-   # You can create your account at this stage using your mail ID
-   # Then browse to the dataset in question, in this case Northern Lights (https://data.equinor.com/dataset/NorthernLights)
-   # The token ("shared access signature URI") will be found at the bottom of the page, in the "Data links" section
-   # The token's validity is of limited time (a month or so), you can get a new token by following the steps above once the token expires
+   # use the shared access signature URI from EquiNor data sharing website after signing in.
+   # To create this token, go to https://data.equinor.com, and log in (either as employee or as b2c) (ensure pop-ups are allowed).
+   # You can create your account at this stage using your mail ID.
+   # Then browse to the dataset in question, in this case Northern Lights (https://data.equinor.com/dataset/NorthernLights).
+   # The token ("shared access signature URI") will be found at the bottom of the page, in the "Data links" section.
+   # The token's validity is of limited time (a month or so), you can get a new token by following the steps above once the token expires.
 
    # Initialize the ContainerClient
    container_client = ContainerClient.from_container_url("your/shared/access/signature/uri/here")
@@ -82,6 +84,8 @@ Some extra packages are required to download using python, else we can use Azure
       print(f"Successfully downloaded {os.path.basename(blob_path)}")
 
    print("\nAll files downloaded successfully!")
+
+The downloaded data will be used in the following example, with some files created based on the information downloaded (by changing the file types and format as required)
 
 Initial Setup
 -------------
