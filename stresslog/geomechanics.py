@@ -660,13 +660,13 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Section attributes, including parameters like maximum ECD, casing shoe depth, casing diameter, 
         bit diameter, mud salinity, and bottom-hole temperature (BHT) at the shoe
     flowgradvals : list of lists, optional
-        Flow gradient values for different depths (default is [[0, 0]]).
+        Flow gradient values for different depths (i.e. [emw in g/cc at which kick taken/RFT/DST/whathaveyou, MD]) (default is [[0, 0]]).
     fracgradvals : list of lists, optional
-        Fracture gradient values for different depths (default is [[0, 0]]).
+        Fracture gradient values for different depths (i.e. [emw in g/cc at which mud lost/(x)LOT/minifrac/whathaveyou, MD]) (default is [[0, 0]]).
     flowpsivals : list of lists, optional
-        Flow pressure values for different depths (default is [[0, 0]]).
+        Flow pressure values for different depths (i.e. [bhp in psi at which kick taken/RFT/DST/whathaveyou, MD]) (default is [[0, 0]]).
     fracpsivals : list of lists, optional
-        Fracture pressure values for different depths (default is [[0, 0]]).
+        Fracture pressure values for different depths (i.e. [bhp in psi at which mud lost/(x)LOT/minifrac/whathaveyou, MD]) (default is [[0, 0]]).
     attrib : list, optional
         Well attributes list. The fields correspond to KB, GL/WD, WL, Latitude, Longitude, BHT, Mud Resistance, Mud filtrate Resistance (Note: the water level parameter will be implemented fully in the future)
         (default is [1, 0, 0, 0, 0, 0, 0, 0]).
