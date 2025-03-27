@@ -17,7 +17,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,delT=0,path=None):
+def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0,delT=0,PhiBr=15,biot=1,path=None):
     """Draw a stress polygon visualization for wellbore stability analysis.
 
     Parameters
@@ -45,13 +45,17 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,de
     mu : float, optional
         Friction coefficient, by default 0.65
     nu : float, optional
-        Poisson's ratio, by default 0
+        Poisson's ratio, by default 0.25
     bt : float, optional
         Linear thermal expansion coefficient, by default 0
     ym : float, optional
         Young's modulus in MPa, by default 0
     delT : float, optional
         Temperature difference in degrees Celsius, by default 0
+    PhiBr : float, optional
+        Breakout width in degrees, by default 15
+    biot : float, optional
+        Biot's poroelastic constant, by default 1
     path : str, optional
         File path to save the plot, by default None
 
@@ -77,8 +81,8 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,de
     
     #mu = (1-(2*nu))/(2*((nu*(1-nu))**0.5))
     
-    PhiBr = 15
-    biot = 1
+    #PhiBr = 15
+    #biot = 1
     maxSH = 0
     minSH = 0
     midSH = 0
@@ -277,7 +281,7 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0,bt=0,ym=0,de
     else:
         return plt3
 
-def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT=0):
+def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0.25,bt=0,ym=0,delT=0, PhiBr=15, biot=1):
     """Calculate SHmax using stress polygon logic, returns said value without visualisation.
 
     Parameters
@@ -305,14 +309,17 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT
     mu : float, optional
         Friction coefficient, by default 0.6
     nu : float, optional
-        Poisson's ratio, by default 0
+        Poisson's ratio, by default 0.25
     bt : float, optional
         Linear thermal expansion coefficient, by default 0
     ym : float, optional
         Young's modulus in MPa, by default 0
     delT : float, optional
         Temperature difference in degrees Celsius between hole-wall and circulating fluid, by default 0
-
+    PhiBr : float, optional
+        Breakout width in degrees, by default 15
+    biot : float, optional
+        Biot's poroelastic constant, by default 1
     Returns
     -------
     list
@@ -331,8 +338,8 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0,bt=0,ym=0,delT
     but returns the numerical results without creating a visualization.
     """
     
-    PhiBr = 15
-    biot = 1
+    #PhiBr = 15
+    #biot = 1
     maxSH = 0
     minSH = 0
     midSH = 0

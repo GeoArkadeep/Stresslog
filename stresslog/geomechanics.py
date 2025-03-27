@@ -2047,8 +2047,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             sgHMpsiU[i] = sgHMpsi[i] * 1.1
         else:
             result = getSP(obgpsi[i] / 145.038, psipp[i] / 145.038, mudpsi[
-                i] / 145.038, psifg[i] / 145.038, ucs2[i], phi[i], ilog[i],
-                mu2[i], nu2[i], bt[i], ym[i], delTempC[i])
+                i] / 145.038, psifg[i] / 145.038, UCS=ucs2[i], phi=phi[i], flag=ilog[i],
+                mu=mu2[i], nu=nu2[i], bt=bt[i], ym=ym[i], delT=delTempC[i], biot=biot[i])
             sgHMpsi[i] = result[2] * 145.038
             sgHMpsiL[i] = result[0] * 145.038
             sgHMpsiU[i] = result[1] * 145.038
@@ -2095,13 +2095,13 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         print('nu is ', nu2[doiX]) if debug else None
         print('phi is ', np.degrees(phi[doiX])) if debug else None
         if writeFile:
-            drawSP(sigmaVmpa, ppmpa, bhpmpa, sigmahminmpa, ucsmpa, phi[doiX
-                ], ilog_flag, mu2[doiX], nu2[doiX], bt[doiX], ym[doiX],
-                delTempC[doiX], path=output_fileSP)
+            drawSP(sigmaVmpa, ppmpa, bhpmpa, sigmahminmpa, UCS=ucsmpa, phi=phi[doiX
+                ], flag=ilog_flag, mu=mu2[doiX], nu=nu2[doiX], bt=bt[doiX], ym=ym[doiX],
+                delT=delTempC[doiX], path=output_fileSP, biot=biot[doiX])
         else:
             rv4 = plot_to_base64_png(drawSP(sigmaVmpa, ppmpa, bhpmpa,
-                sigmahminmpa, ucsmpa, phi[doiX], ilog_flag, mu2[doiX], nu2[
-                doiX], bt[doiX], ym[doiX], delTempC[doiX]))
+                sigmahminmpa, UCS=ucsmpa, phi=phi[doiX], flag=ilog_flag, mu=mu2[doiX], nu=nu2[
+                doiX], bt=bt[doiX], ym=ym[doiX], delT=delTempC[doiX], biot=biot[doiX]))
         sigmaHMaxmpa = sgHMpsi[doiX] / 145.038
         print('SigmaHM = ', sigmaHMaxmpa) if debug else None
         sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
