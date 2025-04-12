@@ -86,9 +86,10 @@ Now we can use the following python script to download the data to be used in th
    print("\nAll files downloaded successfully!")
 
 The downloaded data will be used in the following example, with some files created based on the information downloaded (by changing the file types and format as required)
-Some of the data required for this example has strict format requirements, we provide example versions with current formatting in the following repository: https://github.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lightshttps://github.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights
+Some of the data required for this example has strict format requirements, we provide example versions with current formatting in the following repository: https://github.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights
 
 .. code-block:: python
+
    # Load support data
    survey = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/Deviation.csv')
    print(survey)
