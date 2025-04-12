@@ -131,7 +131,7 @@ Some of the data required for this example has strict format requirements, we pr
 Initial Setup
 -------------
 
-First, let's explore the necessary environment setup and data structures:
+First, let's import the required packages:
 
 .. code-block:: python
 
@@ -142,7 +142,7 @@ First, let's explore the necessary environment setup and data structures:
 Loading Well Data
 -----------------
 
-Here's how we load our well data and supporting datasets:
+Here's how we load our well data:
 
 .. code-block:: python
 
