@@ -86,6 +86,46 @@ Now we can use the following python script to download the data to be used in th
    print("\nAll files downloaded successfully!")
 
 The downloaded data will be used in the following example, with some files created based on the information downloaded (by changing the file types and format as required)
+Some of the data required for this example has strict format requirements, we provide example versions with current formatting in the following repository: https://github.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lightshttps://github.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights
+
+.. code-block:: python
+   # Load support data
+   survey = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/Deviation.csv')
+   print(survey)
+   formations = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/NorthernLights-31_5-7.csv')
+   print(formations.head())
+   print(list(formations))
+
+   """
+      Top TVD  Number                  Formation Name  ...  DXP_NCT  DXP_exp  DXP_ML
+   0      488       1  URU(Upperregionalunconformity)  ...      NaN      NaN     NaN
+   1      772       2                           Skade  ...      NaN      NaN     NaN
+   2     1144       3              HordalandGreenClay  ...      NaN      NaN     NaN
+   3     1442       4                          Balder  ...      NaN      NaN     NaN
+   4     1530       5                            Sele  ...      NaN      NaN     NaN
+
+   [5 rows x 24 columns]
+   ['Top TVD', 'Number', 'Formation Name', 'GR Cut', 'Struc.Top', 'Struc.Bottom', 'CentroidRatio',
+   'OWC', 'GOC', 'Coeff.Vol.Therm.Exp.', 'SHMax Azim.', 'SVDip', 'SVDipAzim', 'Tectonic Factor',
+   'InterpretedSH/Sh', 'Biot', 'Dt_NCT', 'Dt_ML', 'Res_NCT', 'Res_Exp', 'Res_ML', 'DXP_NCT', 'DXP_exp', 'DXP_ML']
+   """
+   # The formations data, if provided, must contain 24 columns in this exact order.
+   # If values are unavailable or we wish to use the defaults/constant values, it is fine to leave them blank
+
+   ucs = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/UCSdata.csv')
+   print(ucs.head())
+   """
+      2643.08  35
+   0  2644.02  34
+   1  2645.02  35
+   2  2646.25  31
+   3  2647.50  37
+   4  2648.55  34
+   """
+   # The UCS data if provided, must be in MPa, with the depths in metres, TVD.
+
+   imagelog = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/31_5-7_Image.csv')
+   #Image log is available and features are visible, so we will use them here.
 
 Initial Setup
 -------------
@@ -120,39 +160,6 @@ Here's how we load our well data and supporting datasets:
    string_las1 = lst.get_las_from_dlis('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS', aliases=alias, step=0.147)
    # we could have used aliases=None (which is the default) but that would have returned ALL the channels in the dlis creating a huge las file which slows the analysis somewhat.
    vertwell = Well.from_las(string_las1)
-   # Load supporting data
-   survey = pd.read_csv('Deviation.csv')
-   formations = pd.read_csv('NorthernLights-31_5-7.csv')
-   
-   print(formations.head())
-   print(list(formations))
-
-   """
-      Top TVD  Number                  Formation Name  ...  DXP_NCT  DXP_exp  DXP_ML
-   0      488       1  URU(Upperregionalunconformity)  ...      NaN      NaN     NaN
-   1      772       2                           Skade  ...      NaN      NaN     NaN
-   2     1144       3              HordalandGreenClay  ...      NaN      NaN     NaN
-   3     1442       4                          Balder  ...      NaN      NaN     NaN
-   4     1530       5                            Sele  ...      NaN      NaN     NaN
-
-   [5 rows x 24 columns]
-   ['Top TVD', 'Number', 'Formation Name', 'GR Cut', 'Struc.Top', 'Struc.Bottom', 'CentroidRatio',
-   'OWC', 'GOC', 'Coeff.Vol.Therm.Exp.', 'SHMax Azim.', 'SVDip', 'SVDipAzim', 'Tectonic Factor',
-   'InterpretedSH/Sh', 'Biot', 'Dt_NCT', 'Dt_ML', 'Res_NCT', 'Res_Exp', 'Res_ML', 'DXP_NCT', 'DXP_exp', 'DXP_ML']
-   """
-   # The formations data, if provided, must contain 24 columns in this exact order.
-   # If values are unavailable or we wish to use the defaults/constant values, it is fine to leave them blank
-
-   ucs = pd.read_csv('UCSdata.csv')
-   print(ucs.head())
-   """
-      2643.08  35
-   0  2644.02  34
-   1  2645.02  35
-   2  2646.25  31
-   3  2647.50  37
-   4  2648.55  34
-   """
 
 Iteration 1: Vertical Well
 -----------------------------------------
