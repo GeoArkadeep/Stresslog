@@ -7,7 +7,7 @@ name = "stresslog"
 version = "1.6.6"
 description = "Library for stress calculations from well logs"
 readme = "README.md"
-requires-python = ">=3.7,<=3.13"
+requires-python = ">=3.9,<=3.13"
 license = {text = "AGPL-3.0"}
 authors = [
     {name = "Arkadeep Ghosh", email = "arkadeep_ghosh@rocklab.in"}
@@ -16,8 +16,6 @@ classifiers = [
     "Development Status :: 6 - Mature",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Intended Audience :: Science/Research",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
