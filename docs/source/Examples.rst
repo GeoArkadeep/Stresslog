@@ -398,7 +398,7 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
     from matplotlib import pyplot as plt
     plt.plot(unwrapped_z)
     plt.xlabel("Depth (metres)")
-    plt.ylabel("SH_Max Azimuth (degrees)")
+    plt.ylabel("Fast Shear Azimuth as per log data (degrees)")
     plt.savefig('SHmax_Azim.png')
 
 .. image:: ../Figures/SHmax_Azim.png
