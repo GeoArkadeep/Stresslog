@@ -339,7 +339,7 @@ Looking at the survey data, we notice that the well isn't perfectly vertical. At
         fracgradvals=xlot
     )
 
-These results can be found in the ./output0 directory (we will be using different output directories throughout these examples, as set by the user_home parameter. In regular useage, the user_home defaults to ~/Documents, so users can find their results there by default).
+These results can be found in the ./output0/Stresslog_Plots directory, as plotBHI.png (we will be using different output directories throughout these examples, as set by the user_home parameter. In regular useage, the user_home defaults to ~/Documents, so users can find their results there by default).
 
 .. image:: ../Figures/resized/PlotBHI1.png
    :alt: BHI Plot
