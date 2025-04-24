@@ -29,12 +29,6 @@ Now we can use the following python script to download the data to be used in th
 
    # Initialize the ContainerClient
    container_client = ContainerClient.from_container_url("your/shared/access/signature/uri/here")
-
-   # List blobs in the container
-   print("\nBlobs in the container:")
-   blobs = container_client.list_blobs()
-   for blob in blobs:
-      print(blob.name)
       
    # List of files to download
    files_to_download = [
