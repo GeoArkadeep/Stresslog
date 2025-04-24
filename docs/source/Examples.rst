@@ -87,7 +87,7 @@ Some of the data required for this example has strict format requirements, we pr
    # Load support data
 
    import pandas as pd
-   
+
    survey = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/Deviation.csv')
    print(survey)
    formations = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/NorthernLights-31_5-7.csv')
@@ -289,7 +289,7 @@ In this first run, we've made several key assumptions:
 
 - The well is perfectly vertical
 - The SHmax azimuth is 91 degrees
--The stress tensor is tilted 2 degrees to the south
+- The stress tensor is tilted 2 degrees to the south
 
 The results can be found in the ./output/Stresslog_Plots directory, where PlotAll.png shows the Zobackogram, stability plot, sanding risk plot, and synthetic borehole image.
 
@@ -397,6 +397,8 @@ Digging deeper into the log data, we discover there's actually a proxy for SHmax
     # Plot the azimuth values
     from matplotlib import pyplot as plt
     plt.plot(unwrapped_z)
+    plt.xlabel("Depth (metres)")
+    plt.ylabel("SH_Max Azimuth (degrees)")
     plt.savefig('SHmax_Azim.png')
 
 .. image:: ../Figures/SHmax_Azim.png
