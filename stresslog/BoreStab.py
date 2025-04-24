@@ -387,7 +387,7 @@ def getRota(alpha,beta,gamma):
     return Rs
 
 
-def getStens(sx,sy,sz,alpha,beta,gamma):
+def getStens(sx,sy,sz,alpha,beta,gamma,debug=False):
     """
     Calculate the stress tensor in the NED (Geographic) Coordinate System.
 
@@ -414,7 +414,7 @@ def getStens(sx,sy,sz,alpha,beta,gamma):
 
     Notes
     -----
-    Prints eigenvalues, eigenvectors, vector dip, dip direction, and
+    Optionaly prints eigenvalues, eigenvectors, vector dip, dip direction, and
     vertical/horizontal stress components.
     """
     #print(Ss)
@@ -430,14 +430,14 @@ def getStens(sx,sy,sz,alpha,beta,gamma):
     RsT = np.transpose(Rs)
     Ss = np.array([[sx,0,0],[0,sy,0],[0,0,sz]])
     Sg = RsT@Ss@Rs
-    print(Sg)
-    print(np.linalg.eigh(Sg))
-    print("Vector Dip is:",np.degrees(np.arccos(Rs[2][2])))
+    print(Sg) if debug else None
+    print(np.linalg.eigh(Sg)) if debug else None
+    print("Vector Dip is:",np.degrees(np.arccos(Rs[2][2]))) if debug else None
     dip_direction = np.degrees(np.arctan2(Rs[2][1], Rs[2][0]))
-    print("Dip Direction is:", dip_direction)
-    print("Calculated Vertical Component is:", Sg[2][2])
-    print("Calculated Max Horizontal Component is:", max(Sg[1][1],Sg[0][0]))
-    print("Calculated Min Horizontal Component is:", min(Sg[1][1],Sg[0][0]))    
+    print("Dip Direction is:", dip_direction) if debug else None
+    print("Calculated Vertical Component is:", Sg[2][2]) if debug else None
+    print("Calculated Max Horizontal Component is:", max(Sg[1][1],Sg[0][0])) if debug else None
+    print("Calculated Min Horizontal Component is:", min(Sg[1][1],Sg[0][0])) if debug else None  
     return Sg[0],Sg[1],Sg[2]
 
 def getStrikeDip(alpha,beta,gamma):
@@ -875,7 +875,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
         plt2.close()
         return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,b64png
 
-def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None,ten_fac=10):
+def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None,ten_fac=10, debug=False):
     """Generate wellbore stability plots showing mud weight headroom and breakout widths.
 
     This function creates two polar projection plots:
@@ -949,7 +949,7 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
     mui = (1+np.sin(phi))/(1-np.sin(phi))
     #mui = 1.9
-    print("Mu_i = ",mui)
+    print("Mu_i = ",mui) if debug else None
     fmui = ((((mui**2)+1)**0.5)+mui)**2
     values = np.zeros((10,37))
     values2 = np.zeros((10,37))
@@ -1003,7 +1003,7 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
         inc+=1
 
         
-    print(orit)
+    print(orit) if debug else None
     
     fig = plt2.figure()
     ax = fig.add_subplot(121,projection='polar')
@@ -1052,7 +1052,7 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
     aws.set_theta_direction(-1)
     levels = np.linspace(0,120,1300)
     cax2 = aws.contourf(azimuth, inclination, values2, 1300, levels=levels, extend = 'both', cmap = 'jet', alpha = 1)
-    print(orit)
+    print(orit) if debug else None
     aws.scatter(math.radians(azimuthu),inclinationi, s=50, color = 'green', edgecolors='black', label='Bore')
     #aws.text(math.radians(orit[0]),orit[1], " "+str(round(s3,1)))
     #aws.scatter(math.radians(orit[0]),orit[1], s=20, color = 'black', edgecolors='black', label=s3)

@@ -47,7 +47,7 @@ Now we can use the following python script to download the data to be used in th
    ]
 
    # Specify output directory with a separate variable
-   output_path = "./EOSdata"  # Relative to where the script is run from
+   output_path = "."  # Relative to where the script is run from
 
    # Create output directory if it doesn't exist
    if not os.path.exists(output_path):
@@ -342,6 +342,8 @@ Looking at the survey data, we notice that the well isn't perfectly vertical. At
         mudtemp=35,
         fracgradvals=xlot
     )
+
+These results can be found in the ./output0 directory (we will be using different output directories throughout these examples, as set by the user_home parameter. In regular useage, the user_home defaults to ~/Documents, so users can find their results there by default).
 
 .. image:: ../Figures/resized/PlotBHI1.png
    :alt: BHI Plot

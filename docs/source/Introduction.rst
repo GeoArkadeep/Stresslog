@@ -10,6 +10,9 @@ To install **Stresslog**, ensure you have Python 3.10 or 3.11 installed. You can
 
     pip install stresslog
 
+Development
+-----------
+
 For developers and pythonistas, you can download the repository from github and install from source as follows:
 
 .. code-block:: bash
@@ -22,6 +25,10 @@ For developers and pythonistas, you can download the repository from github and 
 
    # Install in editable mode
    pip install -e .
+
+   # Run tests
+   pip install -r ./tests/test-requirements.txt
+   pytest
 
 Basic Usage
 -----------

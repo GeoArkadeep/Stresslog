@@ -1,6 +1,39 @@
 [build-system]
 requires = [
     "setuptools>=42",
-    "wheel",
+    "wheel"
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "stresslog"
+version = "1.6.6"
+description = "Library for stress calculations from well logs"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9,<=3.13"
+license = { text = "AGPL-3.0" }
+authors = [
+    { name = "Arkadeep Ghosh", email = "arkadeep_ghosh@rocklab.in" }
+]
+dependencies = [
+    "pandas>=2.0",
+    "numpy<=1.26.4",
+    "scipy",
+    "welly",
+    "pint",
+    "matplotlib",
+    "plotly",
+    "dlisio<=1.0.2",
+    "setuptools>=42"
+]
+
+[project.urls]
+Homepage = "https://www.rocklab.in/stresslog"
+Documentation = "https://stresslog.readthedocs.io/en/stable/"
+Source = "https://github.com/GeoArkadeep/Stresslog"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]

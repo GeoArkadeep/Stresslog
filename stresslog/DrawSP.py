@@ -17,7 +17,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0,delT=0,PhiBr=15,biot=1,path=None):
+def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0,delT=0,PhiBr=15,biot=1,path=None,debug=False):
     """Draw a stress polygon visualization for wellbore stability analysis.
 
     Parameters
@@ -89,11 +89,11 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0
     sigmaV = Sv-Pp
     sigmahmin = shmin-Pp
     ufac = ((((mu**2)+1)**0.5)+mu)**2
-    print("Mu factor: ",ufac)
+    print("Mu factor: ",ufac) if debug else None
 
     ShmP = ((Sv-Pp)/ufac)+Pp
     SHMP = ((Sv-Pp)*ufac)+Pp
-    print("Corners: ",ShmP,SHMP)
+    print("Corners: ",ShmP,SHMP) if debug else None
 
 
     maxSt = 1.02*SHMP
@@ -138,9 +138,9 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0
     #PhiB = 0.1 #degrees
     PhiBr = math.radians(PhiBr)
     TwoCosPhiB = 2*(math.cos((math.pi)-(PhiBr)))
-    print("TwoCosPhiB: ",TwoCosPhiB)
+    print("TwoCosPhiB: ",TwoCosPhiB) if debug else None
     #ShmP = UCS
-    print("Phi = ",math.degrees(phi))
+    print("Phi = ",math.degrees(phi)) if debug else None
     twocos2Beta = 2 * (math.cos(PhiBr))
     q = (1+np.sin(phi))/(1-np.sin(phi)) #Zhang 6.70
     
@@ -243,8 +243,8 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0
                 maxSH = np.interp(shmin, xd, yd)
                 minSH = np.interp(shmin, xucs, yucs)
     midSH = (minSH + maxSH) / 2
-    print([maxSH,minSH,shmin,Sv])
-    print("DITF :",ditf)
+    print([maxSH,minSH,shmin,Sv]) if debug else None
+    print("DITF :",ditf) if debug else None
     ax.add_patch(DITF)
     # Draw a vertical purple line for Shmin
     ax.plot([shmin, shmin], [minSH, maxSH], color='purple', linewidth=1)

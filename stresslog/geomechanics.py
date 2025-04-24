@@ -248,15 +248,16 @@ def read_aliases_from_file(file_path):
 
 
 def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
-    strength_units, gradient_units, ureg, file_path):
-    print('Reading Styles file from ', file_path)
+    strength_units, gradient_units, ureg, file_path, debug=False):
 
     def convert_value(value, from_unit, to_unit, ureg=ureg):
         return (value * ureg(from_unit.lower())).to(to_unit.lower()).magnitude
     try:
         with open(file_path, 'r') as file:
             styles = json.load(file)
+        print('Reading Styles file from ', file_path) if debug else None
     except:
+        print('Using default Styles, file read failed.') if debug else None
         styles = {'lresnormal': {'color': 'red', 'linewidth': 1.5, 'style':
             '--', 'track': 1, 'left': -3, 'right': 1, 'type': 'linear',
             'unit': 'ohm.m'}, 'lresdeep': {'color': 'black', 'linewidth': 
@@ -529,7 +530,7 @@ def add_curves(well, df, clear=False):
     return well
 
 
-def remove_curves(well, mnemonics_to_remove):
+def remove_curves(well, mnemonics_to_remove, debug=False):
     """
     Removes curves with the specified mnemonics from the well object.
     
@@ -542,7 +543,7 @@ def remove_curves(well, mnemonics_to_remove):
             mnemonic == mnemonic]
         for key in keys_to_delete:
             del well.data[key]
-            print(f'Removed curve: {mnemonic}')
+            print(f'Removed curve: {mnemonic}') if debug else None
     return well
 
 
@@ -2142,7 +2143,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         m = np.min([sigmas[0], sigmas[1], sigmas[2]])
         osx, osy, osz = get_principal_stress(sigmas[0], sigmas[1], sigmas[2], alphas
             [doiX], betas[doiX], gammas[doiX])
-        sten = getStens(osx, osy, osz, alphas[doiX], betas[doiX], gammas[doiX])
+        sten = getStens(osx, osy, osz, alphas[doiX], betas[doiX], gammas[doiX], debug=debug)
         sn, se, sd = np.linalg.eigh(sten)[0]
         on, oe, od = np.linalg.eigh(sten)[1]
         if writeFile:
@@ -2152,7 +2153,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 draw(tvd[doiX], osx, osy, osz, sigmas[3], sigmas[4], ucsmpa,
                     alphas[doiX], betas[doiX], gammas[doiX], 0, nu2[doiX],
                     azmdoi, incdoi, bt[doiX], ym[doiX], delTempC[doiX],
-                    path=output_fileS,ten_fac=arr_ten_fac[i])
+                    path=output_fileS,ten_fac=arr_ten_fac[i], debug=debug)
             except:
                 pass
         else:
@@ -2248,9 +2249,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         angles = np.array(angles)
         data2 = j, fr, angles, minazi, maxazi
         if writeFile:
-            d, f = plotfrac(data2, output_fileFrac)
+            d, f = plotfrac(data2, output_fileFrac,debug=debug)
         else:
-            d, f = plotfrac(data2)
+            d, f = plotfrac(data2,debug=debug)
         plotfracs(data)
         plt.imshow(frac, cmap='Reds', alpha=0.5, extent=[0, 360, tvd[doiF],
             tvd[doiS]], aspect=10)
@@ -2272,7 +2273,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
             except:
                 pass
         else:
-            print('SBI plot svg will be returned and not saved')
+            print('SBI plot svg will be returned and not saved') if debug else None
             try:
                 return plot_to_base64_png(plt)
             except:

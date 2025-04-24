@@ -522,7 +522,7 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
 
     wella.unify_basis(keys=None, alias=None, step=spacing)
 
-    print("Great Success!! :D")
+    #print("Great Success!! :D")
     return wella
 
 def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15,starter=0,stopper=5500, drop=[],seed=None):
@@ -592,7 +592,7 @@ def get_dlis_header(path):
     return pd.DataFrame(list(zip(chnames,description)),columns =['Mnemonic', 'Description'])
 
 
-def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, flatten=False):
+def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, flatten=False, debug=False):
     """
     Extract data from a DLIS file with unit conversion and header processing.
 
@@ -716,7 +716,7 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
                             c_units[curve_name] = curve_channel.units
                     else:
                         if flatten:
-                            print(f"Flattening multi-dimensional curve: {curve_name} with shape {curve_data.shape}")
+                            print(f"Flattening multi-dimensional curve: {curve_name} with shape {curve_data.shape}") if debug else None
                             for i in range(curve_data.shape[1]):
                                 sub_curve_name = f"{curve_name}_{i+1}"
                                 sub_curve_data = curve_data[:, i]
@@ -727,7 +727,7 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
                                     if curve_channel and sub_curve_name not in c_units:
                                         c_units[sub_curve_name] = curve_channel.units
                         else:
-                            print(f"Skipping multi-dimensional curve: {curve_name}")
+                            print(f"Skipping multi-dimensional curve: {curve_name}") if debug else None
                             skipped_curves.add(curve_name)
         else:
             for alias, mnemonics in aliases.items():
@@ -742,7 +742,7 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
                                 c_units[mnemonic] = curve_channel.units
                             break
                         elif flatten:
-                            print(f"Flattening multi-dimensional curve: {mnemonic} with shape {curve_data.shape}")
+                            print(f"Flattening multi-dimensional curve: {mnemonic} with shape {curve_data.shape}") if debug else None
                             for i in range(curve_data.shape[1]):
                                 sub_curve_name = f"{mnemonic}_{i+1}"
                                 sub_curve_data = curve_data[:, i]
@@ -754,7 +754,7 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
                                         c_units[sub_curve_name] = curve_channel.units
                             break
                         else:
-                            print(f"Skipping multi-dimensional curve: {mnemonic}")
+                            print(f"Skipping multi-dimensional curve: {mnemonic}") if debug else None
                             skipped_curves.add(mnemonic)
                             continue
 
@@ -769,11 +769,12 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
                 print(f"Warning: Error creating DataFrame for frame {frame.name}: {str(e)}")
                 continue
 
-    print("All encountered curves:")
-    print(", ".join(sorted(all_curves)))
-    if skipped_curves:
-        print("\nSkipped multi-dimensional curves:")
-        print(", ".join(sorted(skipped_curves)))
+    if debug:
+        print("All encountered curves:")
+        print(", ".join(sorted(all_curves)))
+        if skipped_curves:
+            print("\nSkipped multi-dimensional curves:")
+            print(", ".join(sorted(skipped_curves)))
 
     if not dataframes:
         raise ValueError("No valid data frames could be created from the DLIS file")
@@ -867,8 +868,8 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
     return combined_df, c_units, header_df, parameters
 
 
-def get_las_from_dlis(path,aliases,depthunit='m',step=0.15):
-    y = get_dlis_data('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS',aliases,resample_interval=step)
+def get_las_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
+    y = get_dlis_data('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS',aliases,resample_interval=step, debug=debug)
     return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
 # Example usage
@@ -902,3 +903,4 @@ if __name__ == "__main__":
     ax.set_zlabel('Depth (Z)')
 
     plt.show()
+

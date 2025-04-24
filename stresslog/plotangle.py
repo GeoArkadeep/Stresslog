@@ -112,7 +112,7 @@ def plotfracsQ(data):
 def cot(x):
     return np.cos(x)/np.sin(x)
 
-def plotfrac(data,path=None, dia=8.5):
+def plotfrac(data,path=None, dia=8.5, debug=False):
     """
     Generate detailed fracture morphology plot with depth calculations.
     
@@ -196,7 +196,7 @@ def plotfrac(data,path=None, dia=8.5):
         plt.title("Fracture Morphology")
         plt.savefig(path)
         plt.close()
-    print(yj)
+    print(yj) if debug else None
     yj[(maxangle-10)%360:(maxangle+15)%360]=np.nan
     yj[(maxangle+170)%360:(maxangle+195)%360]=np.nan
     #depths[(maxangle-10)%360:(maxangle+15)%360]=np.nan
@@ -229,7 +229,7 @@ def plotfrac(data,path=None, dia=8.5):
     
     i=0
     fdepths=depths.copy()
-    print(fdepths)
+    print(fdepths) if debug else None
     deldep = (np.nanmean(depths)) 
     depths = depths-deldep
     fdepths = fdepths-deldep
@@ -244,7 +244,7 @@ def plotfrac(data,path=None, dia=8.5):
     m1 = np.nanmax(np.concatenate([fdepths[0:(midpoint1-1)],fdepths[midpoint2:360]]))
     m2 = np.nanmax(fdepths[midpoint1:(midpoint2-1)])
     diff = m2-m1
-    print(diff)
+    print(diff) if debug else None
     fdepths[0:(midpoint1-1)] = fdepths[0:(midpoint1-1)] + diff/2
     fdepths[midpoint2:360] = fdepths[midpoint2:360] + diff/2
     fdepths[midpoint1:(midpoint2-1)]=fdepths[midpoint1:(midpoint2-1)] - diff/2
@@ -254,8 +254,8 @@ def plotfrac(data,path=None, dia=8.5):
     cdepths[midpoint1:(midpoint2-1)]=cdepths[midpoint1:(midpoint2-1)] - diff/2
     #cdepths[midpoint1:midpoint2] = cdepths[midpoint1:midpoint2][::-1]# FlipHorzR
     #fdepths[midpoint1:midpoint2] = fdepths[midpoint1:midpoint2][::-1]# FlipHorzR
-    print(fdepths)
-    print(d)
+    print(fdepths) if debug else None
+    print(d) if debug else None
     
     """
     while i<360:

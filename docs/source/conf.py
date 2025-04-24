@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 project = 'stresslog'
 copyright = 'ROCK LAB PRIVATE LIMITED'
 author = 'Arkadeep Ghosh'
-release = '1.6.6'
+release = '1.6.7'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
