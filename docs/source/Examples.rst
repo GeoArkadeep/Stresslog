@@ -85,6 +85,9 @@ Some of the data required for this example has strict format requirements, we pr
 .. code-block:: python
 
    # Load support data
+
+   import pandas as pd
+   
    survey = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/Deviation.csv')
    print(survey)
    formations = pd.read_csv('https://raw.githubusercontent.com/GeoArkadeep/supporting-data-for-EOS-Northern-Lights/main/NorthernLights-31_5-7.csv')
@@ -131,7 +134,6 @@ First, let's import the required packages:
 
     import stresslog as lst
     from welly import Well
-    import pandas as pd
 
 Loading Well Data
 -----------------
