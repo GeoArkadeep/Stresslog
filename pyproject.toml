@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stresslog"
-version = "1.6.7"
+version = "1.6.8"
 description = "Library for stress calculations from well logs"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.9,<=3.13"
