@@ -18,6 +18,12 @@ from welly import Curve
 from welly import Well
 from collections import defaultdict
 import io
+
+import warnings
+from pandas.errors import UnitStrippedWarning
+
+warnings.simplefilter("ignore", UnitStrippedWarning)
+
 user_home = os.path.expanduser('~/Documents')
 app_data = os.getenv('APPDATA')
 up = ['psi', 'Ksc', 'Bar', 'Atm', 'MPa']
