@@ -20,9 +20,7 @@ from collections import defaultdict
 import io
 
 import warnings
-from pandas.errors import UnitStrippedWarning
-
-warnings.simplefilter("ignore", UnitStrippedWarning)
+warnings.filterwarnings("ignore")
 
 user_home = os.path.expanduser('~/Documents')
 app_data = os.getenv('APPDATA')
