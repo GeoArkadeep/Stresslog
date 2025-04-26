@@ -42,11 +42,13 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
 
     # Load your well data from a LAS file
 
-    well = Well.from_las('path/to/your/well.las')
+    well = Well.from_las('path/to/your/well.las', index='m')
 
     # Simplest use case: Vertical well with no deviation data at full resolution (will take a fairly long time, enough for a coffee break)
     # This will also write output files to the default directories. If you don't want that, set writeFile=False
     # This will assume all the optional parameters are at their default settings
+    # It is necessary for the depth to be in metres. setting index='m' makes welly automatically convert the unit to metres, even if the original las has them in feet
+    # It is possible later to convert the units back to feet (and not just the depth but all calculated units can be changed to suit your needs) but this is not demonstrated here
 
     output = lst.compute_geomech(well)
 

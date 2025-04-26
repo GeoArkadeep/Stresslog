@@ -154,9 +154,9 @@ Here's how we load our well data:
    }
 
    # Load well log data
-   string_las1 = lst.get_las_from_dlis('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS', aliases=alias, step=0.147)
+   vertwell = lst.get_well_from_dlis('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS', aliases=alias, step=0.147)
    # we could have used aliases=None (which is the default) but that would have returned ALL the channels in the dlis creating a huge las file which slows the analysis somewhat.
-   vertwell = Well.from_las(string_las1)
+   # also steps less than 0.15m will be reset to 0.15m, this is a protective measure, upsampling data beyond it's natural resolution with this method creates artefacts and other issues. 
 
 Iteration 1: Vertical Well
 -----------------------------------------
@@ -317,7 +317,7 @@ Looking at the survey data, we notice that the well isn't perfectly vertical. At
 .. code-block:: python
 
     # Create deviated well model
-    wellwithdeviation = lst.getwelldev(wella=Well.from_las(string_las1), deva=survey)
+    wellwithdeviation = lst.getwelldev(wella=vertwell, deva=survey)
     # Run analysis with deviation but no stress tensor tilt
     output = lst.compute_geomech(
         wellwithdeviation,

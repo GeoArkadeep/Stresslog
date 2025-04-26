@@ -7,23 +7,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stresslog"
-version = "1.6.8"
+version = "1.6.9"
 description = "Library for stress calculations from well logs"
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<=3.13"
 license = { text = "AGPL-3.0" }
 authors = [
     { name = "Arkadeep Ghosh", email = "arkadeep_ghosh@rocklab.in" }
 ]
 dependencies = [
     "pandas>=2.0",
-    "numpy<=1.26.4",
+    "numpy",
     "scipy",
     "welly",
     "pint",
     "matplotlib",
     "plotly",
-    "dlisio<=1.0.2",
+    "dlisio",
     "setuptools>=42"
 ]
 
