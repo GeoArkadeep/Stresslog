@@ -869,7 +869,7 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
 
 
 def get_las_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
-    y = get_dlis_data('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS',aliases,resample_interval=step, debug=debug)
+    y = get_dlis_data(path,aliases,resample_interval=step, debug=debug)
     return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
 def get_well_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
