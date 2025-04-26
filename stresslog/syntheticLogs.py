@@ -872,6 +872,16 @@ def get_las_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
     y = get_dlis_data('WL_RAW_AAC-ARLL-CAL-DEN-GR-NEU_RUN6_EWL_2.DLIS',aliases,resample_interval=step, debug=debug)
     return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
+def get_well_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
+    y = get_dlis_data(path,aliases,resample_interval=step, debug=debug)
+    z = datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
+    well = Well.from_las(z, index='m')
+    start = well.header.loc[well.header['mnemonic'] == 'STRT', 'value'].values[0]
+    stop = well.header.loc[well.header['mnemonic'] == 'STOP', 'value'].values[0]
+    manual_basis = np.arange(start, stop, step)
+    well.unify_basis(basis=manual_basis)
+    return well
+
 # Example usage
 if __name__ == "__main__":
     # Demonstrate the function with file writing

@@ -22,7 +22,7 @@ from .BoreStab import (
 
 from .thirdparty import datasets_to_las
 
-from .syntheticLogs import create_random_las, getwelldev, create_random_well, create_header, get_las_from_dlis, get_dlis_data, get_dlis_header
+from .syntheticLogs import create_random_las, getwelldev, create_random_well, create_header, get_las_from_dlis, get_well_from_dlis, get_dlis_data, get_dlis_header
 
 # DrawSP.py
 from .DrawSP import drawSP, getSP
