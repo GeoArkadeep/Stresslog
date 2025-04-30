@@ -46,7 +46,9 @@ We **welcome contributions**—feel free to submit a pull request!
 ### Guidelines for Contributions  
 * Pull Requests are Welcome: If you have an improvement, bug fix, or feature, send a PR.  
 * No Code-Style Requirements: We don’t enforce a specific coding style — if the tests pass, your code is valid.
+* Before submitting a pull request, open an issue first: This is so that maintainer(s) can discuss the situation and perhaps guide the pull request in a way compatible with the overall structure and function of the codebase.
 
+Contributors are required to accept the Contributor License Agreement before submitting a pull request.
 
 ## Acknowledgements
 
