@@ -7,10 +7,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stresslog"
-version = "1.6.9"
+version = "1.6.10"
 description = "Library for stress calculations from well logs"
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.9,<=3.13"
+requires-python = ">=3.9,<=3.14"
 license = { text = "AGPL-3.0" }
 authors = [
     { name = "Arkadeep Ghosh", email = "arkadeep_ghosh@rocklab.in" }

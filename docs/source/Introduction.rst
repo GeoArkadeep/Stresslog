@@ -27,6 +27,7 @@ For developers and pythonistas, you can download the repository from github and 
    pip install -e .
 
    # Run tests
+   # Currently only pytest is required for testing
    pip install -r ./tests/test-requirements.txt
    pytest
 
