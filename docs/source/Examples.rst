@@ -291,7 +291,7 @@ In this first run, we've made several key assumptions:
 - The SHmax azimuth is 91 degrees
 - The stress tensor is tilted 2 degrees to the south
 
-The results can be found in the ./output/Stresslog_Plots directory, where PlotAll.png shows the Zobackogram, stability plot, sanding risk plot, and synthetic borehole image.
+The results can be found in the ./output/Stresslog_Plots directory, where PlotAll.png shows the Zobackogram, stability plot, sanding risk plot, and synthetic borehole image. The image at ./output/Stresslog_Plots/PlotBHI.png has been overlain on the imagelog manually to compare fracture patterns.
 
 .. image:: ../Figures/WellPlot.png
    :alt: Well Plot
