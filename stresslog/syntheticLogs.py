@@ -621,8 +621,8 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
     parameters : dict
         Dictionary containing raw parameter values from the DLIS file.
     """
-    if resample_interval < 0.15:
-        resample_interval = 0.15
+    if resample_interval < 0.1469:
+        resample_interval = 0.1469
     
     f, *tail = dlis.load(path)
     origin, *origin_tail = f.origins
@@ -869,13 +869,35 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
 
 
 def get_las_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
+    """
+    DEPRECATED in favor of get_well_from_dlis
+    """
     y = get_dlis_data(path,aliases,resample_interval=step, debug=debug)
     return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
-def get_well_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
-    y = get_dlis_data(path,aliases,resample_interval=step, debug=debug)
+def get_well_from_dlis(path,aliases=None,depthunit='m',step=0.15, debug=False):
+    """
+    Reads a dlis file using dlisio and converts the data first to a las string and then to a welly.Well object.
+
+    Parameters
+    ----------
+    path : str
+        Path to the DLIS file.
+    aliases: dict
+        The dict of mnemonics used to decide which of the available dlis curves will be imported. If None (default) then all the curves are included.
+    depthunit: str
+        String indicating the desired depth unit of the parsed well. Pass 'f' for depth in feet, or 'm' (default) for depth in metres.
+    step: float
+        Desired sample spacing of the parsed well data, in the unit chosen. Do not try to oversample much, results in weird aliasing artefacts if appreciably below the actual sample spacing.
+    
+    Returns
+    -------
+    welly.Well
+        A well object representing the dlis file, resampled according to the given step.
+    """
+    y = get_dlis_data(path,aliases,resample_interval=step, depthunits=depthunit, debug=debug)
     z = datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
-    well = Well.from_las(z, index='m')
+    well = Well.from_las(z, index=depthunit)
     start = well.header.loc[well.header['mnemonic'] == 'STRT', 'value'].values[0]
     stop = well.header.loc[well.header['mnemonic'] == 'STOP', 'value'].values[0]
     manual_basis = np.arange(start, stop, step)

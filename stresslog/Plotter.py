@@ -58,6 +58,7 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
         fig.text(0.95, 0.89, 'GL: '+str(-(details["GL"]))+' '+details["unit"]+' below MSL', fontsize=9, horizontalalignment='right') if details["GL"]<0 else fig.text(0.95, 0.89, 'GL: '+str(details["GL"])+' '+details["unit"]+' above MSL', fontsize=9, horizontalalignment='right')
     
     plt.savefig(plotfile,dpi=dpi)
+    plt.close()
     choptop(55,0,os.path.join(output_dir,'BottomLabel.png'))
     cutify2(os.path.join(output_dir,'PlotFigure.png'),os.path.join(output_dir,'BottomLabel.png'), os.path.join(output_dir,'WellPlot.png'), 0, 300, 0, 0)
     choptop(200,0,os.path.join(output_dir,'WellPlot.png'))
@@ -360,9 +361,10 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
         if pltsign > 0:
             #plt.tight_layout()
             plt.savefig(os.path.join(output_dir,"BottomLabel.png"), dpi=dpi)
-            
+            plt.close()
             return
         else:
+            plt.savefig(os.path.join(output_dir,'TopLabel.png'), dpi=dpi)
             if to_plotly:
                 plotly_fig = tls.mpl_to_plotly(fig)
                 #plt.tight_layout()
@@ -389,7 +391,7 @@ def plot_logs(data, styles, points=None, pointstyles=None, y_min=None, y_max=Non
                 plotly_fig.update_layout(margin=dict(l=50,r=50,t=0,b=0))
                 pio.write_json(plotly_fig,os.path.join(output_dir,"TopPlotly.json"))
                 #plotly_fig.write_image("TopPlotly.png")
-            #plt.savefig(os.path.join(output_dir,'TopLabel.png'), dpi=dpi)
+            plt.close()
             return
     #print(normalization_info)
     return fig, axes
