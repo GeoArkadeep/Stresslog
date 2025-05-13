@@ -156,25 +156,21 @@ output = lst.compute_geomech(
 print(output[0])
 print(list(output[0]))
 """
-                  DEPT           DTCO  ...  Shear_Modulus     Bulk_Modulus
-0         0.0000000000            NaN  ...   0.0000000000     0.0000000000
-1         0.1470000000            NaN  ...   0.0000000000     0.0000000000
-2         0.2940000000            NaN  ...   0.0000000000     0.0000000000
-3         0.4410000000            NaN  ...   0.0000000000     0.0000000000
-4         0.5880000000            NaN  ...   0.0000000000     0.0000000000
-...                ...            ...  ...            ...              ...
-18922  2781.5339999988  87.2171899945  ...   1.8637329689  5133.1104753863
-18923  2781.6809999988  87.7187699958  ...   1.8287958424  4848.8212822883
-18924  2781.8279999988  88.2238099957  ...   1.7944750138  4796.3186612756
-18925  2781.9749999988  88.4480199981  ...   1.7795074291  4957.0108813337
-18926  2782.1219999988  88.3849000005  ...   0.0000000000     0.0000000000
+                  DEPT  DTCO  ...  Shear_Modulus     Bulk_Modulus
+0         0.0000000000   NaN  ...   0.0000000000     0.0000000000
+1         0.1470000000   NaN  ...   0.0000000000     0.0000000000
+2         0.2940000000   NaN  ...   0.0000000000     0.0000000000
+3         0.4410000000   NaN  ...   0.0000000000     0.0000000000
+4         0.5880000000   NaN  ...   0.0000000000     0.0000000000
+...                ...   ...  ...            ...              ...
+19828  2914.7159999987   NaN  ...   2.2818260018  6776.4871193190
+19829  2914.8629999987   NaN  ...   2.2820489493  6777.2354994299
+19830  2915.0099999987   NaN  ...   2.2822719005  6777.9839018296
+19831  2915.1569999987   NaN  ...   2.2824948556  6778.7323265105
+19832  2915.3039999987   NaN  ...   0.0000000000     0.0000000000
 
-[18927 rows x 38 columns]
-['DEPT', 'DTCO', 'DTSM', 'GR', 'NPHI', 'RLA1', 'RXO_HRLT', 'RHOZ', 'PEFLA',
-'MD', 'TVDM', 'INCL', 'AZIM', 'ShaleFlag', 'RHO', 'OBG_AMOCO', 'DTCT', 'PP_GRADIENT',
-'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad', 'FracPressure', 'GEOPRESSURE', 'SHmin_PRESSURE', 'SHmax_PRESSURE',
-'MUD_PRESSURE', 'OVERBURDEN_PRESSURE', 'HYDROSTATIC_PRESSURE', 'MUD_GRADIENT', 'S0_Lal', 'S0_Lal_Phi', 'UCS_Horsud',
-'UCS_Lal', 'Poisson_Ratio', 'ML90', 'Youngs_Modulus', 'Shear_Modulus', 'Bulk_Modulus']
+[19833 rows x 40 columns]
+['DEPT', 'DTCO', 'DTSM', 'GR', 'NPHI', 'RLA1', 'RXO_HRLT', 'RHOZ', 'PEFLA', 'MD', 'TVDM', 'INCL', 'AZIM', 'ShaleFlag', 'RHO', 'OBG_AMOCO', 'DTCT', 'PP_GRADIENT', 'SHmin_DAINES', 'SHmin_ZOBACK', 'FracGrad', 'FracPressure', 'GEOPRESSURE', 'SHmin_PRESSURE', 'SHmax_PRESSURE', 'MUD_PRESSURE', 'OVERBURDEN_PRESSURE', 'HYDROSTATIC_PRESSURE', 'MUD_GRADIENT', 'S0_Lal', 'S0_Lal_Phi', 'UCS_horsrud', 'S0 Lal', 'phi_lal', 'phi_lang', 'Poisson_Ratio', 'ML90', 'Youngs_Modulus', 'Shear_Modulus', 'Bulk_Modulus']
 """
 
 print(output[1][:2500])
@@ -184,61 +180,61 @@ VERS.   2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.    NO : One line per depth step
 DLM . SPACE : Column Data Section Delimiter
 ~Well ------------------------------------------------------
-STRT.m     0.00000 :
-STOP.m  2782.12200 :
-STEP.m     0.14700 :
+STRT.m     0.00000 : 
+STOP.m  2915.30400 : 
+STEP.m     0.14700 : 
 NULL.      -999.25 : Null value
-UWI .       31/5-7 :
-WELL.       31/5-7 :
-SRVC. Schlumberger :
-COMP.      Equinor :
-FLD .          Eos :
+UWI .       31/5-7 : 
+WELL.       31/5-7 : 
+SRVC. Schlumberger : 
+COMP.      Equinor : 
+FLD .          Eos : 
 ~Curve Information -----------------------------------------
-DEPT                .m      :
-DTCO                .us/ft  :
-DTSM                .us/ft  :
-GR                  .gAPI   :
-NPHI                .m3/m3  :
-RLA1                .ohm.m  :
-RXO_HRLT            .ohm.m  :
-RHOZ                .g/cm3  :
-PEFLA               .       :
-MD                  .m      :
-TVDM                .m      :
-INCL                .       :
-AZIM                .       :
-ShaleFlag           .       :
-RHO                 .gcc    :
-OBG_AMOCO           .gcc    :
-DTCT                .       :
-PP_GRADIENT         .gcc    :
-SHmin_DAINES        .gcc    :
-SHmin_ZOBACK        .gcc    :
-FracGrad            .gcc    :
-FracPressure        .psi    :
-GEOPRESSURE         .psi    :
-SHmin_PRESSURE      .psi    :
-SHmax_PRESSURE      .psi    :
-MUD_PRESSURE        .psi    :
-OVERBURDEN_PRESSURE .psi    :
-HYDROSTATIC_PRESSURE.psi    :
-MUD_GRADIENT        .gcc    :
-S0_Lal              .       :
-S0_Lal_Phi          .       :
-UCS_Horsud          .mpa    :
-UCS_Lal             .mpa    :
-Poisson_Ratio       .       :
-ML90                .gcc    :
-Youngs_Modulus      .       :
-Shear_Modulus       .       :
-Bulk_Modulus        .       :
+DEPT                .m      : 
+DTCO                .us/ft  : 
+DTSM                .us/ft  : 
+GR                  .gAPI   : 
+NPHI                .m3/m3  : 
+RLA1                .ohm.m  : 
+RXO_HRLT            .ohm.m  : 
+RHOZ                .g/cm3  : 
+PEFLA               .       : 
+MD                  .m      : 
+TVDM                .m      : 
+INCL                .       : 
+AZIM                .       : 
+ShaleFlag           .       : 
+RHO                 .gcc    : 
+OBG_AMOCO           .gcc    : 
+DTCT                .       : 
+PP_GRADIENT         .gcc    : 
+SHmin_DAINES        .gcc    : 
+SHmin_ZOBACK        .gcc    : 
+FracGrad            .gcc    : 
+FracPressure        .psi    : 
+GEOPRESSURE         .psi    : 
+SHmin_PRESSURE      .psi    : 
+SHmax_PRESSURE      .psi    : 
+MUD_PRESSURE        .psi    : 
+OVERBURDEN_PRESSURE .psi    : 
+HYDROSTATIC_PRESSURE.psi    : 
+MUD_GRADIENT        .gcc    : 
+S0_Lal              .       : 
+S0_Lal_Phi          .       : 
+UCS_horsrud         .mpa    : 
+S0 Lal              .mpa    : 
+phi_lal             .       : 
+phi_lang            .       : 
+Poisson_Ratio       .       : 
+ML90                .gcc    : 
+Youngs_Modulus      .       : 
+Shear_Modulus       .       : 
+Bulk_Modulus        .       : 
 ~Params ----------------------------------------------------
-SMALL_RING     .in 8.0 : Caliper Calibration Small Ring
-CALI_LIN_OFFSET.m  0.0 : Caliper Linear Offset
-~Other -----------------------------------------------------
-~ASCII -----------------------------------------------------
-   0.00000    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    0.00000    0.00000    0.00000    0.00000    0.00000    -999.25    -999.25   60.00000    -999.25    -999.25    1.48043    -999.25    -999.25  436.74626    -999.25    -999.25    0.00000    0.00000    0.00000    1.26000    0.00000    0.00000    0.00000    0.00000    0.25000    0.51126    0.00000    0.00000    0.00000
-   0.14700    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -999.25    -
+SMALL_RING                       .in                                                                                               8.0 : Caliper Calibration Small Ring
+LARGE_RING                       .in                                                                                11.999999046325684 : Caliper Calibration Large Ring
+NCT_WATER_TEMP                   .degC                                                                              24.444442749023438 : Calibration Tank Water Temperature
+GR_JIG_REF                       .gAPI                                                                                           160.0 : Jig minus background reference
 """
 
 
@@ -295,7 +291,7 @@ unwrapped_z = z.where(z >= 0, z + 180)
 from matplotlib import pyplot as plt
 plt.plot(unwrapped_z)
 plt.xlabel("Depth (metres)")
-plt.ylabel("SH_Max Azimuth (degrees)")
+plt.ylabel("Fast Shear Azimuth as per log data (degrees)")
 plt.savefig('SHmax_Azim.png')
 
 
