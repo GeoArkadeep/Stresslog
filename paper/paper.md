@@ -27,9 +27,9 @@ This package is meant to be used by researchers and practitioners working in the
 
 # Statement of need
 
-Open-source packages exist, such as [@Yu2018], but this as well as most other commercial software (JewelSuite by Baker Hughes being a notable exception) assume a vertical stress state. Stresslog differs from these by aiming to be comprehensive: allowing modeling of variable Biot's coefficient, thermal stresses and inclined stress states, operating on standard well log formats, and in-built support for log aliases.
+Open-source packages exist, such as [@Yu2018], but this as well as most other commercial software (JewelSuite by Baker Hughes being a notable exception) assume a vertical stress state. Stresslog differs from these by aiming to be comprehensive: allowing modeling of variable Biot's coefficient, thermal stresses and inclined stress states, operating on standard well log formats, and with built-in support for log aliasing.
 
-Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. Stresslog is aimed at empowering researchers with a 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
+Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. It is aimed at empowering researchers with a 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
 
 # Methodology
 
