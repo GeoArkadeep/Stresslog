@@ -23,9 +23,11 @@ bibliography: paper.bib
 
 # Summary
 
-This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use 6 component stress tensor (as calculated using [@pevska1995]) which allows modeling of inclined wellbores in inclined states of stress. Stresslog estimates pore-pressure (with and without unloading effects) from sonic, resistivity and d-exponent, principal stresses, hoop stresses, compressive strength, tensile strength, the three moduli of elasticity and sanding tendency.
+This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use 6 component stress tensor, as calculated using [@pevska1995], which allows modeling of inclined wellbores in inclined states of stress. Stresslog estimates pore-pressure (with and without unloading effects) from sonic, resistivity and d-exponent, principal stresses, hoop stresses, compressive strength, tensile strength, the three moduli of elasticity and sanding tendency.
 
 # Statement of need
+
+Commercial software such as JewelSuite by Baker Hughes allow modeling of inclined stress states, but detailed information regarding the implementaion are not publicly available. Open Source repositories exist for this task, such as [@Yu2018], but this as well as most other commercial software assume a vertical stress state.
 
 Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. Stresslog is aimed at empowering researchers with a comprehensive 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
 
