@@ -46,7 +46,8 @@ Below is a basic example demonstrating how to use **Stresslog** to perform geome
     well = Well.from_las('path/to/your/well.las', index='m')
 
     # Simplest use case: Vertical well with no deviation data at full resolution (will take a fairly long time, enough for a coffee break)
-    # This will also write config and output files to the default directories (by default ~/Documents/Stresslog_Config, ~/Documents/Stresslog_Data and ~/Documents/Stresslog_Plots). If you don't want that, set writeFile=False and writeConfig=False
+    # This will also write config and output files to the default directories (by default ~/Documents/Stresslog_Config, ~/Documents/Stresslog_Data and ~/Documents/Stresslog_Plots).
+    # If you don't want that, set writeFile=False and writeConfig=False, this will skip writing files and creating directories
     # This will assume all the optional parameters are at their default settings
     # It is necessary for the depth to be in metres. setting index='m' makes welly automatically convert the unit to metres, even if the original las has them in feet
     # It is possible later to convert the units back to feet (and not just the depth but all calculated units can be changed to suit your needs) but this is not demonstrated here
