@@ -43,7 +43,7 @@ def get_path_dict(user_home):
     path_dict = {}
     path_dict['output_dir'] = os.path.join(user_home, 'Stresslog_Plots')
     path_dict['output_dir1'] = os.path.join(user_home, 'Stresslog_Data')
-    path_dict['input_dir'] = os.path.join(user_home, 'Stresslog_Models')
+    path_dict['input_dir'] = os.path.join(user_home, 'Stresslog_Config')
     path_dict['motor_dir'] = os.path.join(user_home, 'Mud_Motor')
     path_dict.update({'plot_figure': os.path.join(path_dict['output_dir'],
         'PlotFigure.png'), 'plot_stability': os.path.join(path_dict[
@@ -224,7 +224,7 @@ def getNu(well, nun, alias):
     return nu
 
 
-def read_aliases_from_file(file_path):
+def read_aliases_from_file(file_path, writeConfig=True):
     import json
     try:
         with open(file_path, 'r') as file:
@@ -243,6 +243,8 @@ def read_aliases_from_file(file_path):
             ['none', 'SURFRPM'], 'WOB': ['none', 'WOBAVG'], 'ECD': ['none',
             'ACTECDM'], 'BIT': ['none', 'BIT'], 'TORQUE': ['none', 'TORQUE',
             'TORQUEAVG'], 'FLOWRATE': ['none', 'FLOWRATE', 'FLOWIN']}
+        if not writeConfig:
+            return aliases
         try:
             with open(file_path, 'w') as file:
                 json.dump(aliases, file, indent=4)
@@ -252,7 +254,7 @@ def read_aliases_from_file(file_path):
 
 
 def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
-    strength_units, gradient_units, ureg, file_path, debug=False):
+    strength_units, gradient_units, ureg, file_path, debug=False, writeConfig=True):
 
     def convert_value(value, from_unit, to_unit, ureg=ureg):
         return (value * ureg(from_unit.lower())).to(to_unit.lower()).magnitude
@@ -341,13 +343,15 @@ def read_styles_from_file(minpressure, maxchartpressure, pressure_units,
                 value['right'] = round(convert_value(value['right'], value[
                     'unit'], strength_units))
                 value['unit'] = strength_units
+    if not writeConfig:
+        return styles
     with open(file_path, 'w') as file:
         json.dump(styles, file, indent=4)
     return styles
 
 
 def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units,
-    strength_units, gradient_units, ureg, file_path):
+    strength_units, gradient_units, ureg, file_path, writeConfig=True):
 
     def convert_value(value, from_unit, to_unit, ureg=ureg):
         return (value * ureg(from_unit.lower())).to(to_unit.lower()).magnitude
@@ -389,6 +393,8 @@ def read_pstyles_from_file(minpressure, maxchartpressure, pressure_units,
                 value['right'] = round(convert_value(value['right'], value[
                     'unit'], strength_units))
                 value['unit'] = strength_units
+    if not writeConfig:
+        return pstyles
     with open(file_path, 'w') as file:
         json.dump(pstyles, file, indent=4)
     return pstyles
@@ -572,7 +578,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
     lithos=None, user_home=user_home, program_option=[300,
     4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
-    debug=False, penetration=False, ten_fac = 10, ehmin = None, ehmax= None):
+    debug=False, penetration=False, ten_fac = 10, ehmin = None, ehmax= None, writeConfig=True):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -703,6 +709,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Strain in direction of minimum horizontal stress, in absolute or microstrains (default None) if provided overrides the tecb parameter in shmin calculation.
     ehmax : float, optional
         Strain in direction of maximum horizontal stress, in absolute or microstrains (default None) if provided overrides the tecb parameter in shmin calculation.
+    writeConfig: bool, optional
+        Whether to write config files in the specified paths (default is True)
 
     Returns
     -------
@@ -760,6 +768,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     if writeFile:
         os.makedirs(output_dir, exist_ok=True)
         os.makedirs(output_dir1, exist_ok=True)
+    if writeConfig:
         os.makedirs(input_dir, exist_ok=True)
     output_file = paths['plot_figure']
     output_fileS = paths['plot_stability']
@@ -811,7 +820,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     devdata = np.column_stack((md, incdata, azmdata))
     finaldepth = well.df().index[-1]
     if aliasdict is None:
-        alias = read_aliases_from_file(aliaspath)
+        alias = read_aliases_from_file(aliaspath,writeConfig=writeConfig)
     else:
         alias = aliasdict
     print(alias) if debug else None
@@ -2726,7 +2735,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         'GR_CUTOFF': grcut
     }, index=tvdm)"""
     styles = read_styles_from_file(minpressure, maxchartpressure,
-        pressure_unit, strength_unit, gradient_unit, ureg, stylespath)
+        pressure_unit, strength_unit, gradient_unit, ureg, stylespath, writeConfig=writeConfig)
     print('max pressure is ', maxchartpressure) if debug else None
 
     def convert_to_tvd(y_values):
@@ -2757,7 +2766,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         ucss = np.array([[depth, ucs] for ucs, depth in ucss])
         points_data['ucs'] = zip(*ucss)
     pointstyles = read_pstyles_from_file(minpressure, maxchartpressure,
-        pressure_unit, strength_unit, gradient_unit, ureg, pstylespath)
+        pressure_unit, strength_unit, gradient_unit, ureg, pstylespath,writeConfig=writeConfig)
     if np.any(~np.isnan(cald)) > 0 or len(casing_dia) > 1:
         print('Track 5 added') if debug else None
         styles.update({'CALIPER1': {'color': 'brown', 'linewidth': 0.5,
