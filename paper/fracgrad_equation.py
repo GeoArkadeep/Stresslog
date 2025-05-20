@@ -6,7 +6,7 @@ Sb00, Sb11, Sb22, Sb01, Sb02, Sb12 = symbols("Sb00 Sb11 Sb22 Sb01 Sb02 Sb12")
 
 # Derived variables
 deltaP = bhp - pp
-sigmaT = symbols("sigmaT")  # to be defined later
+sigmaT = symbols("sigmaT")  # thermal stress
 tensile_strength = tns
 
 # Expressions for Szz, Stt, and Ttz
