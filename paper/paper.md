@@ -119,7 +119,7 @@ The well data from Equinor Northern Lights dataset [@northernlights] has been us
 
 ![Model of Northern Lights Eos Well showing the Drake I, II and IntraMarine formations.](./figures/WellPlot.png)
 
-![Fracture motifs calculated at 2624.5m and superimposed onto the image log.](./figures/overlay.png)
+![Fracture motifs calculated at 2627.5m and superimposed onto the image log.](./figures/overlay.png)
 
 It is not being suggested that this interpretation of the data is preferred over any other, the analysis by [@Thompson2022] is much more comprehensive.
 
