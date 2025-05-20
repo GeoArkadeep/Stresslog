@@ -4,7 +4,9 @@ Stresslog Documentation
 Introduction
 ============
 
-This is a python package for geomechanics. The core priorities of this package are:
+This is a python package for geomechanics. It is meant for use by researchers and professionals, to solve problems regarding wellbore stability and perform 1D mechanical earth modeling.
+
+The core priorities of this package are:
 
 - Being as accurate as possible:
     - Calculations take into account thermal stresses and Biot's poroelastic constant, and many of the parameters can be changed on per formation basis or per lithology basis
