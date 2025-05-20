@@ -105,7 +105,7 @@ $$
 }
 $$
 
-where $\sigma'_B$ is the effective stress tensor in the borehole frame of reference, PP is pore-pressure, TS is tensile strength, $\nu$ is Poisson's ratio and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
+where $\sigma'_B$ is the effective stress tensor in the borehole frame of reference, PP is pore-pressure, TS is tensile strength, $\nu$ is Poisson's ratio, $\sigma_T$ is thermal stress and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
 
 If the user specifies an analysis depth, an orientation-stability plot is calculated at that depth. Synthetic image of the wellbore wall is prepared for 5 metres around the analysis depth. Other plots are also calculated at the analysis depth, including sanding prediction [@willson2002; @Zhang2007].
 
