@@ -23,7 +23,7 @@ bibliography: paper.bib
 
 # Summary
 
-This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use 6 component stress tensor, as calculated using [@pevska1995], which allows modeling of inclined wellbores in inclined states of stress. Under the hood, Stresslog uses [@SciPy] for optimizations, dlisio and welly to handle well .dlis files and .las files (and other well data), respectively.
+This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use 6 component stress tensor, as calculated using [@pevska1995], which allows modeling of inclined wellbores in inclined states of stress. Under the hood, Stresslog uses SciPy [@SciPy] for optimizations, and dlisio and welly to handle well .dlis files and .las files (and other well data), respectively.
 
 # Statement of need
 
