@@ -87,7 +87,8 @@ In this example:
 - We load a well from a LAS file using the `welly` library.
 - Deviation data is added to the well object. The deviation data should be provided as a DataFrame with columns: measured depth, inclination, and azimuth, in that order.
 - Well attributes are defined in the `attrib` list. These attributes can include parameters like Kelly Bushing (KB) height, Ground Level (GL), and others as required.
-- The `compute_geomech` function is called to perform the geomechanical analysis. The `writeFile` parameter is set to `False` to prevent writing output to files. 
+- The `compute_geomech` function is called to perform the geomechanical analysis. The `writeFile` parameter is set to `False` to prevent writing output to files.
+- If interactive plots during the process are desired, we can set `display` parameter to `True` which will also set `writeFile` to `True` internally. This will then display the well plot, as well as other plots at the depth of interest, if any.
 - For a comprehensive list of parameters for 'compute_geomech', please refer to the API documentation.
 
 
