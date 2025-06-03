@@ -578,7 +578,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
     lithos=None, user_home=user_home, program_option=[300,
     4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
-    debug=False, penetration=False, ten_fac = 10, ehmin = None, ehmax= None, writeConfig=True):
+    debug=False, penetration=False, ten_fac = 10, ehmin = None, ehmax= None, writeConfig=True, display=False):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -2620,7 +2620,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     lasheader = lasheader.drop(index=0).reset_index(drop=True)
     filestring = datasets_to_las(None, {'Header': lasheader, 'Curves':
         cdf3}, cc_units)
-    if not writeFile:
+    if not writeFile and not display:
         return cdf3, filestring, rv1, rv2, rv3, rv4, rv5, doi, well
     """
     plt.plot(ladempa)
@@ -2802,8 +2802,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     fig, axes = plot_logs_labels(data, styles, y_min=(float(plotend) * ureg(
         'metre').to(ul[unitchoice[0]])).magnitude, y_max=(float(plotstart) *
         ureg('metre').to(ul[unitchoice[0]])).magnitude, width=15, height=10,
-        points=points_df, pointstyles=pointstyles, dpi=dpif, output_dir=paths['output_dir'],title=figname, details=details)
-    fig.suptitle('Wellbore : ' + figname, fontsize=14, y=0.9)
+        points=points_df, pointstyles=pointstyles, dpi=dpif, output_dir=paths['output_dir'],title=figname, details=details, display=display)
     plt.close()
     #return df3, well
     return cdf3, filestring, rv1, rv2, rv3, rv4, rv5, doi, well
