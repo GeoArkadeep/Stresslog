@@ -56,9 +56,10 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
         
         fig.text(0.95, 0.91, 'KB: '+str(details["KB"])+' '+details["unit"]+' above MSL', fontsize=9, horizontalalignment='right')
         fig.text(0.95, 0.89, 'GL: '+str(-(details["GL"]))+' '+details["unit"]+' below MSL', fontsize=9, horizontalalignment='right') if details["GL"]<0 else fig.text(0.95, 0.89, 'GL: '+str(details["GL"])+' '+details["unit"]+' above MSL', fontsize=9, horizontalalignment='right')
-    if display:
-        plt.show(block=False)
+    
     plt.savefig(plotfile,dpi=dpi)
+    if display:
+        plt.show()
     plt.close()
     choptop(55,0,os.path.join(output_dir,'BottomLabel.png'))
     cutify2(os.path.join(output_dir,'PlotFigure.png'),os.path.join(output_dir,'BottomLabel.png'), os.path.join(output_dir,'WellPlot.png'), 0, 300, 0, 0)

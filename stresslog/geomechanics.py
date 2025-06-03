@@ -4,12 +4,15 @@ This file is part of "Stresslog" project and is released under the
 GNU Affero General Public License v3.0 (AGPL-3.0)
 See the GNU Affero General Public License for more details: <https://www.gnu.org/licenses/agpl-3.0.html>
 """
+import warnings
+warnings.filterwarnings("ignore")
+
 import pint
 import os
 import numpy as np
 import scipy
 import matplotlib
-#matplotlib.use('svg')
+
 from matplotlib import pyplot as plt
 import pandas as pd
 import lasio as laua
@@ -711,6 +714,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         Strain in direction of maximum horizontal stress, in absolute or microstrains (default None) if provided overrides the tecb parameter in shmin calculation.
     writeConfig: bool, optional
         Whether to write config files in the specified paths (default is True)
+    display: bool, optional
+        Whether to interactively show output during processing (default is False)
 
     Returns
     -------
@@ -725,6 +730,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
     Notes
     -----
     - If `writeFile` is True, all generated plots and data will be saved to disk.
+    - If `display` is True, the stress polygon, directional stability plot, synthetic borehole image, sanding risk plot and well plot will be shown in addition to being saved to disk. writeFile is assumed to be True internally in this case.
     - The following dataframes must have fixed formats for their respective columns:
       
       - **forms**: Must contain columns in this order:
@@ -748,6 +754,9 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
       Any deviation in column order, or missing values will result in errors during processing.
     """
     print('Starting Geomech Calculation...') if debug else None
+    if display:
+        writeFile = True
+    
     numodel = [0.35, 0.26, 0.23, 0.25]
     try:
         if ehmin>1:
@@ -2111,7 +2120,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         if writeFile:
             drawSP(sigmaVmpa, ppmpa, bhpmpa, sigmahminmpa, UCS=ucsmpa, phi=phi[doiX
                 ], flag=ilog_flag, mu=mu2[doiX], nu=nu2[doiX], bt=bt[doiX], ym=ym[doiX],
-                delT=delTempC[doiX], path=output_fileSP, biot=biot[doiX])
+                delT=delTempC[doiX], path=output_fileSP, biot=biot[doiX], display=display)
         else:
             rv4 = plot_to_base64_png(drawSP(sigmaVmpa, ppmpa, bhpmpa,
                 sigmahminmpa, UCS=ucsmpa, phi=phi[doiX], flag=ilog_flag, mu=mu2[doiX], nu=nu2[
@@ -2166,7 +2175,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
                 draw(tvd[doiX], osx, osy, osz, sigmas[3], sigmas[4], ucsmpa,
                     alphas[doiX], betas[doiX], gammas[doiX], 0, nu2[doiX],
                     azmdoi, incdoi, bt[doiX], ym[doiX], delTempC[doiX],
-                    path=output_fileS,ten_fac=arr_ten_fac[i], debug=debug)
+                    path=output_fileS,ten_fac=arr_ten_fac[i], debug=debug, display=display)
             except:
                 pass
         else:
@@ -2283,6 +2292,8 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         if writeFile:
             try:
                 plt.savefig(output_fileBHI, dpi=1200)
+                if display:
+                    plt.show()
             except:
                 pass
         else:
@@ -2348,7 +2359,7 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
         k0 = 1
         if writeFile:
             plot_sanding(sigmamax, sigmamin, sigma_axial, ppmpa, ucsmpa, k0,
-                nu2[i], biot[i], os.path.join(output_dir, 'Sanding.png'))
+                nu2[i], biot[i], os.path.join(output_dir, 'Sanding.png'), display=display)
         else:
             return plot_to_base64_png(plot_sanding(sigmamax, sigmamin,
                 sigma_axial, ppmpa, ucsmpa, k0, nu2[i], biot[i]))

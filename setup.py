@@ -27,7 +27,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering",
     ],
     python_requires=">=3.9,<=3.14",
-    install_requires=["pandas>=2.0","numpy","scipy","welly","pint","matplotlib", "plotly","dlisio","setuptools>=42"],
+    install_requires=["pandas>=2.0","numpy","scipy","welly","pint","matplotlib", "plotly","dlisio","setuptools>=42,<81"],
     packages=setuptools.find_packages(),
     include_package_data=True,    
 )

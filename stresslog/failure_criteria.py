@@ -357,7 +357,7 @@ def willson_sanding_cwf(sigmamax,sigmamin,pp,ucs,nu,biot=1):
 import matplotlib.pyplot as plt
 
 
-def plot_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1, path=None):
+def plot_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1, path=None, display=False):
     """
     Create a sanding analysis plot comparing Zhang and Willson criteria.
 
@@ -429,6 +429,8 @@ def plot_sanding(sigmamax, sigmamin,sigma_axial, pp, ucs, k0, nu, biot=1, path=N
     plt.grid(False)
     if path is not None:
         plt.savefig(path)
+        if display:
+            plt.show()
         plt.close()
     else:
         return plt
