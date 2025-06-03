@@ -24,7 +24,7 @@ dependencies = [
     "matplotlib",
     "plotly",
     "dlisio",
-    "setuptools>=42"
+    "setuptools>=42,<81"
 ]
 
 [project.urls]

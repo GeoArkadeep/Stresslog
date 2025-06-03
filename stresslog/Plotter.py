@@ -18,7 +18,7 @@ import os
 
 user_home = os.path.expanduser("~/Documents")
 
-def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=False, title=None, details={"unit":"metres","type":"TVD","reference":"KB/DF","KB":0,"GL":0}):
+def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=False, title=None, details={"unit":"metres","type":"TVD","reference":"KB/DF","KB":0,"GL":0}, display=False):
     """
     Wrapper function that calls plot_logs three times to generate the main plot and label plots.
     
@@ -58,6 +58,8 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
         fig.text(0.95, 0.89, 'GL: '+str(-(details["GL"]))+' '+details["unit"]+' below MSL', fontsize=9, horizontalalignment='right') if details["GL"]<0 else fig.text(0.95, 0.89, 'GL: '+str(details["GL"])+' '+details["unit"]+' above MSL', fontsize=9, horizontalalignment='right')
     
     plt.savefig(plotfile,dpi=dpi)
+    if display:
+        plt.show()
     plt.close()
     choptop(55,0,os.path.join(output_dir,'BottomLabel.png'))
     cutify2(os.path.join(output_dir,'PlotFigure.png'),os.path.join(output_dir,'BottomLabel.png'), os.path.join(output_dir,'WellPlot.png'), 0, 300, 0, 0)

@@ -875,7 +875,7 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
         plt2.close()
         return crush,frac,minstress,maxstress,angle[minstress],angle[(minstress+180)%360],angle,b64png
 
-def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None,ten_fac=10, debug=False):
+def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,  azimuthu=0,inclinationi=0,bt=0,ym=0,delT=0,path=None,ten_fac=10, debug=False, display=False):
     """Generate wellbore stability plots showing mud weight headroom and breakout widths.
 
     This function creates two polar projection plots:
@@ -923,6 +923,10 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
         Temperature difference, default 0
     path : str, optional
         File path to save the plot. If None, returns the plot object
+    debug : bool, optional
+        Prints debug statements to console
+    display : bool, optional
+        Displays the plot in addition to saving
 
     Returns
     -------
@@ -1076,6 +1080,8 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
          ha='center', fontsize=10)
     if path is not None:
         plt2.savefig(path,dpi=600)
+        if display:
+            plt2.show()
         plt2.clf()
     else:
         return plt2

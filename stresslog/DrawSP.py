@@ -17,7 +17,7 @@ UCS = 46
 PhiB = 45
 mu = 0.6
 
-def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0,delT=0,PhiBr=15,biot=1,path=None,debug=False):
+def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0,delT=0,PhiBr=15,biot=1,path=None,debug=False, display=False):
     """Draw a stress polygon visualization for wellbore stability analysis.
 
     Parameters
@@ -276,6 +276,8 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0
     plt3.ylabel("SHmax", labelpad=10)  # Increase labelpad as needed
     if path is not None:
         plt3.savefig(path, dpi=600)
+        if display:
+            plt3.show()
         plt3.clf()
         plt3.close()
     else:
