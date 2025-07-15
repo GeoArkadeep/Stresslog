@@ -439,7 +439,7 @@ def get_Dxc_vec(ROP, RPM, WOB, BTDIA, ECD, pn):
 
     # Calculate Dxc
     Dxc = (np.log10(ROP / (60 * RPM)) * pn) / (np.log10((12 * WOB) / (10**6 * BTDIA)) * ECD)
-    return Dxc
+    return np.where(Dxc > 0.1, Dxc, np.nan)
 
 
 def get_Shmin_grad_Daine_ppg(nu2, ObgTppg, biot, ppgZhang, tecB):
