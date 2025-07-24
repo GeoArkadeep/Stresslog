@@ -1,0 +1,51 @@
+# This workflow runs tests for the project on pushes and pull requests.
+# It's a good practice to have a separate CI workflow from your release workflow.
+name: Run Tests (CI)
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+
+  # Triggers the workflow on pull request events but only for the "main" branch
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # This job runs the test suite
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      # By setting fail-fast to false, all jobs in the matrix will be allowed to
+      # finish, even if one of them fails. This is useful to see test results
+      # for all Python versions.
+      fail-fast: false
+      matrix:
+        # Run the tests on a matrix of Python versions
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      # 1. Checks out your repository's code
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # 2. Sets up the specific Python version for this job run
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # 3. Installs project dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .  # Installs your package
+          # Adjust this path if your test requirements file is elsewhere
+          pip install -r ./tests/test-requirements.txt
+
+      # 4. Runs pytest to execute the tests
+      - name: Run tests with pytest
+        run: |
+          pip install pytest
+          pytest
