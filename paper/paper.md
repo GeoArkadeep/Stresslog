@@ -23,15 +23,23 @@ bibliography: paper.bib
 
 # Summary
 
-This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use 6 component stress tensor, as calculated using [@pevska1995], which allows modeling of inclined wellbores in inclined states of stress. Under the hood, Stresslog uses SciPy [@SciPy] for optimizations, dlisio [@dlisio] and welly [@welly] to read .dlis files and .las files (and other well data), respectively, and lasio[@Inverarity_Lasio_2023] to write .las files.
+This package is meant to be used by researchers and practitioners working in the field of geomechanics. It uses a collection of algorithms used to iteratively model the sate of stress underground, given a well log. The computations use 6 component stress tensor, as calculated using [@pevska1995], which allows modeling of inclined wellbores in inclined states of stress.
 
 # Statement of need
 
-Open-source packages exist, such as PyGeoPressure [@Yu2018], but this as well as most commercial software (JewelSuite by Baker Hughes being a notable exception) assume a vertical stress state. Stresslog differs from these by aiming to be comprehensive: allowing modeling of variable Biot's coefficient, thermal stresses and inclined stress states, operating on standard well log formats, and with built-in support for log aliasing.
+Many commercial packages exist for calculating geomechanical parameters and pressure prediction. Due to their high cost, their usage is limited in research settings. Many practitioners rely on Microsoft Excel for routine geomechanical calculations, but implementing iterative calculations in Excel is challenging.
+
+The python ecosystem for geology is rapidly growing. Handling of well-log and seismic data is now very mature. Geomechanics focused packages exist, such as PyGeoPressure [@Yu2018], but this as well as most commercial software assume a vertical stress state.
+
+Stresslog differs from these by aiming to be comprehensive: allowing modeling of variable Biot's coefficient, thermal stresses and inclined stress states, operating on standard well log formats, and with built-in support for log aliasing.
 
 Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. It is aimed at empowering researchers with a 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
 
+Stresslog uses welly [@welly] to read las files and handle well data. Dliso is used to parse dlis [@dlisio] files. A modified function from lasio [@Inverarity_Lasio_2023] is used to write las files. Numpy [@2020NumPy-Array], Pandas [@pandas_software, @mckinney2010data] and Scipy [@SciPy] are used for numerical computations and matplotlib [@Hunter:2007] and plotly [@plotly_py] are used for plotting the data. Pint is used for unit conversions.
+
 # Methodology
+
+To use Stresslog, at the minimum a well log is required containing atleast sonic or resistivity or drilling parameters data. Numerous other types of data can be specified to improve/constrain the estimates. Some of the input data require specific format and units to work correctly. Please refer to the documentation for details.
 
 Overburden gradient [@traugott1997], pore-pressure [@Zhang20132; @Flemings2021], minimum horizontal stress [@Daines1982; @zoback1992], rock strength [@lal1999; @horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress-polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress-polygon results if available.
 
@@ -109,13 +117,11 @@ where $\sigma'_B$ is the effective stress tensor in the borehole frame of refere
 
 If the user specifies an analysis depth, an orientation-stability plot is calculated at that depth. Synthetic image of the wellbore wall is prepared for 5 metres around the analysis depth. Other plots are also calculated at the analysis depth, including sanding prediction [@willson2002; @Zhang2007].
 
-For pre-drill forecast, the function get_analog() can be used to derive a log-prediction from nearby post-drill well by interpolation using formation tops.
-
 From observations on multiple wells sampling the same stress field at different wellbore orientations, a better estimate of the stress tensor is possible [@thorsen2011].
 
 # Case Study
 
-The well data from Equinor Northern Lights dataset [@northernlights] has been used as the example here, to model the stress state occurring in the depth interval of 2600 to 2630m. The resistivity image log shows the occurrence of en-echelon fractures in a vertical wellbore. The model applied here uses parameters similar to [@Thompson2022], and a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
+The well data from Equinor Northern Lights dataset [@northernlights] has been used as the example here, to model the stress state occurring in the depth interval of 2600 to 2630m. The resistivity image log shows the occurrence of en-echelon fractures in a vertical wellbore. The model applied here uses parameters similar to [@Thompson2022], with a stress tensor tilt of 2 degrees towards south, and is able to replicate the fracture patterns observed in the actual image log.
 
 ![Model of Northern Lights Eos Well showing the Drake I, II and IntraMarine formations.](./figures/WellPlot.png)
 
