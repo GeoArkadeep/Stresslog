@@ -521,10 +521,14 @@ def add_curves(well, df, clear=False):
     """
     Adds all columns from a DataFrame as curves to the Well object while preserving start, stop, and step values.
     
-    Parameters:
-    well (Well): The welly Well object.
-    df (pd.DataFrame): The DataFrame containing the data to be added as curves.
-    clear (bool): If True, all existing columns are cleared before adding new ones. Defaults to False
+    Parameters
+    ----------
+    well : welly.Well
+        The welly Well object
+    df : pd.DataFrame
+        The DataFrame containing the data to be added as curves.
+    clear : bool
+        If True, all existing columns are cleared before adding new ones. Defaults to False
     """
     indexcurve = df['DEPT']
     if clear:
