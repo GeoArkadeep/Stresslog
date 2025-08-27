@@ -570,18 +570,22 @@ unitdictdef = {'pressure': 'psi', 'strength': 'MPa', 'gradient': 'gcc',
     'length': 'm'}
 
 
-def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
-    ul_depth=0, a=0.63, nu=0.25, mu = 0.65, sfs=1.0, window=1, plotstart=0, plotend=6000,
-    dtml=210, dtmt=60, water=1.0, underbalancereject=1, tecb=0, doi=0,
-    offset=0, dip_dir=0, dip=0, mudtemp=0, res0=0.98, be=0.00014, ne=0.6,
-    dex0=0.5, de=0.00017, nde=0.5, lala=-1.0, lalb=1.0, lalm=5, lale=0.5,
-    lall=5, horsruda=0.77, horsrude=2.93, mabw=90, unitchoice=unitchoicedef,
-    ureg=uregdef, mwvalues=[[1.0, 0.0, 0.0, 0.0, 0.0, 0]], flowgradvals=[[0,
-    0]], fracgradvals=[[0, 0]], flowpsivals=[[0, 0]], fracpsivals=[[0, 0]],
-    attrib=[1, 0, 0, 0, 0, 0, 0, 0], flags=None, UCSs=None, forms=None,
-    lithos=None, user_home=user_home, program_option=[300,
-    4, 0, 0, 0], writeFile=False, aliasdict=None, unitdict=unitdictdef,
-    debug=False, penetration=False, ten_fac = 10, ehmin = None, ehmax= None, writeConfig=True, display=False):
+def compute_geomech(
+    well,
+    rhoappg=16.33, lamb=0.0008, ul_exp=0.0008, ul_depth=0, a=0.63, nu=0.25,
+    mu=0.65, sfs=1.0, window=1, plotstart=0, plotend=6000, dtml=210, dtmt=60,
+    water=1.0, underbalancereject=1, tecb=0, doi=0, offset=0, dip_dir=0, dip=0,
+    mudtemp=0, res0=0.98, be=0.00014, ne=0.6, dex0=0.5, de=0.00017, nde=0.5,
+    lala=-1.0, lalb=1.0, lalm=5, lale=0.5, lall=5, horsruda=0.77, horsrude=2.93,
+    mabw=90, unitchoice=None, ureg=None,
+    mwvalues=None, flowgradvals=None, fracgradvals=None,
+    flowpsivals=None, fracpsivals=None, attrib=None,
+    flags=None, UCSs=None, forms=None, lithos=None,
+    user_home=None, program_option=None,
+    writeFile=False, aliasdict=None, unitdict=None,
+    debug=False, penetration=False, ten_fac=10,
+    ehmin=None, ehmax=None, writeConfig=True, display=False
+    ):
     """
     Performs geomechanical calculations, data processing, and pore pressure estimation based on 
     well log data and additional user inputs.
@@ -753,6 +757,33 @@ def compute_geomech(well, rhoappg=16.33, lamb=0.0008, ul_exp=0.0008,
       
       Any deviation in column order, or missing values will result in errors during processing.
     """
+    
+    # Set mutable defaults
+    if mwvalues is None:
+        mwvalues = [[1.0, 0.0, 0.0, 0.0, 0.0, 0]]
+    if flowgradvals is None:
+        flowgradvals = [[0, 0]]
+    if fracgradvals is None:
+        fracgradvals = [[0, 0]]
+    if flowpsivals is None:
+        flowpsivals = [[0, 0]]
+    if fracpsivals is None:
+        fracpsivals = [[0, 0]]
+    if attrib is None:
+        attrib = [1, 0, 0, 0, 0, 0, 0, 0]
+    if program_option is None:
+        program_option = [300, 4, 0, 0, 0]
+    if unitdict is None:
+        unitdict = unitdictdef
+    if unitchoice is None:
+        unitchoice = unitchoicedef
+    if ureg is None:
+        ureg = uregdef
+    if user_home is None:
+        user_home = globals()["user_home"]
+
+
+    
     print('Starting Geomech Calculation...') if debug else None
     if display:
         writeFile = True

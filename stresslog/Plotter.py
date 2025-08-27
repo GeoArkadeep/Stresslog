@@ -18,7 +18,7 @@ import os
 
 user_home = os.path.expanduser("~/Documents")
 
-def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=False, title=None, details={"unit":"metres","type":"TVD","reference":"KB/DF","KB":0,"GL":0}, display=False):
+def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=False, title=None, details=None, display=False):
     """
     Wrapper function that calls plot_logs three times to generate the main plot and label plots.
     
@@ -28,6 +28,10 @@ def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_
     Returns:
     - fig, axes: The figure and axes objects of the main plot.
     """
+    
+    if details is None:
+        details={"unit":"metres","type":"TVD","reference":"KB/DF","KB":0,"GL":0}
+    
     labelmax = int(y_max) #2600
     #print(labelmax)
     # Generate simulated data for label plots

@@ -527,7 +527,7 @@ def getwelldev(string_las=None, wella=None, deva=None, kickoffpoint=None, final_
     #print("Great Success!! :D")
     return wella
 
-def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15,starter=0,stopper=5500, drop=[],seed=None):
+def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15,starter=0,stopper=5500, drop=None,seed=None):
     """Create a random well object with specified parameters.
 
     Parameters
@@ -550,6 +550,8 @@ def create_random_well(kb,gl,kop=0, maxangle=0, step=0.15,starter=0,stopper=5500
     welly.Well
         Well object containing randomly generated log data
     """
+    if drop is None:
+        drop = []
     if seed is None:
         data_frame_2, header_frame_2, string_buffer = create_random_las(kb=kb,gl=gl, stepper=step, stopper=stopper, drop=drop)
         string_data = string_buffer.getvalue()

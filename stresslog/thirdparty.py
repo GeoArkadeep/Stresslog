@@ -3,7 +3,7 @@ import io
 import numpy as np
 import pandas as pd
 
-def datasets_to_las(path, datasets, custom_units={}, **kwargs):
+def datasets_to_las(path, datasets, custom_units=None, **kwargs):
     """
     copyright 2021 Agile Scientific
     license
@@ -24,7 +24,8 @@ def datasets_to_las(path, datasets, custom_units={}, **kwargs):
     from functools import reduce
     import warnings
     from lasio import HeaderItem, CurveItem, SectionItems
-    
+    if custom_units is None:
+        custom_units={}
     # ensure no NaN values in header
     if 'Header' in datasets:
         datasets['Header'] = datasets['Header'].fillna('')
