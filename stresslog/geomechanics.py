@@ -729,11 +729,13 @@ def compute_geomech(
     -------
     tuple
         The tuple contains the following:
-        0 : Well log DataFrame (original and computed values) with mnemonics as headers
-        1 : LAS file as StringIO object containing original and computed values
-        2 : Base64 encoded plot strings for properties calculated at depth of interest (or None if written to files or not calculated at doi=0)
-        3 : Depth of Interest as specified (in meters)
-        4 : Welly object containing all data
+
+        - **0** : Well log DataFrame (original and computed values) with mnemonics as headers
+        - **1** : LAS file as StringIO object containing original and computed values
+        - **2** : Base64 encoded plot strings for properties calculated at depth of interest (or None if written to files or not calculated at doi=0)
+        - **3** : Depth of Interest as specified (in meters)
+        - **4** : Welly object containing all data
+
 
     Notes
     -----
