@@ -349,10 +349,10 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
     maintains the character of the original logs while honoring new formation tops and a new wellbore trajectory.
 
     The function performs several key operations:
-    1. Converts MD (Measured Depth) formations to TVD (True Vertical Depth) if necessary
-    2. Creates a blank wellbore with specified geometry
-    3. Transforms the original well's log data to match new formation depths
-    4. Generates a new well object with the transformed data
+        1. Converts MD (Measured Depth) formations to TVD (True Vertical Depth) if necessary
+        2. Creates a blank wellbore with specified geometry
+        3. Transforms the original well's log data to match new formation depths
+        4. Generates a new well object with the transformed data
 
     Parameters
     ----------
@@ -365,10 +365,10 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
         Must include columns for depth values and formation names.
         Depths can be in either MD or TVD (specified by column name).
         Example format:
-            TopTVD/MD  Name
-            1690      Alpha
-            2380      Beta
-            ...       ...
+            - TopMD    Name
+            - 1690    Alpha
+            - 2380    Beta
+            - ...       ...
 
     target_forms : pandas.DataFrame
         DataFrame containing the target formation tops information for the analog well.
