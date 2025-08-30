@@ -20,13 +20,69 @@ user_home = os.path.expanduser("~/Documents")
 
 def plot_logs_labels(data, styles, points=None, pointstyles=None, y_min=None, y_max=None, width=15, height=10, label_height=20, dpi=100, output_dir = os.path.join(user_home, "Stresslog_plots"), to_plotly=False, title=None, details=None, display=False):
     """
-    Wrapper function that calls plot_logs three times to generate the main plot and label plots.
-    
-    Parameters:
-    - Same as plot_logs function, except plot_labels is not included as it's handled internally.
-    
-    Returns:
-    - fig, axes: The figure and axes objects of the main plot.
+    Wrapper function that calls `plot_logs` three times to generate the main plot 
+    and the top/bottom label plots.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        DataFrame where each column corresponds to a curve to be plotted.
+    styles : dict
+        Dictionary mapping column names from `data` to style attributes.
+        Each value should be a dictionary containing keys such as 
+        ``color``, ``linewidth``, ``style``, ``track``, ``left``, ``right``, 
+        and ``type``.
+        
+        Example
+        -------
+        ``{'lithology1': {"color": "green", "linewidth": 1.5, "style": '.', 
+        "track": 0, "left": 0, "right": 150, "type": 'linear'}}``
+
+    points : pandas.DataFrame, optional
+        DataFrame where each column corresponds to sparse points to be plotted.
+    pointstyles : dict, optional
+        Dictionary mapping column names from `points` to style attributes. 
+        Each value should be a dictionary containing keys such as 
+        ``color``, ``pointsize``, ``symbol``, ``track``, ``left``, ``right``, 
+        ``type``, and ``unit``.
+
+        Example
+        -------
+        ``{'ucs': {'color': 'blue', 'pointsize': 10, 'symbol': 'o', 
+        'track': 4, 'left': 0, 'right': 100, 'type': 'linear', 'unit': 'MPa'}}``
+
+    y_min : float, optional
+        Minimum value of the y-axis (depth).
+    y_max : float, optional
+        Maximum value of the y-axis (depth).
+    width : float, default=15
+        Width of the figure in inches.
+    height : float, default=10
+        Height of the main plot in inches.
+    label_height : float, default=20
+        Height scaling factor for label placement.
+    dpi : int, default=100
+        Dots per inch for saved figures.
+    output_dir : str, default=os.path.join(user_home, "Stresslog_plots")
+        Directory where plot files will be saved.
+    to_plotly : bool, default=False
+        If True, also generate a Plotly version of the figure.
+    title : str, optional
+        Wellbore title to annotate on the figure.
+    details : dict, optional
+        Metadata about depth and reference information. 
+        Expected keys: ``unit``, ``type``, ``reference``, ``KB``, ``GL``.
+        Defaults to 
+        ``{"unit":"metres","type":"TVD","reference":"KB/DF","KB":0,"GL":0}``.
+    display : bool, default=False
+        If True, display the matplotlib figure interactively.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The Matplotlib figure object of the main plot.
+    axes : list of matplotlib.axes.Axes
+        List of axes objects corresponding to each track in the main plot.
     """
     
     if details is None:
