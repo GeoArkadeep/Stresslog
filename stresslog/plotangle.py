@@ -120,6 +120,7 @@ def plotfrac(data,path=None, dia=8.5, debug=False):
     ----------
     data : tuple
         A tuple containing:
+        
         - tvd : float
             True vertical depth
         - fr : ndarray
@@ -139,6 +140,7 @@ def plotfrac(data,path=None, dia=8.5, debug=False):
     -------
     tuple
         A tuple containing two ndarrays:
+        
         - cdepths : ndarray
             Corrected depths array
         - fdepths : ndarray
