@@ -943,10 +943,10 @@ def draw(tvd,s1,s2,s3,deltaP,Pp,UCS = 0,alpha=0,beta=0,gamma=0,offset=0,nu=0.35,
     Both plots use polar projections with inclination (0-90°) and azimuth (0-360°).
     
     The plots include:
-    - Contour plots of stability parameters
-    - Green marker showing the actual wellbore orientation
-    - Horizontal colorbars with appropriate units
-    - Title showing TVD and key parameters (UCS, deltaP, deltaT, Nu)
+        - Contour plots of stability parameters
+        - Green marker showing the actual wellbore orientation
+        - Horizontal colorbars with appropriate units
+        - Title showing TVD and key parameters (UCS, deltaP, deltaT, Nu)
     """
     #phi = 183-(163*nu) ## wayy too high
     #phi = np.arcsin(1-(nu/(1-nu))) #Still too high
