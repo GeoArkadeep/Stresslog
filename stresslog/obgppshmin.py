@@ -455,15 +455,23 @@ def get_Shmin_grad_Daine_ppg(nu2, ObgTppg, biot, ppgZhang, tecB):
     """
     Scalar calculation of fracture gradient pressure for a single sample.
     
-    Parameters:
-    nu2 (float): Poisson's ratio
-    ObgTppg (float): Overburden gradient in ppg
-    biot (float): Biot's coefficient
-    ppgZhang (float): Zhang's pore pressure in ppg
-    tecB (float): Tectonic factor
+    Parameters
+    ----------
+    nu2 : float
+        Poisson's ratio
+    ObgTppg : float
+        Overburden gradient in ppg
+    biot : float
+        Biot's coefficient
+    ppgZhang : float
+        Zhang's pore pressure in ppg
+    tecB : float
+        Tectonic factor
     
-    Returns:
-    float: Fracture gradient pressure in ppg
+    Returns
+    -------
+    float
+        Fracture gradient pressure in ppg
     """
     return (nu2 / (1 - nu2)) * (ObgTppg - (biot * ppgZhang)) + (biot * ppgZhang) + (tecB * ObgTppg)
 
@@ -471,15 +479,23 @@ def get_Shmin_grad_Daine_ppg_vec(nu2, ObgTppg, biot, ppgZhang, tecB):
     """
     Vectorized calculation of fracture gradient pressure.
     
-    Parameters:
-    nu2 (array-like): Poisson's ratio
-    ObgTppg (array-like): Overburden gradient in ppg
-    biot (array-like): Biot's coefficient
-    ppgZhang (array-like): Zhang's pore pressure in ppg
-    tecB (array-like): Tectonic factor
+    Parameters
+    ----------
+    nu2 : array-like
+        Poisson's ratio
+    ObgTppg : array-like
+        Overburden gradient in ppg
+    biot : array-like
+        Biot's coefficient
+    ppgZhang : array-like
+        Zhang's pore pressure in ppg
+    tecB : array-like
+        Tectonic factor
     
-    Returns:
-    numpy.ndarray: Fracture gradient pressure in ppg
+    Returns
+    -------
+    numpy.ndarray
+        Fracture gradient pressure in ppg
     """
     # Convert all inputs to numpy arrays
     nu2 = np.asarray(nu2)
