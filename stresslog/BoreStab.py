@@ -36,15 +36,36 @@ def get_optimal_old(sx,sy,sz,alpha=0, beta=0, gamma=0):
 
 def get_principal_stress(sx, sy, sz, dalpha=0, dbeta=0, dgamma=0):
     """
-    Estimate the principal stresses (s1, s2, s3) such that their rotated stress tensor
-    matches the given stresses (sx, sy, sz) in the geographic coordinate system.
+    Estimate the principal stresses (s1, s2, s3) such that their rotated stress 
+    tensor matches the given stresses in the geographic coordinate system.
+
+    Parameters
+    ----------
+    sx : float
+        shmin in the geographic coordinate system.
+    sy : float
+        SHMAX in the geographic coordinate system.
+    sz : float
+        Vertical stress.
+    dalpha : float, optional
+        Euler angle alpha, in degrees. Always set to 0 internally. This is because the incoming stress data is assumed to be provided with sx pointed in the Shmin direction
+    dbeta : float, optional
+        Euler angle beta, in degrees. Default is 0.
+    dgamma : float, optional
+        Euler angle gamma, in degrees. Default is 0.
+
+    Returns
+    -------
+    s1 : float
+        Optimized principal stress along the first principal direction.
+    s2 : float
+        Optimized principal stress along the second principal direction.
+    s3 : float
+        Optimized principal stress along the third principal direction.
     
-    Parameters:
-    - sx, sy, sz: Stresses in the geographic coordinate system
-    - alpha, beta, gamma: Rotation angles (in radians)
-    
-    Returns:
-    - s1, s2, s3: Optimized principal stresses
+    Notes
+    -----
+    The beta and gamma angles are used to provide info about the 'tilt' (non-verticality) of the stress state.
     """
     alpha = 0#np.radians(dalpha)
     beta = np.radians(dbeta)
