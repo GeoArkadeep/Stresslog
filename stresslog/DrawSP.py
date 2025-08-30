@@ -72,6 +72,7 @@ def drawSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.65,nu=0.25,bt=0,ym=0
     work just fine, as long as all units are compatible with each other
     (for example Sv, Pp, bhp and ucs can all be in psi and the plot will
     also be in psi)
+    
     This function creates a stress polygon visualization that includes:
         - Stress regime domains (Normal, Strike-slip, Reverse)
         - Breakout analysis with UCS variations
