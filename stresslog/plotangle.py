@@ -145,12 +145,7 @@ def plotfrac(data,path=None, dia=8.5, debug=False):
             Corrected depths array
         - fdepths : ndarray
             Final depths array
-    
-    Notes
-    -----
-    Uses a bit diameter of 8.5 inches for calculations.
-    Handles special angle cases and implements various depth corrections
-    and transformations.
+
     """
     tvd,fr,angles,minangle,maxangle = data
     #dia = 8.5 #inches, bit
