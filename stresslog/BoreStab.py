@@ -249,8 +249,7 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     Returns
     -------
     complex
-        Vertical stress component with imaginary part representing maximum
-        horizontal stress depending on faulting regime:
+        Vertical stress component with imaginary part representing maximum horizontal stress depending on faulting regime:
             - Normal slip: imaginary part is max(σyy, σxx)
             - Strike slip: imaginary part is max(σyy, σxx)
             - Reverse slip: imaginary part is 0
