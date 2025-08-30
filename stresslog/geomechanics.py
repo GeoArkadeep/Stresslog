@@ -509,6 +509,25 @@ from scipy.interpolate import CubicSpline
 
 
 def find_TVD(well, md):
+    """
+    Calculate True Vertical Depth (TVD) from Measured Depth (MD).
+
+    This function uses a cubic spline interpolation based on the well's
+    deviation survey to find the TVD corresponding to a given MD.
+
+    Parameters
+    ----------
+    well : welly.Well
+        The welly well object containing valid deviation data (MD and TVDM curves).
+    md : float
+        The Measured Depth (MD) at which to calculate the TVD.
+
+    Returns
+    -------
+    float
+        The calculated True Vertical Depth (TVD).
+    """
+    
     df = well.df()
     md_values = df['MD'].values
     tvdm_values = df['TVDM'].values
