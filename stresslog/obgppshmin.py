@@ -31,6 +31,13 @@ def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, glwd):
     -------
     tuple:
         Arrays of integrho (Rho_a), integrhopsift, and ObgTppg
+    
+    Notes
+    -----
+    - Inputs may be scalars (floats) or 1D arrays. Scalars are broadcast
+      across arrays automatically.
+    - All array inputs must have the same length; mismatched lengths
+      will raise a ValueError due to NumPy broadcasting rules.
     """
     tvd = np.asarray(tvd)
     tvdbgl = np.asarray(tvdbgl)
@@ -165,7 +172,7 @@ def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltm
     -----
     This function applies Zhang's method for pressure gradient calculation
     with support for vectorized operations. All inputs are broadcast to
-    compatible shapes before calculation.
+    compatible shapes before calculation. Arrays must be of the same length if used.
     """
     ObgTgcc = np.asarray(ObgTgcc)
     pn = np.asarray(pn)
@@ -263,7 +270,7 @@ def get_PPgrad_Eaton_gcc_vec(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1)
     Notes
     -----
     Vectorized version of the Eaton pressure gradient calculation.
-    All inputs are broadcast to compatible shapes before calculation.
+    All inputs are broadcast to compatible shapes before calculation. Arrays must be of the same length if used.
     """
     # Ensure all inputs are numpy arrays
     ObgTgcc = np.asarray(ObgTgcc)
@@ -352,7 +359,7 @@ def get_PPgrad_Dxc_gcc_vec(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
     Notes
     -----
     Vectorized version of the d-exponent pressure gradient calculation.
-    All inputs are broadcast to compatible shapes before calculation.
+    All inputs are broadcast to compatible shapes before calculation. Arrays must be of the same length if used.
     """
     # Ensure all inputs are numpy arrays
     ObgTgcc = np.asarray(ObgTgcc)
@@ -433,7 +440,7 @@ def get_Dxc_vec(ROP, RPM, WOB, BTDIA, ECD, pn):
     Notes
     -----
     Vectorized version of the corrected d-exponent calculation.
-    All inputs are broadcast to compatible shapes before calculation.
+    All inputs are broadcast to compatible shapes before calculation. Arrays must be of the same length if used.
     """
     # Ensure all inputs are numpy arrays
     ROP = np.asarray(ROP)
@@ -496,6 +503,13 @@ def get_Shmin_grad_Daine_ppg_vec(nu2, ObgTppg, biot, ppgZhang, tecB):
     -------
     numpy.ndarray
         Fracture gradient pressure in ppg
+    
+    Notes
+    -----
+    - Inputs may be scalars (floats) or 1D arrays. Scalars are broadcast
+      across arrays automatically.
+    - All array inputs must have the same length; mismatched lengths
+      will raise a ValueError due to NumPy broadcasting rules.
     """
     # Convert all inputs to numpy arrays
     nu2 = np.asarray(nu2)
