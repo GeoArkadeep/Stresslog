@@ -415,20 +415,18 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
 
     debug : bool, optional
         If True, enables debug mode which:
-        - Prints intermediate dataframes
-        - Generates diagnostic plots
-        - Saves additional output files
-        - Provides verbose console output
+            - Prints intermediate dataframes
+            - Generates diagnostic plots
+            - Saves additional output files
+            - Provides verbose console output
         Default is False.
 
     Returns
     -------
     tuple
         A tuple containing two elements:
-        - welly.Well : The created analog well object with transformed log data
-          and new trajectory information
-        - io.StringIO : A StringIO object containing the LAS file representation
-          of the analog well
+        - welly.Well : The created analog well object with transformed log data and new trajectory information
+        - io.StringIO : A StringIO object containing the LAS file representation of the analog well
 
     Notes
     -----
