@@ -538,16 +538,26 @@ def find_TVD(well, md):
 
 def add_curves(well, df, clear=False):
     """
-    Adds all columns from a DataFrame as curves to the Well object while preserving start, stop, and step values.
-    
+    Add all columns from a DataFrame as curves to a Welly Well object.
+
     Parameters
     ----------
     well : welly.Well
-        The welly Well object
-    df : pd.DataFrame
-        The DataFrame containing the data to be added as curves.
-    clear : bool
-        If True, all existing columns are cleared before adding new ones. Defaults to False
+        The Well object to which curves will be added.
+    df : pandas.DataFrame
+        DataFrame containing the curves to add. Must include a 'DEPT' column for the depth index.
+    clear : bool, optional
+        If True, clears all existing curves in the well before adding new ones. Default is False.
+
+    Returns
+    -------
+    well : welly.Well
+        The Well object with the new curves added.
+
+    Notes
+    -----
+    - If a curve with the same mnemonic already exists in the well, it is skipped.
+    - The 'DEPT' column of the DataFrame is used as the index for all added curves.
     """
     indexcurve = df['DEPT']
     if clear:
@@ -568,11 +578,25 @@ def add_curves(well, df, clear=False):
 
 def remove_curves(well, mnemonics_to_remove, debug=False):
     """
-    Removes curves with the specified mnemonics from the well object.
-    
-    Parameters:
-    well (Well): The welly Well object.
-    mnemonics_to_remove (list): A list of mnemonics to be removed.
+    Remove specified curves from a Welly Well object.
+
+    Parameters
+    ----------
+    well : welly.Well
+        The Well object from which curves will be removed.
+    mnemonics_to_remove : list of str
+        List of curve mnemonics to remove from the well.
+    debug : bool, optional
+        If True, prints a message for each removed curve. Default is False.
+
+    Returns
+    -------
+    well : welly.Well
+        The Well object with the specified curves removed.
+
+    Notes
+    -----
+    If a mnemonic in `mnemonics_to_remove` does not exist in the well, it is ignored.
     """
     for mnemonic in mnemonics_to_remove:
         keys_to_delete = [key for key, curve in well.data.items() if curve.
