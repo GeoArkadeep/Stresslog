@@ -425,8 +425,8 @@ def get_analog(well,current_forms, target_forms, kb,gl,dev=None,kop=0,ma=0,rob=0
     -------
     tuple
         A tuple containing two elements:
-        - welly.Well : The created analog well object with transformed log data and new trajectory information
-        - io.StringIO : A StringIO object containing the LAS file representation of the analog well
+            - welly.Well : The created analog well object with transformed log data and new trajectory information
+            - io.StringIO : A StringIO object containing the LAS file representation of the analog well
 
     Notes
     -----
