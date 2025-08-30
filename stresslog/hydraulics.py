@@ -25,9 +25,9 @@ def getColumnHeights(tvd,structop,goc,owc):
     -------
     list of float
         A list containing three heights [h1, h2, h3] where:
-        - h1: height of water column (negative value)
-        - h2: height of oil column (negative value)
-        - h3: height of gas column (negative value)
+            - h1: height of water column (negative value)
+            - h2: height of oil column (negative value)
+            - h3: height of gas column (negative value)
 
     Notes
     -----
