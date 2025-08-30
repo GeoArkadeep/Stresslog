@@ -556,8 +556,7 @@ def add_curves(well, df, clear=False):
 
     Notes
     -----
-    - If a curve with the same mnemonic already exists in the well, it is skipped.
-    - The 'DEPT' column of the DataFrame is used as the index for all added curves.
+    If a curve with the same mnemonic already exists in the well, it is skipped.
     """
     indexcurve = df['DEPT']
     if clear:
