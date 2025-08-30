@@ -13,6 +13,9 @@ from scipy.optimize import minimize
 
 def get_optimal_old(sx,sy,sz,alpha=0, beta=0, gamma=0):
     """
+    ***DEPRACATED***
+    Please use get_principal_stress instead.
+    
     Optimizes sx, sy, sz to achieve a specified SV
     under given angular conditions.
     
@@ -248,9 +251,9 @@ def getVertical(sx,sy,sz,alpha=0,beta=0,gamma=0):
     complex
         Vertical stress component with imaginary part representing maximum
         horizontal stress depending on faulting regime:
-        - Normal slip: imaginary part is max(σyy, σxx)
-        - Strike slip: imaginary part is max(σyy, σxx)
-        - Reverse slip: imaginary part is 0
+            - Normal slip: imaginary part is max(σyy, σxx)
+            - Strike slip: imaginary part is max(σyy, σxx)
+            - Reverse slip: imaginary part is 0
     """
     alpha = np.radians(alpha)
     beta = np.radians(beta)

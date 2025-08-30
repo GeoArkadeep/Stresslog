@@ -8,21 +8,29 @@ See the GNU Affero General Public License for more details: <https://www.gnu.org
 import math
 import numpy as np
 
-def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, wdf, glwd):
+def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, glwd):
     """
     Vectorized calculation of comprehensive overburden stress considering offshore and onshore scenarios.
     
-    Parameters:
-    tvd (array-like): True Vertical Depth
-    tvdbgl (array-like): True Vertical Depth Below Ground Level
-    tvdmsl (array-like): True Vertical Depth from Mean Sea Level
-    rhogcc (array-like): Density in g/cc
-    water (float): Water density
-    wdf (float): Water depth factor
-    glwd (float): Ground Level Water Depth (negative for offshore)
+    Parameters
+    ----------
+    tvd : array-like
+        True Vertical Depth
+    tvdbgl : array-like
+        True Vertical Depth Below Ground Level
+    tvdmsl : array-like
+        True Vertical Depth from Mean Sea Level
+    rhogcc: array-like
+        Density in g/cc
+    water :float
+        Water density in g/cc
+    glwd :float
+        Ground Level/Water Depth in meters (negative for offshore)
     
-    Returns:
-    tuple: Arrays of integrho (Pa), integrhopsift, and ObgTppg
+    Returns
+    -------
+    tuple:
+        Arrays of integrho (Rho_a), integrhopsift, and ObgTppg
     """
     tvd = np.asarray(tvd)
     tvdbgl = np.asarray(tvdbgl)
@@ -34,13 +42,14 @@ def get_OBG_pascals_vec(tvd, tvdbgl, tvdmsl, rhogcc, water, wdf, glwd):
     integrhopsift = np.zeros(n)
     ObgTppg = np.zeros(n)
     
-    maxwaterppg = wdf * 8.34540426515252 * water
+    
     
     # Calculate depth differences
     depth_diff = np.diff(tvdbgl, prepend=tvdbgl[0])
     
     # Offshore case
     if glwd < 0:
+        maxwaterppg = (abs(glwd) * 3.28084) * 8.34540426515252 * water
         # Mudline mask
         mudline_mask = tvdbgl > 0
         
