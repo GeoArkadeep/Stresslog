@@ -784,7 +784,8 @@ def getHoop(inc,azim,s1,s2,s3,deltaP,Pp, ucs, alpha=0,beta=0,gamma=0,nu=0.35,bt=
         - Effective axial stresses (SZZ - Pp)
         - Shear stresses (TTZ)
 
-    Uses Zhang's equations with internal friction angle calculated from Poisson's ratio: phi = arcsin(1-2nu)
+    Uses Zhang's equations with internal friction angle calculated from Poisson's ratio:
+        phi = arcsin(1-2nu)
     """
     phi = np.arcsin(1-(2*nu)) #unModified Zhang
     mui = (1+np.sin(phi))/(1-np.sin(phi))

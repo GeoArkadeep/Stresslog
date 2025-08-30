@@ -303,11 +303,11 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0.25,bt=0,ym=0,d
         Internal friction angle in radians, by default 0
     flag : int, optional
         Condition flag for stress calculation:
-        0 - No image log exists
-        1 - Image log exists, no breakouts or tensile fractures observed
-        2 - Breakouts observed
-        3 - Tensile fractures observed
-        4 - Both breakouts and tensile fractures observed
+            - **0** : No image log exists
+            - **1** : Image log exists, no breakouts or tensile fractures observed
+            - **2** : Breakouts observed
+            - **3** : Tensile fractures observed
+            - **4** : Both breakouts and tensile fractures observed
         By default 0
     mu : float, optional
         Friction coefficient, by default 0.6
@@ -327,9 +327,9 @@ def getSP(Sv,Pp,bhp,shmin,UCS = 0,phi = 0, flag = 0,mu = 0.6,nu=0.25,bt=0,ym=0,d
     -------
     list
         A list containing three float values:
-        - minSH: Minimum Max horizontal stress (SHMax)(MPa)
-        - maxSH: Maximum Max horizontal stress (SHMax)(MPa)
-        - midSH: Best Estimate Max horizontal stress (SHMAx)(MPa)
+            - minSH: Minimum Max horizontal stress (SHMax)(MPa)
+            - maxSH: Maximum Max horizontal stress (SHMax)(MPa)
+            - midSH: Best Estimate Max horizontal stress (SHMAx)(MPa)
 
     Notes
     -----
