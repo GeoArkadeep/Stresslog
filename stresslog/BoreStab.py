@@ -48,7 +48,7 @@ def get_principal_stress(sx, sy, sz, dalpha=0, dbeta=0, dgamma=0):
     sz : float
         Vertical stress.
     dalpha : float, optional
-        Euler angle alpha, in degrees. Always set to 0 internally. This is because the incoming stress data is assumed to be provided with sx pointed in the Shmin direction
+        Euler angle alpha, in degrees. Default is 0
     dbeta : float, optional
         Euler angle beta, in degrees. Default is 0.
     dgamma : float, optional
