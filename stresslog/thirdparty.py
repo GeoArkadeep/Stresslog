@@ -39,7 +39,8 @@ def datasets_to_las(path, datasets, custom_units=None, **kwargs):
         Dictionary mapping curve names to their units. If a curve's unit is not specified, it defaults to an empty string.
     Returns
     -------
-    str if path is None, otherwise writes to file
+    str
+        if path is None, otherwise writes to file and returns None
     """
     from functools import reduce
     import warnings
