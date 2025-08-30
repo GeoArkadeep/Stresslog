@@ -142,9 +142,9 @@ def plotfrac(data,path=None, dia=8.5, debug=False):
         A tuple containing two ndarrays:
         
         - cdepths : ndarray
-            Corrected depths array
+            Corrected fracture depths (likely fracture region).
         - fdepths : ndarray
-            Final depths array
+            Final fracture depths (full fracture trend, including unlikely regions).
 
     """
     tvd,fr,angles,minangle,maxangle = data
