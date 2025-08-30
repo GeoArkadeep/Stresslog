@@ -40,7 +40,9 @@ def datasets_to_las(path, datasets, custom_units=None, **kwargs):
     Returns
     -------
     str
-        if path is None, returns the las file as a string, otherwise writes to file and returns None
+        if path is None, returns the las file as a string
+    None    
+        if path is provided, writes to file and returns None
     """
     from functools import reduce
     import warnings
