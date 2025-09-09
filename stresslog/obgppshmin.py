@@ -129,6 +129,7 @@ def get_PPgrad_Zhang_gcc(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, d
     Implements Zhang's method for calculating pore pressure gradient.
     The calculation varies based on the relationship between b and c coefficients.
     """
+    biot = np.clip(biot, 0.0001, 1.0)
     if b>=c:
         numerator = ObgTgcc - ((ObgTgcc-pn)*((math.log((mudline-matrick))-(math.log(dalm-matrick)))/(c*tvdbgl)))
     else:
@@ -184,12 +185,12 @@ def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltm
     deltmu0 = np.asarray(deltmu0)
     dalm = np.asarray(dalm)
     biot = np.asarray(biot)
-
+    biot = np.clip(biot, 0.0001, 1.0)
     # Broadcast arrays to a common shape
     ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot = np.broadcast_arrays(
         ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltmu0, dalm, biot
     )
-
+    
     # Apply the condition element-wise
     numerator = np.where(
         b >= c,
@@ -199,7 +200,7 @@ def get_PP_grad_Zhang_gcc_vec(ObgTgcc, pn, b, tvdbgl, c, mudline, matrick, deltm
             np.log((mudline - matrick) / (dalm - matrick))
         )
     )
-
+    
     return numerator / biot
 
 
@@ -236,6 +237,9 @@ def get_PPgrad_Eaton_gcc(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1):
     This is the single-point version of the Eaton pressure gradient calculation.
     For vectorized operations, use get_PPgrad_Eaton_gcc_vec.
     """
+    biot = np.clip(biot, 0.0001, 1.0)
+    if be*tvdbgl>708:
+        return np.nan
     numerator = ObgTgcc - ((ObgTgcc - pn)*((resdeep/(res0*np.exp(be*tvdbgl)))**ne))
     return numerator / biot
 
@@ -281,14 +285,16 @@ def get_PPgrad_Eaton_gcc_vec(ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot=1)
     res0 = np.asarray(res0)
     resdeep = np.asarray(resdeep)
     biot = np.asarray(biot)
-
+    biot = np.clip(biot, 0.0001, 1.0)
     # Broadcast scalar values to match the shape of the largest array
     ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot = np.broadcast_arrays(
         ObgTgcc, pn, be, ne, tvdbgl, res0, resdeep, biot
     )
 
     # Calculate numerator
+    mask = be * tvdbgl > 708
     numerator = ObgTgcc - ((ObgTgcc - pn) * ((resdeep / (res0 * np.exp(be * tvdbgl))) ** ne))
+    numerator[mask] = np.nan
     return numerator / biot
 
 
@@ -325,6 +331,9 @@ def get_PPgrad_Dxc_gcc(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
     This is the scalar version of the d-exponent pressure gradient calculation.
     For vectorized operations, use get_PPgrad_Dxc_gcc_vec.
     """
+    biot = np.clip(biot, 0.0001, 1.0)
+    if d*tvdbgl> 708:
+        return np.nan
     numerator = ObgTgcc - ((ObgTgcc - pn)*((Dxc/(D0*np.exp(d*tvdbgl)))**nde))
     return numerator / biot
 
@@ -370,14 +379,16 @@ def get_PPgrad_Dxc_gcc_vec(ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot=1):
     D0 = np.asarray(D0)
     Dxc = np.asarray(Dxc)
     biot = np.asarray(biot)
-
+    biot = np.clip(biot, 0.0001, 1.0)
     # Broadcast scalar values to match the shape of the largest array
     ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot = np.broadcast_arrays(
         ObgTgcc, pn, d, nde, tvdbgl, D0, Dxc, biot
     )
 
     # Calculate numerator
+    mask = d * tvdbgl > 708
     numerator = ObgTgcc - ((ObgTgcc - pn) * ((Dxc / (D0 * np.exp(d * tvdbgl))) ** nde))
+    numerator[mask] = np.nan
     return numerator / biot
 
 def get_Dxc(ROP,RPM,WOB,BTDIA,ECD,pn):
@@ -480,6 +491,8 @@ def get_Shmin_grad_Daine_ppg(nu2, ObgTppg, biot, ppgZhang, tecB):
     float
         Fracture gradient pressure in ppg
     """
+    if nu2>0.5 or nu2<0:
+        return np.nan
     return (nu2 / (1 - nu2)) * (ObgTppg - (biot * ppgZhang)) + (biot * ppgZhang) + (tecB * ObgTppg)
 
 def get_Shmin_grad_Daine_ppg_vec(nu2, ObgTppg, biot, ppgZhang, tecB):
@@ -517,5 +530,10 @@ def get_Shmin_grad_Daine_ppg_vec(nu2, ObgTppg, biot, ppgZhang, tecB):
     biot = np.asarray(biot)
     ppgZhang = np.asarray(ppgZhang)
     tecB = np.asarray(tecB)
-    
-    return (nu2 / (1 - nu2)) * (ObgTppg - (biot * ppgZhang)) + (biot * ppgZhang) + (tecB * ObgTppg)
+    mask = (nu2 >= 0) & (nu2 <= 0.5)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        # Perform the calculation for all elements. Elements where nu2 is invalid
+        # might result in inf or nan, but we will handle that next.
+        calculation = (nu2 / (1 - nu2)) * (ObgTppg - (biot * ppgZhang)) + (biot * ppgZhang) + (tecB * ObgTppg)
+    result = np.where(mask, calculation, np.nan)
+    return result #(nu2 / (1 - nu2)) * (ObgTppg - (biot * ppgZhang)) + (biot * ppgZhang) + (tecB * ObgTppg)
