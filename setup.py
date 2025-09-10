@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="stresslog",
-    version="1.6.17",
+    version="1.6.18",
     description="Library for stress calculations from well logs",
     long_description=pathlib.Path("README.md").read_text(),
     long_description_content_type="text/markdown",
@@ -19,15 +19,14 @@ setuptools.setup(
         "Development Status :: 6 - Mature",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Intended Audience :: Science/Research",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
         "Topic :: Scientific/Engineering",
     ],
-    python_requires=">=3.9,<=3.14",
-    install_requires=["pandas>=2.0","numpy","scipy","welly","pint","matplotlib", "plotly","dlisio","setuptools>=42,<81"],
+    python_requires=">=3.10,<=3.14",
+    install_requires=["pandas>=2.0","numpy>=2.0.0","scipy","welly","pint","matplotlib", "plotly","dlisio","setuptools>=42,<81"],
     packages=setuptools.find_packages(),
     include_package_data=True,    
 )
