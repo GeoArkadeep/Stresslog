@@ -171,7 +171,7 @@ def plotfrac(data,path=None, dia=8.5, debug=False):
         if abs(d[i])==270:
             d[i]=90*(abs(d[i])/d[i])
         yj[i] = (np.tan(np.radians((90-angles[i])%360))*d[i]) #FlipVertN if abs
-        sign[i] = yj[i]/abs(yj[i])
+        sign[i] = yj[i]/abs(yj[i]) if yj[i] !=0 else 1
         depths[i] = (((yj[i]-180)/180)*(cm/2))
         if d[i-1]==0:
             yj[i-1] = (yj[i-2]+yj[i])/2

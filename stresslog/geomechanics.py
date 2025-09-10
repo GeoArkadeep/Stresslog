@@ -1111,7 +1111,7 @@ def compute_geomech(
     else:
         shaleflag = np.zeros(len(md))
         zoneflag = np.zeros(len(md))
-    shaleflagN = (np.max(shaleflag) - shaleflag[:]) / np.max(shaleflag)
+    shaleflagN = np.divide(np.max(shaleflag) - shaleflag,np.max(shaleflag),out=np.full_like(shaleflag, np.nan, dtype=float),where=np.max(shaleflag) != 0)
     flag = Curve(shaleflag, mnemonic='ShaleFlag', units='ohm/m', index=md,
         null=0)
     zone = Curve(zoneflag, mnemonic='ShaleFlag', units='ohm/m', index=md,
@@ -1560,7 +1560,7 @@ def compute_geomech(
     else:
         shaleflag = np.zeros(len(md))
         zoneflag = np.zeros(len(md))
-    shaleflagN = (np.max(shaleflag) - shaleflag[:]) / np.max(shaleflag)
+    shaleflagN = np.divide(np.max(shaleflag) - shaleflag,np.max(shaleflag),out=np.full_like(shaleflag, np.nan, dtype=float),where=np.max(shaleflag) != 0)
     flag = Curve(shaleflag, mnemonic='ShaleFlag', units='ohm/m', index=md,
         null=0)
     zone = Curve(zoneflag, mnemonic='ShaleFlag', units='ohm/m', index=md,
@@ -1617,7 +1617,7 @@ def compute_geomech(
     hydroppf = 0.4335275040012 * hydrostatic
     mudppf = 0.4335275040012 * mudhydrostatic
     lithostatic = 2.6 * 9.80665 / 6.89476 * tvd
-    gradient = lithostatic / tvdf * 1.48816
+    gradient = np.divide(lithostatic, tvdf, out=np.full_like(lithostatic, np.nan), where=tvdf!=0) * 1.48816
     rhoppg[np.nanargmin(abs(tvdbgl))] = rhoappg
     if np.nanargmin(abs(tvdbgl)) > 0:
         rhoppg[0:np.nanargmin(abs(tvdbgl))] = np.nan
@@ -1771,8 +1771,7 @@ def compute_geomech(
         mvindex = np.nan
     else:
         mvindex = find_nearest_depth(tvd, maxveldepth)[0]
-    deltmu0 = np.nanmean(dalm[find_nearest_depth(tvd, maxveldepth)[0] - 5:
-        find_nearest_depth(tvd, maxveldepth)[0] + 5])
+    deltmu0 = np.nanmean(dalm[find_nearest_depth(tvd, maxveldepth)[0] - 5: find_nearest_depth(tvd, maxveldepth)[0] + 5]) if ul_depth>0 else np.nan
     c = ct
     b = ct
     print('Max velocity is ', deltmu0, 'uspf') if debug else None
@@ -2494,12 +2493,12 @@ def compute_geomech(
     skip = 21 if 2.0 <= window < 21 else window
     mtol = 1 - 2 * mabw / 360
     for i in range(0, len(tvd), 1):
-        sigmaVmpa = np.nanmean(obgpsi[i]) / 145.038
-        sigmahminmpa = np.nanmean(psifg[i]) / 145.038
-        sigmaHMaxmpa = np.nanmean(sgHMpsi[i]) / 145.038
-        ppmpa = np.nanmean(psipp[i]) / 145.038
-        bhpmpa = np.nanmean(mudpsi[i]) / 145.038
-        ucsmpa = np.nanmean(horsrud[i])
+        sigmaVmpa   = obgpsi[i]   / 145.038 if not np.isnan(obgpsi[i])   else np.nan
+        sigmahminmpa = psifg[i]   / 145.038 if not np.isnan(psifg[i])   else np.nan
+        sigmaHMaxmpa = sgHMpsi[i] / 145.038 if not np.isnan(sgHMpsi[i]) else np.nan
+        ppmpa       = psipp[i]    / 145.038 if not np.isnan(psipp[i])   else np.nan
+        bhpmpa      = mudpsi[i]   / 145.038 if not np.isnan(mudpsi[i])  else np.nan
+        ucsmpa      = horsrud[i]  if not np.isnan(horsrud[i])           else np.nan
         deltaP = bhpmpa - ppmpa
         sigmas = [sigmaHMaxmpa, sigmahminmpa, sigmaVmpa]
         try:
@@ -2545,7 +2544,7 @@ def compute_geomech(
             hoopmin[i] = np.nanmin(Stmin)
             lademax[i] = np.nanpercentile(ladempa, mtol * 100)
             minthetarad = np.radians(np.nanargmin(Stmin))
-            lademin[i] = np.nanmin(ladempa)
+            lademin[i] = np.nanmin(ladempa) if not np.all(np.isnan(ladempa)) else np.nan
             if not penetration:
                 trufracmpa[i] = get_frac_pressure(Sb[i], ppmpa, -horsrud[i]/arr_ten_fac[i], minthetarad, nu2[i], sigmaT) if arr_ten_fac[i]>0 else get_frac_pressure(Sb[i], ppmpa, 0, minthetarad, nu2[i], sigmaT)
             else:
@@ -2565,8 +2564,8 @@ def compute_geomech(
     hoopmax = interpolate_nan(hoopmax)
     Sbminmpa = np.minimum(Sby, Sbx)
     Sbmaxmpa = np.maximum(Sby, Sbx)
-    Sbmingcc = Sbminmpa * 145.038 / tvdf / 0.4335275040012
-    Sbmaxgcc = Sbmaxmpa * 145.038 / tvdf / 0.4335275040012
+    Sbmingcc = np.divide(Sbminmpa * 145.038 / 0.4335275040012,tvdf,out=np.full_like(tvdf, np.nan, dtype=float),where=(tvdf != 0) & (~np.isnan(tvdf)))
+    Sbmaxgcc = np.divide(Sbmaxmpa * 145.038 / 0.4335275040012,tvdf,out=np.full_like(tvdf, np.nan, dtype=float),where=(tvdf != 0) & (~np.isnan(tvdf)))
     tensilefracpsi = trufracmpa * 145.038
     if np.nanargmin(abs(tvdbgl)) > 0:
         tensilefracpsi[0:np.nanargmin(abs(tvdbgl))] = np.nan
@@ -2576,9 +2575,19 @@ def compute_geomech(
     deltaPressure = tensilefracpsi - referencepressure
     deltaDepth = tvdbglf - referencedepth
     if glwd < 0:
-        tensilefracgcc = tensilefracpsi / hydrostaticpsi
+        tensilefracgcc = np.divide(
+            tensilefracpsi,
+            hydrostaticpsi,
+            out=np.full_like(tensilefracpsi, np.nan, dtype=float),
+            where=hydrostaticpsi != 0
+        )
     else:
-        tensilefracgcc = deltaPressure / deltaDepth / 0.4335275040012
+        tensilefracgcc = np.divide(
+            deltaPressure,
+            deltaDepth * 0.4335275040012,
+            out=np.full_like(deltaPressure, np.nan, dtype=float),
+            where=deltaDepth != 0
+        )
     tensilefracgcc = np.where(tensilefracgcc < spp, spp, tensilefracgcc)
     mogimpa = mogi(psifg / 145.038, sgHMpsi / 145.038, obgpsi / 145.038)
     ladegcc = lademax * 145.038 / tvdf / 0.4335275040012

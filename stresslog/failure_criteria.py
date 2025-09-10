@@ -41,7 +41,7 @@ def mod_lad_cmw(sxx,syy,szz,txy,tyz,tzx,theta,phi,cohesion,pp):#Stress tensor ro
         Critical wellbore pressure (Pw)
     """
 
-    ps1 = (cohesion/np.tan(phi))
+    ps1 = (cohesion/np.tan(phi)) if np.tan(phi) != 0 else np.nan
     pfac= (ps1-pp)
     I1 = (sxx+pfac)+(syy+pfac)+(szz+pfac)
     I3 = (sxx+pfac)*(syy+pfac)*(szz+pfac)+(2*txy*tyz*tzx)-((sxx+pfac)*(tyz**2))-((syy+pfac)*(tzx**2))-((szz+pfac)*(txy**2))
@@ -54,7 +54,8 @@ def mod_lad_cmw(sxx,syy,szz,txy,tyz,tzx,theta,phi,cohesion,pp):#Stress tensor ro
     B = (A*Stn)-(Ttz**2)
     D = ((Stn+szz+(3*ps1)-(3*pp))**3)/(27+eta)
     C = (B**2)-(4*A*(D-((ps1-pp)*((A*(Stn+ps1-pp))-(Ttz**2)))))
-    Pw = (B-(C**0.5))/(2*A)
+    Pw = (B-(C**0.5))/(2*A) if C>=0 else np.nan
+    
     
     return Pw
 
