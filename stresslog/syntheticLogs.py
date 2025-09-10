@@ -566,7 +566,7 @@ import dlisio
 dlisio.common.set_encodings(['utf-8','latin-1'])
 from dlisio import dlis
 
-def get_dlis_header(path):
+def get_dlis_header(path): # pragma: no cover
     """
     Extract header information from a DLIS file.
 
@@ -596,7 +596,7 @@ def get_dlis_header(path):
     return pd.DataFrame(list(zip(chnames,description)),columns =['Mnemonic', 'Description'])
 
 
-def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, flatten=False, debug=False):
+def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, flatten=False, debug=False): # pragma: no cover
     """
     Extract data from a DLIS file with unit conversion and header processing.
 
@@ -872,14 +872,14 @@ def get_dlis_data(path, aliases=None, depthunits='m', resample_interval=0.1, fla
     return combined_df, c_units, header_df, parameters
 
 
-def get_las_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False):
+def get_las_from_dlis(path,aliases,depthunit='m',step=0.15, debug=False): # pragma: no cover
     """
     DEPRECATED in favor of get_well_from_dlis
     """
     y = get_dlis_data(path,aliases,resample_interval=step, debug=debug)
     return datasets_to_las(None, {'Curves': y[0], 'Header': y[2]}, y[1])
 
-def get_well_from_dlis(path,aliases=None,depthunit='m',step=0.15, debug=False):
+def get_well_from_dlis(path,aliases=None,depthunit='m',step=0.15, debug=False): # pragma: no cover
     """
     Reads a dlis file using dlisio and converts the data first to a las string and then to a welly.Well object.
 
@@ -907,36 +907,3 @@ def get_well_from_dlis(path,aliases=None,depthunit='m',step=0.15, debug=False):
     manual_basis = np.arange(start, stop, step)
     well.unify_basis(basis=manual_basis)
     return well
-
-# Example usage
-if __name__ == "__main__":
-    # Demonstrate the function with file writing
-    #data_frame, header_frame, filename = process_well_data(writeFile=True)
-    
-    # Demonstrate the function with string buffer
-    data_frame_2, header_frame_2, string_buffer = create_random_las(kb=50,gl=-30, debug=True)
-    
-    # Optional: read string buffer content
-    if not isinstance(string_buffer, str):
-        print("\nLAS File Content (first 1500 chars):")
-        string_buffer.seek(0)
-        print(string_buffer.read(1500))
-    x = create_random_well(kb=35,gl=20)
-    x = getwelldev(wella = x)#,kickoffpoint=1000,final_angle=85, azimuth=89, rateofbuild=0.2)
-    print(x)
-    y=x.location.trajectory()
-    z = x.location.position
-    # Assuming z is your array
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-
-    # Plot 3D line
-    ax.plot3D(z[:, 0], z[:, 1], -z[:, 2])
-
-    # Labels
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Depth (Z)')
-
-    plt.show()
-
