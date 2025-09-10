@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import stresslog
-
+import pandas as pd
 # --- Test Configuration ---
 RTOL = 0.01  # Relative Tolerance
 ATOL = 0.051  # Absolute Tolerance for 1-decimal rounding
@@ -193,7 +193,7 @@ def test_getSP(inputs, expected_output):
     ({'s1': 114.3041, 's2': 119.0893, 's3': 51.3233, 'alpha': -52.6641, 'beta': -16.3785, 'gamma': 136.7691, 'azim': -112.0377, 'inc': 8.4108, 'theta': 166.5956, 'deltaP': 107.9572, 'Pp': 120.0245, 'nu': 0.3919}, (-77.2157, 33.0977, -1.8043, 33.1272, -77.2453, -0.9368, [-158.8964, 177.4465, 0.2861, 92.3870, 90.9065, 89.6761])),
     ({'s1': 176.2960, 's2': 126.2873, 's3': 21.5282, 'alpha': -152.3213, 'beta': -64.5810, 'gamma': 142.8582, 'azim': -53.2580, 'inc': 153.0492, 'theta': -155.4493, 'deltaP': 63.8631, 'Pp': 25.7986, 'nu': 0.4199}, (-91.6976, 92.4353, 17.0107, 93.9937, -93.2559, 5.2341, [87.5590, 87.3420, 2.4933, 91.1272, 177.1126, 64.5468])),
     ({'s1': 159.8108, 's2': 65.0776, 's3': 22.2195, 'alpha': 92.2066, 'beta': -14.9570, 'gamma': -54.4390, 'azim': 124.4123, 'inc': 19.2097, 'theta': -143.0936, 'deltaP': 36.7492, 'Pp': 88.3991, 'nu': 0.3330}, (77.8673, 15.2701, -109.9233, 160.8610, -67.7236, -52.9467, [89.0572, 91.6093, -0.9501, 90.2610, 178.3697, -100.1615])),
-    ({'s1': 80.9919, 's2': 114.6084, 's3': 11.2391, 'alpha': 49.9817, 'beta': -101.8218, 'gamma': -1.5150, 'azim': -54.6688, 'inc': 72.1373, 'theta': 109.4874, 'deltaP': 133.8510, 'Pp': 47.6181, 'nu': 0.4012}, (12.5561, 155.3661, 23.9920, 159.2890, 8.6332, 9.2861, [89.9597, 0.8719, 1.7771, 90.0264, 90.8715, 88.2225])),
+    ({'s1': 80.9919, 's2': 114.6084, 's3': 11.2391, 'alpha': 49.9817, 'beta': -101.8218, 'gamma': -1.5150, 'azim': -54.6688, 'inc': 72.1373, 'theta': 109.4874, 'deltaP': 133.8510, 'Pp': 47.6181, 'nu': 0.4012}, (12.5561, 155.3661, 23.9920, 159.2890, 8.6332, 9.2861, [89.9597, 179.1280, 1.7771, 90.0264, 89.1284, 88.2225])),
 ])
 def test_getSigmaTT(inputs, expected_output):
     """Regression test for stresslog.getSigmaTT."""
@@ -498,3 +498,85 @@ def test_get_Shmin_grad_Daine_ppg_vec_consistency(vector_inputs, expected_vector
     actual_vector_output = stresslog.get_Shmin_grad_Daine_ppg_vec(**vector_inputs)
     np.testing.assert_allclose(actual_vector_output, expected_vector_output, rtol=RTOL, atol=ATOL, equal_nan=True)
 
+from stresslog import (
+    convert_rop,
+    convert_wob,
+    convert_ecd,
+    convert_flowrate,
+    convert_torque,
+    #convert_dataframe_units,
+)
+#convert_rop, convert_wob, convert_ecd, convert_torque, convert_flowrate
+
+# --- Test convert_rop ---------------------------------------------------------
+
+def test_convert_rop_min_per_m_to_ft_per_hr():
+    values = np.array([1.0])  # 1 min/m
+    result = convert_rop(values, "minute / meter")
+    # Expected: about 196.85 ft/hr
+    assert np.isclose(result[0], 196.85, rtol=RTOL)
+
+
+def test_convert_rop_m_per_hr_to_ft_per_hr():
+    values = np.array([10.0])  # 10 m/hr
+    result = convert_rop(values, "M/HR")
+    # 10 m/hr = 32.808 ft/hr
+    assert np.isclose(result[0], 32.808, rtol=RTOL)
+
+
+# --- Test convert_wob ---------------------------------------------------------
+
+def test_convert_wob_ton_to_lb():
+    values = np.array([1.0])  # 1 ton (2000 lb)
+    result = convert_wob(values, "TON")
+    assert np.isclose(result[0], 2000, rtol=RTOL)
+
+
+def test_convert_wob_metric_ton_to_lb():
+    values = np.array([1.0])  # 1 metric ton = 2204.62 lb
+    result = convert_wob(values, "MTON")
+    assert np.isclose(result[0], 2204.62, rtol=RTOL)
+
+
+# --- Test convert_ecd ---------------------------------------------------------
+
+def test_convert_ecd_ppg_to_sg():
+    values = np.array([10.0])  # 10 ppg
+    result = convert_ecd(values, "ppg", "SG")
+    # Known: 10 ppg ≈ 1.197 SG
+    assert np.isclose(result[0], 1.197, rtol=RTOL)
+
+
+def test_convert_ecd_sg_to_ppg():
+    values = np.array([1.2])  # 1.2 SG
+    result = convert_ecd(values, "SG", "ppg")
+    # Reverse: 1.2 SG ≈ 10.02 ppg
+    assert np.isclose(result[0], 10.02, rtol=RTOL)
+
+
+# --- Test convert_flowrate ----------------------------------------------------
+
+def test_convert_flowrate_lpm_to_gpm():
+    values = np.array([3.785])  # 3.785 L/min = 1 gpm
+    result = convert_flowrate(values, "LPM", "GPM")
+    assert np.isclose(result[0], 1.0, rtol=RTOL)
+
+
+def test_convert_flowrate_gpm_to_lpm():
+    values = np.array([1.0])  # 1 gpm
+    result = convert_flowrate(values, "GPM", "LPM")
+    assert np.isclose(result[0], 3.785, rtol=RTOL)
+
+
+# --- Test convert_torque ------------------------------------------------------
+
+def test_convert_torque_ftlb_to_nm():
+    values = np.array([10.0])  # 10 ft-lb
+    result = convert_torque(values, "FTLB", "NM")
+    assert np.isclose(result[0], 13.56, rtol=RTOL)
+
+
+def test_convert_torque_nm_to_ftlb():
+    values = np.array([10.0])  # 10 Nm
+    result = convert_torque(values, "NM", "FTLB")
+    assert np.isclose(result[0], 7.376, rtol=RTOL)
