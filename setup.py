@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="stresslog",
-    version="1.7.0",
+    version="1.7.1",
     description="Library for stress calculations from well logs",
     long_description=pathlib.Path("README.md").read_text(),
     long_description_content_type="text/markdown",
