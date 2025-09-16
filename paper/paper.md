@@ -14,7 +14,7 @@ authors:
     affiliation: 1
 
 affiliations:
-  - name: Rock Lab Private Limited, India
+  - name: ROCK LAB PRIVATE LIMITED, India
     index: 1
 
 date: 12 February 2025
