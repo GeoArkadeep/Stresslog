@@ -35,11 +35,11 @@ Stresslog differs from these by aiming to be comprehensive: allowing modeling of
 
 Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. It is aimed at empowering researchers with a 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
 
-Stresslog uses welly [@welly] to read las files and handle well data. Dliso is used to parse dlis [@dlisio] files. A modified function from lasio [@Inverarity_Lasio_2023] is used to write las files. Numpy [@2020NumPy-Array], Pandas [@the_pandas_development_team_2025_16918803; @mckinney2010data] and Scipy [@SciPy] are used for numerical computations. Matplotlib [@Hunter:2007] and Plotly [@plotly_py] are used for plotting data. Pint is used for unit conversions.
+Stresslog uses welly [@welly] to read las files and handle well data. dliso is used to parse dlis [@dlisio] files. A modified function from lasio [@Inverarity_Lasio_2023] is used to write las files. Numpy [@2020NumPy-Array], Pandas [@the_pandas_development_team_2025_16918803; @mckinney2010data] and Scipy [@SciPy] are used for numerical computations. Matplotlib [@Hunter:2007] and Plotly [@plotly_py] are used for plotting data. Pint is used for unit conversions.
 
 # Methodology
 
-To use Stresslog, at the minimum a well log is required containing atleast sonic or resistivity or drilling parameters data. Numerous other types of data can be specified to improve/constrain the estimates. Some of the input data require specific format and units to work correctly. Please refer to the documentation for details.
+To use Stresslog, at the minimum a well log is required containing at least sonic or resistivity or drilling parameters data. Numerous other types of data can be specified to improve/constrain the estimates. Some of the input data require specific format and units to work correctly. Please refer to the documentation for details.
 
 Overburden gradient [@traugott1997], pore-pressure [@Zhang20132; @Flemings2021], minimum horizontal stress [@Daines1982; @zoback1992], rock strength [@lal1999; @horsrud2001] and other parameters are calculated considering the given well-logging, deviation, and formation data. The maximum horizontal stress is estimated by applying stress-polygon [@ZOBACK2003] for every depth-sample. Borehole image interpretation is considered in the stress-polygon results if available.
 
