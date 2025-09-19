@@ -59,7 +59,7 @@ Considering the azimuth of maximum principal stress as $\alpha$, the above relat
 
 For every depth-sample, the stresses resolved on the wellbore wall are calculated along the circumference. The lower critical mudweight is calculated by using the modified Lade formula [@ewy1999] for critical mudweight during this process. A closed-form solution has been derived by setting $\sigma_{\theta_{\min}}$ equal to tensile stress and solving this for the upper critical mud pressure, as follows:
 
-{\small
+\small
 $\text{FracturePressure}_{\text{non-penetrating}} =$
 $$
 \frac{
@@ -113,7 +113,6 @@ $$
   + TS
 }
 $$
-}
 
 where $\sigma'_B$ is the effective stress tensor in the borehole frame of reference, PP is pore-pressure, TS is tensile strength, $\nu$ is Poisson's ratio, $\sigma_T$ is thermal stress and $\theta_{\min}$ is the circumferential angle corresponding to minimum hoop stress.
 
