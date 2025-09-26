@@ -1,5 +1,5 @@
 ---
-title: "Stresslog: A python package for modeling wellbore stability in inclined stress states"
+title: "Stresslog: A Python package for modeling wellbore stability in inclined stress states"
 tags:
   - Python
   - Drilling
@@ -29,13 +29,13 @@ This package is meant to be used by researchers and practitioners working in the
 
 Many commercial packages exist for calculating geomechanical parameters and pressure prediction. Due to their high cost, their usage is limited in research settings. Many practitioners rely on Microsoft Excel for routine geomechanical calculations, but implementing iterative calculations in Excel is challenging.
 
-The python ecosystem for geology is rapidly growing. Handling of well-log and seismic data is now very mature. Geomechanics focused packages exist, such as PyGeoPressure [@Yu2018], but this as well as most commercial software assume a vertical stress state.
+The Python ecosystem for geology is rapidly growing. Handling of well-log and seismic data is now very mature. Geomechanics focused packages exist, such as `PyGeoPressure` [@Yu2018], but this as well as most commercial software assume a vertical stress state.
 
 Stresslog differs from these by aiming to be comprehensive: allowing modeling of variable Biot's coefficient, thermal stresses and inclined stress states, operating on standard well log formats, and with built-in support for log aliasing.
 
 Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. It is aimed at empowering researchers with a 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
 
-Stresslog uses welly [@welly] to read las files and handle well data. dlisio is used to parse dlis [@dlisio] files. A modified function from lasio [@Inverarity_Lasio_2023] is used to write las files. Numpy [@2020NumPy-Array], Pandas [@the_pandas_development_team_2025_16918803; @mckinney2010data] and Scipy [@SciPy] are used for numerical computations. Matplotlib [@Hunter:2007] and Plotly [@plotly_py] are used for plotting data. Pint is used for unit conversions.
+Stresslog uses `welly` [@welly] to read las files and handle well data. `dlisio` is used to parse dlis [@dlisio] files. A modified function from `lasio` [@Inverarity_Lasio_2023] is used to write las files. Numpy [@2020NumPy-Array], Pandas [@the_pandas_development_team_2025_16918803; @mckinney2010data] and Scipy [@SciPy] are used for numerical computations. Matplotlib [@Hunter:2007] and Plotly [@plotly_py] are used for plotting data. `Pint` is used for unit conversions.
 
 # Methodology
 
