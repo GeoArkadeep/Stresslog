@@ -35,7 +35,7 @@ Stresslog differs from these by aiming to be comprehensive: allowing modeling of
 
 Stresslog has been designed to help with pre-drill, post-drill and realtime geomechanical calculations. It is aimed at empowering researchers with a 1D mechanical earth modeling tool that is freely available and which researchers can modify to apply their own methods when necessary, while allowing practitioners to use industry-standard algorithms to calculate solutions and export well log data.
 
-Stresslog uses `welly` [@welly] to read las files and handle well data. `dlisio` is used to parse dlis [@dlisio] files. A modified function from `lasio` [@Inverarity_Lasio_2023] is used to write las files. Numpy [@2020NumPy-Array], Pandas [@the_pandas_development_team_2025_16918803; @mckinney2010data] and Scipy [@SciPy] are used for numerical computations. Matplotlib [@Hunter:2007] and Plotly [@plotly_py] are used for plotting data. `Pint` is used for unit conversions.
+Stresslog uses `welly` [@welly] to read las files and handle well data. `dlisio` is used to parse `.dlis` [@dlisio] files. A modified function from `lasio` [@Inverarity_Lasio_2023] is used to write `.las` files. `Numpy` [@2020NumPy-Array], `Pandas` [@the_pandas_development_team_2025_16918803; @mckinney2010data] and `Scipy` [@SciPy] are used for numerical computations. `Matplotlib` [@Hunter:2007] and `Plotly` [@plotly_py] are used for plotting data. `Pint` is used for unit conversions.
 
 # Methodology
 
