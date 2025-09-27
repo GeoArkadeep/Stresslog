@@ -3,6 +3,8 @@
 
 A package to calculate and plot pore pressure and other geomechanical data from las files. It is intended for pre-drill and post-drill studies of wells, and can be used for limited realtime stress prediction.
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.08036/status.svg)](https://doi.org/10.21105/joss.08036)
+
 ## Features
 
 * Import las files, dlis files, deviation files, ucs and lithology files
